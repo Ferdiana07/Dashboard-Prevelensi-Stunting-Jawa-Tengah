@@ -1,0 +1,219 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-16T19:24:12+07:00",
+  "title": "Design System: Dashboard Prioritas Intervensi Stunting Jawa Tengah",
+  "extensions": {
+    "colorMeta": {
+      "page": {
+        "role": "neutral",
+        "displayName": "Kanvas terang"
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Panel putih"
+      },
+      "achieved": {
+        "role": "primary",
+        "displayName": "Hijau mencapai target"
+      },
+      "moderate": {
+        "role": "primary",
+        "displayName": "Kuning perlu perhatian"
+      },
+      "high": {
+        "role": "primary",
+        "displayName": "Merah prioritas tinggi"
+      },
+      "blue-surface": {
+        "role": "secondary",
+        "displayName": "Pastel biru KPI"
+      },
+      "orange-surface": {
+        "role": "secondary",
+        "displayName": "Pastel oranye KPI"
+      },
+      "purple-surface": {
+        "role": "secondary",
+        "displayName": "Pastel ungu KPI"
+      },
+      "green-surface": {
+        "role": "secondary",
+        "displayName": "Pastel hijau KPI"
+      },
+      "trend-blue": {
+        "role": "tertiary",
+        "displayName": "Biru seri tren"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Judul halaman",
+        "purpose": "h1; src/styles/index.css."
+      },
+      "title": {
+        "displayName": "Judul panel",
+        "purpose": "Aturan dasar .panel h2; src/styles/index.css."
+      },
+      "kpi-value": {
+        "displayName": "Angka KPI",
+        "purpose": "Nilai utama .score-value dengan angka tabular; src/styles/index.css."
+      }
+    },
+    "shadows": [
+      {
+        "name": "map-tooltip",
+        "value": "0 8px 24px #192b431f",
+        "purpose": "Tooltip mengambang; src/styles/index.css .map-tooltip. Panel utama tidak memiliki bayangan."
+      }
+    ],
+    "motion": [
+      {
+        "name": "map-fill",
+        "value": "fill .18s",
+        "purpose": "Transisi .map-region; src/styles/index.css."
+      },
+      {
+        "name": "page-scroll",
+        "value": "smooth",
+        "purpose": "html scroll-behavior; src/styles/index.css."
+      },
+      {
+        "name": "loading",
+        "value": "spin 1s linear infinite",
+        "purpose": "Indikator loading, keyframe rotate(360deg); src/styles/index.css."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "animation: none !important; transition: none !important; scroll-behavior: auto",
+        "purpose": "@media (prefers-reduced-motion: reduce); src/styles/index.css."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide-min",
+        "value": "1650px"
+      },
+      {
+        "name": "compact-max",
+        "value": "1190px"
+      },
+      {
+        "name": "single-column-max",
+        "value": "960px"
+      },
+      {
+        "name": "mobile-max",
+        "value": "560px"
+      },
+      {
+        "name": "fit-overview-min-width",
+        "value": "1100px"
+      },
+      {
+        "name": "fit-overview-min-height",
+        "value": "600px"
+      }
+    ],
+    "viewportLayout": {
+      "media": "(min-width: 1100px) and (min-height: 600px)",
+      "overviewHeight": "calc(100svh - 36px)",
+      "overviewRows": "auto auto minmax(0, 1fr) auto",
+      "overviewGap": "clamp(10px, 1.6vh, 16px)",
+      "dashboardPadding": "18px 22px 24px",
+      "analysisRows": "minmax(125px, 2fr) minmax(0, 5fr)",
+      "tableOverflow": "auto",
+      "tableRowHeight": "clamp(30px, 4.8vh, 43px)",
+      "mapHeight": "available grid space",
+      "supplementaryPanels": "normal document flow below overview",
+      "source": "src/styles/index.css"
+    }
+  },
+  "components": [
+    {
+      "name": "Tombol ikon",
+      "kind": "button",
+      "refersTo": "icon-button",
+      "description": "Kontrol ringkas; src/styles/index.css .icon-button dan fokus global. SVG plus dari kontrol peta.",
+      "html": "<button class=\"ds-icon\" aria-label=\"Perbesar peta\"><svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M12 5v14M5 12h14\"/></svg></button>",
+      "css": ".ds-icon{display:inline-flex;justify-content:center;align-items:center;width:34px;height:34px;border:1px solid #d4d8de;background:#fff;border-radius:7px;color:#15181e;cursor:pointer}.ds-icon:hover{background:#edf2f7;border-color:#9aa6b5}.ds-icon:focus-visible{outline:3px solid #2469a9;outline-offset:4px}.ds-icon:disabled{cursor:default;opacity:.5}"
+    },
+    {
+      "name": "Tombol muat ulang",
+      "kind": "button",
+      "refersTo": "retry-button",
+      "description": "Tombol pada halaman gagal; src/App.tsx dan src/styles/index.css .button. Tidak ada aturan hover khusus pada sumber.",
+      "html": "<button class=\"ds-retry\">Coba muat ulang</button>",
+      "css": ".ds-retry{font:inherit;background:#275f96;color:#fff;border:0;padding:11px 18px;border-radius:8px;cursor:pointer}.ds-retry:focus-visible{outline:3px solid #2469a9;outline-offset:4px}.ds-retry:disabled{cursor:default;opacity:.5}"
+    },
+    {
+      "name": "Tombol teks",
+      "kind": "button",
+      "description": "Aksi tampilkan semua dan hapus pencarian; src/styles/index.css .text-button.",
+      "html": "<button class=\"ds-text\">Lihat semua (35)</button>",
+      "css": ".ds-text{font-family:var(--font-sans,'Inter Variable',Inter,sans-serif);font-size:11px;color:#315f8d;background:none;border:0;font-weight:600;padding:5px 0;white-space:nowrap;cursor:pointer}.ds-text:hover{text-decoration:underline;text-underline-offset:3px}.ds-text:focus-visible{outline:3px solid #2469a9;outline-offset:4px}"
+    },
+    {
+      "name": "Filter tahun",
+      "kind": "input",
+      "refersTo": "filter-field",
+      "description": "Select native dan label; src/components/Filters.tsx dan src/styles/index.css .select-wrap.",
+      "html": "<div class=\"ds-field\"><label for=\"ds-year\">Tahun:</label><select id=\"ds-year\"><option>2019</option><option>2021</option><option selected>2022</option></select><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"/></svg></div>",
+      "css": ".ds-field{display:flex;align-items:center;position:relative;background:#fff;border:1px solid #9b9fa6;border-radius:9px;height:43px;padding-left:12px;font-family:var(--font-sans,'Inter Variable',Inter,sans-serif);font-size:13px;font-weight:600;color:#15181e;width:max-content}.ds-field label{pointer-events:none}.ds-field select{font:inherit;appearance:none;background:transparent;border:0;padding:10px 31px 10px 5px;color:#20242b;max-width:197px;min-height:41px;cursor:pointer}.ds-field select:focus-visible{outline:3px solid #2469a9;outline-offset:0}.ds-field svg{position:absolute;right:10px;pointer-events:none}"
+    },
+    {
+      "name": "Pencarian wilayah",
+      "kind": "input",
+      "description": "Input ringkas pada toolbar tabel; src/styles/index.css .search-wrap input.",
+      "html": "<div class=\"ds-search\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg><input aria-label=\"Cari wilayah\" placeholder=\"Cari kabupaten / kota…\"/></div>",
+      "css": ".ds-search{display:flex;gap:7px;align-items:center;color:#687381}.ds-search input{font-family:var(--font-sans,'Inter Variable',Inter,sans-serif);border:0;background:transparent;padding:5px 0;min-width:0;width:178px;font-size:11px;color:#252e3a;caret-color:#2469a9}.ds-search input::placeholder{color:#65707f;opacity:1}.ds-search input:focus-visible{outline:3px solid #2469a9;outline-offset:4px}"
+    },
+    {
+      "name": "Kartu KPI biru",
+      "kind": "card",
+      "refersTo": "scorecard-blue",
+      "description": "Kartu informatif, bukan kontrol; src/styles/index.css .scorecard.blue, .score-value, .score-note. Contoh angka bukan data tetap.",
+      "html": "<article class=\"ds-kpi\"><h2>Rata-rata prevalensi</h2><p class=\"ds-kpi-value\">20,0%</p><p class=\"ds-kpi-note\">rata-rata wilayah</p></article>",
+      "css": ".ds-kpi{font-family:var(--font-sans,'Inter Variable',Inter,sans-serif);font-variant-numeric:tabular-nums;border:1px solid #71b4e8;border-radius:16px;min-height:146px;padding:17px 23px 16px;background:#d7edfd;color:#0e2538}.ds-kpi h2{margin:0;font-size:clamp(15px,1.4vw,22px);font-weight:620;line-height:1.3;letter-spacing:-.025em}.ds-kpi-value{font-size:clamp(31px,3.15vw,54px);line-height:1.17;letter-spacing:-.045em;font-weight:780;margin:5px 0 4px}.ds-kpi-note{margin:0;font-size:clamp(12px,1.22vw,18px);line-height:1.4}"
+    },
+    {
+      "name": "Lencana prevalensi",
+      "kind": "chip",
+      "refersTo": "prevalence-high",
+      "description": "Lencana data noninteraktif; src/components/RankingTable.tsx, src/lib/calculations.ts dan src/styles/index.css .prevalence-badge. Angka contoh.",
+      "html": "<span class=\"ds-prevalence\">20,0%</span>",
+      "css": ".ds-prevalence{font-family:var(--font-sans,'Inter Variable',Inter,sans-serif);font-variant-numeric:tabular-nums;display:inline-flex;padding:4px 9px;min-width:65px;justify-content:center;border-radius:7px;font-size:15px;font-weight:750;background:#ffdada;color:#9d1c22}"
+    },
+    {
+      "name": "Mode analisis tren",
+      "kind": "custom",
+      "refersTo": "trend-tab",
+      "description": "Kelompok tombol aria-pressed; src/components/TrendPanel.tsx dan src/styles/index.css .mode-tabs. Cuplikan menampilkan keadaan awal tanpa runtime React.",
+      "html": "<div class=\"ds-modes\" role=\"group\" aria-label=\"Mode analisis tren\"><button aria-pressed=\"true\">Rata-rata</button><button aria-pressed=\"false\">Satu wilayah</button><button aria-pressed=\"false\">Multiwilayah</button><button aria-pressed=\"false\">Kota vs Kab.</button></div>",
+      "css": ".ds-modes{display:flex;flex-wrap:wrap;gap:3px;background:#f0f2f5;border:1px solid #e0e4e9;padding:3px;border-radius:9px;width:max-content;max-width:100%}.ds-modes button{font-family:var(--font-sans,'Inter Variable',Inter,sans-serif);padding:8px 12px;border:0;background:none;border-radius:6px;font-size:12px;color:#5a6472;cursor:pointer}.ds-modes button[aria-pressed='true']{background:#fff;color:#213e60;font-weight:650}.ds-modes button:hover{color:#172f4a}.ds-modes button:focus-visible{outline:3px solid #2469a9;outline-offset:4px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "",
+    "overview": "Sistem ini merekam implementasi yang sudah ada, dengan referensi visual pengguna `C:/Users/LOQ/Downloads/Dasbor Prioritas Stunting Jawa Tengah (1).png` sebagai otoritas komposisi. Latar terang, empat kartu KPI pastel biru–oranye–ungu–hijau, peta geografis di kiri, grafik batang dan peringkat di kanan, serta tren di bawah mengikuti referensi tersebut dan komitmen dalam `PRODUCT.md`.\n\nPenjelasan berbahasa Indonesia, angka besar, dan label pendamping mendukung pembacaan data. Dokumentasi ini tidak menetapkan metafora, identitas, atau keputusan estetika baru. Nilai berasal dari kode; token YAML di atas bersifat normatif. Metadata, cuplikan komponen, fokus, bayangan, gerak, dan breakpoint tersimpan dalam `.impeccable/design.json`.",
+    "keyCharacteristics": [
+      "Kanvas terang dan panel putih dengan garis tepi tipis.",
+      "Empat warna pastel untuk membedakan jenis indikator.",
+      "Merah–kuning–hijau untuk kategori prevalensi, didampingi rentang angka.",
+      "Inter dengan angka tabular dan hierarki angka KPI yang kuat.",
+      "Kontrol ringkas, fokus keyboard terlihat, serta tata letak yang menjadi satu kolom pada layar kecil."
+    ],
+    "rules": [],
+    "dos": [
+      "**Do** Pertahankan urutan KPI pastel serta komposisi overview dan tren yang ditetapkan referensi pengguna.",
+      "**Do** Gunakan kategori dari `CATEGORIES` bersama label, rentang, dan nilai yang dapat dibaca.",
+      "**Do** Pertahankan fokus keyboard, keadaan terpilih, area gulir tabel, dan perubahan tata letak pada breakpoint yang tercatat.",
+      "**Do** Perbarui token berdasarkan sumber kode saat implementasi berubah."
+    ],
+    "donts": [
+      "**Don't** Mengganti referensi terang yang ditetapkan pengguna dengan tema atau identitas visual baru.",
+      "**Don't** Mengubah batas kategori berdasarkan angka yang sudah dibulatkan atau memakai warna seri tren sebagai kategori risiko.",
+      "**Don't** Menyambung garis melewati 2020 atau menggambar data yang tidak tersedia.",
+      "**Don't** Menganggap contoh sidecar sebagai komponen baru atau mengubah tampilan aplikasi dari dokumentasi ini."
+    ]
+  }
+}
