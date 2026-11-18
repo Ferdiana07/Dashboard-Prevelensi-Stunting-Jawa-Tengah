@@ -1,7 +1,7 @@
 ---
 name: "Dashboard Prioritas Intervensi Stunting Jawa Tengah"
 description: "Sistem visual yang diekstrak dari dashboard dan referensi pengguna yang sudah ditetapkan."
-colors: {"page": "#f8f9fb", "surface": "#fff", "ink": "#15181e", "panel-border": "#a8adb4", "link": "#295d94", "focus": "#2469a9", "blue-surface": "#d7edfd", "blue-border": "#71b4e8", "blue-ink": "#0e2538", "orange-surface": "#ffead0", "orange-border": "#d9a164", "orange-ink": "#382616", "purple-surface": "#f1e2fc", "purple-border": "#be91df", "purple-ink": "#2d1c3c", "green-surface": "#e4f7db", "green-border": "#8cbd77", "green-ink": "#1f3419", "achieved": "#08a33e", "achieved-soft": "#dcf4e2", "achieved-text": "#11652e", "moderate": "#ffd000", "moderate-soft": "#fff3bf", "moderate-text": "#735600", "high": "#ed2429", "high-soft": "#ffdada", "high-text": "#9d1c22", "outside-scope": "#e2e5e9", "table-header": "#ededee", "row-hover": "#f4f7fa", "row-selected": "#eaf3fc", "icon-border": "#d4d8de", "icon-hover": "#edf2f7", "field-border": "#9b9fa6", "retry": "#275f96", "tab-track": "#f0f2f5", "tab-ink": "#5a6472", "tab-active-ink": "#213e60", "trend-blue": "#2563a6", "trend-purple": "#a14399", "trend-orange": "#bd5c12", "trend-teal": "#117866", "trend-violet": "#5f55bb"}
+colors: {"page": "#f8f9fb", "surface": "#fff", "ink": "#15181e", "panel-border": "#a8adb4", "link": "#295d94", "focus": "#2469a9", "blue-surface": "#d7edfd", "blue-border": "#71b4e8", "blue-ink": "#0e2538", "orange-surface": "#ffead0", "orange-border": "#d9a164", "orange-ink": "#382616", "purple-surface": "#f1e2fc", "purple-border": "#be91df", "purple-ink": "#2d1c3c", "green-surface": "#e4f7db", "green-border": "#8cbd77", "green-ink": "#1f3419", "achieved": "#08a33e", "achieved-soft": "#dcf4e2", "achieved-text": "#11652e", "moderate": "#ffd000", "moderate-soft": "#fff3bf", "moderate-text": "#735600", "high": "#ed2429", "high-soft": "#ffdada", "high-text": "#9d1c22", "outside-scope": "#e2e5e9", "table-header": "#ededee", "row-hover": "#f4f7fa", "row-selected": "#eaf3fc", "icon-border": "#d4d8de", "icon-hover": "#edf2f7", "field-border": "#9b9fa6", "retry": "#275f96", "tab-track": "#f0f2f5", "tab-ink": "#5a6472", "tab-active-ink": "#213e60", "series-ink": "#34465b"}
 typography: {"display": {"fontFamily": "'Inter Variable', Inter, sans-serif", "fontSize": "clamp(22px, 1.75vw, 31px)", "fontWeight": 790, "lineHeight": 1.21, "letterSpacing": "-.035em"}, "title": {"fontFamily": "'Inter Variable', Inter, sans-serif", "fontSize": "clamp(19px, 1.76vw, 29px)", "fontWeight": 760, "lineHeight": 1.25, "letterSpacing": "-.032em"}, "kpi-title": {"fontFamily": "'Inter Variable', Inter, sans-serif", "fontSize": "clamp(15px, 1.4vw, 22px)", "fontWeight": 620, "lineHeight": 1.3, "letterSpacing": "-.025em"}, "kpi-value": {"fontFamily": "'Inter Variable', Inter, sans-serif", "fontSize": "clamp(31px, 3.15vw, 54px)", "fontWeight": 780, "lineHeight": 1.17, "letterSpacing": "-.045em"}, "kpi-note": {"fontFamily": "'Inter Variable', Inter, sans-serif", "fontSize": "clamp(12px, 1.22vw, 18px)", "lineHeight": 1.4}, "table-body": {"fontFamily": "'Inter Variable', Inter, sans-serif", "fontSize": "12px"}, "field-label": {"fontFamily": "'Inter Variable', Inter, sans-serif", "fontSize": "13px", "fontWeight": 600}}
 rounded: {"panel": "16px", "panel-mobile": "13px", "kpi-mobile": "12px", "field": "9px", "table": "8px", "control": "7px", "rank-tab": "6px", "legend": "5px", "tooltip": "11px"}
 spacing: {"filter-gap": "10px", "kpi-gap": "17px", "overview-gap": "18px", "panel-padding": "24px", "dashboard-padding": "26px 26px 28px"}
@@ -20,7 +20,7 @@ Penjelasan berbahasa Indonesia, angka besar, dan label pendamping mendukung pemb
 
 - Kanvas terang dan panel putih dengan garis tepi tipis.
 - Empat warna pastel untuk membedakan jenis indikator.
-- Merah–kuning–hijau untuk kategori prevalensi, didampingi rentang angka.
+- Merah–kuning–hijau dengan pola polos, titik, dan arsiran bersama serta rentang angka untuk kategori prevalensi.
 - Inter dengan angka tabular dan hierarki angka KPI yang kuat.
 - Kontrol ringkas, fokus keyboard terlihat, serta tata letak yang menjadi satu kolom pada layar kecil.
 
@@ -28,7 +28,9 @@ Penjelasan berbahasa Indonesia, angka besar, dan label pendamping mendukung pemb
 
 ### Primary
 
-Warna semantik `achieved`, `moderate`, dan `high` berasal dari `CATEGORIES` di `src/lib/calculations.ts`. Hijau berarti mencapai target (≤ 14%), kuning berarti perlu perhatian (> 14% hingga < 20%), dan merah berarti prioritas tinggi (≥ 20%). Batas memakai nilai yang belum dibulatkan. Peta dan batang memakai warna utamanya; lencana tabel memakai pasangan `soft` dan `text` untuk menjaga keterbacaan.
+Warna semantik `achieved`, `moderate`, dan `high` berasal dari `CATEGORIES` di `src/lib/calculations.ts`. Hijau berarti mencapai target (≤ 14%), kuning berarti perlu perhatian (> 14% hingga < 20%), dan merah berarti prioritas tinggi (≥ 20%). Batas memakai nilai yang belum dibulatkan. Peta dan batang memakai warna utama beserta encoding redundan yang sama: hijau polos, kuning bertitik, merah berarsir diagonal. Legenda kategori pada peta, batang, dan tren menampilkan swatch serta rentang yang sama. Lencana tabel memakai pasangan `soft` dan `text` untuk menjaga keterbacaan.
+
+**The Shared Category Rule.** Kategori selalu ditentukan dari nilai mentah. Warna, pola, rentang legenda, dan isian titik tren harus menunjuk kategori yang sama. Label batang, tooltip grafik, dan label tren memakai `prevalenceLabel`: satu desimal secara umum, dengan presisi tambahan hanya bila pembulatan akan menyeberangi batas kategori (misalnya 19,96% tetap kuning, bukan dilabeli 20,0%).
 
 ### Secondary
 
@@ -36,7 +38,7 @@ Empat keluarga `blue`, `orange`, `purple`, dan `green` di `src/styles/index.css`
 
 ### Tertiary
 
-Palet `trend-*` berasal dari `PALETTE` di `src/components/TrendPanel.tsx` dan membedakan seri. Perbandingan kota memakai biru dan kabupaten memakai ungu. Warna garis tren tidak menyatakan kategori prevalensi.
+`series-ink` berasal dari `SERIES_INK` di `src/lib/visualEncoding.ts` dan dipakai semua garis serta tepi simbol tren. Identitas seri dibedakan oleh bentuk titik dan pola garis, bukan warna seri. Isian titik tetap mengikuti kategori prevalensi. Palet seri `PALETTE`/`trend-*` sebelumnya sudah tidak berlaku.
 
 ### Neutral
 
@@ -54,14 +56,14 @@ Ukuran berubah melalui media query; angka pada YAML menggambarkan aturan dasar. 
 
 Sumber ukuran dan breakpoint: `src/styles/index.css`. Kontainer maksimal (1840px), terpusat, memakai `dashboard-padding`. Header memakai flex dengan jarak (24px). Kartu KPI membentuk empat kolom sama lebar dengan `kpi-gap`, tinggi minimal (146px), dan jarak bawah (23px). Overview memakai dua kolom (1.02fr / 1fr) dengan `overview-gap`; kolom kanan menumpuk perbandingan dan peringkat dengan jarak (17px). Panel tren berada setelah overview dan detail pilihan (`src/App.tsx`).
 
-Peta memakai SVG `viewBox="0 0 760 440"`, lebar 100%, tinggi otomatis, dan inset Karimunjawa. Tinggi minimum kanvas dasar (330px), maksimum SVG (410px). Grafik batang dasar (156px); grafik tren (288px). Tabel dapat digulir horizontal, dan mode semua wilayah dibatasi tinggi (408px) dengan gulir vertikal serta header lengket.
+Peta memakai SVG `viewBox="0 0 760 440"`, lebar 100%, tinggi otomatis, dan inset Karimunjawa. Tinggi minimum kanvas dasar (330px), maksimum SVG (410px). Grafik batang dasar (156px); grafik tren (320px). Tabel dapat digulir horizontal, dan mode semua wilayah dibatasi tinggi (408px) dengan gulir vertikal serta header lengket.
 
-Aturan desktop terakhir pada lebar ≥1100px dan tinggi viewport ≥600px mengatasi ukuran dasar: `.dashboard-overview` memakai tinggi `calc(100svh - 36px)`, empat baris grid (`auto auto minmax(0, 1fr) auto`), dan jarak `clamp(10px, 1.6vh, 16px)`. Padding dashboard (18px 22px 24px). Header (21–29px), angka KPI `clamp(30px, 5.1vh, 47px)`, tanpa tinggi minimum kartu. Kanvas/SVG peta mengikuti ruang tersisa tanpa tinggi minimum. Kolom analisis memakai `minmax(125px, 2fr) minmax(0, 5fr)` dengan jarak (12px). Tabel mengisi sisa panel, menggulir internal pada semua mode, dengan baris `clamp(30px, 4.8vh, 43px)`. Detail/tren tetap berada di bawah ringkasan pada aliran dokumen biasa; jangan memotong halaman memakai `overflow: hidden` atau CSS zoom.
+Aturan desktop terakhir pada lebar ≥1100px dan tinggi viewport ≥600px mengatasi ukuran dasar: `.dashboard-overview` memakai tinggi `calc(100svh - 36px)`, empat baris grid (`auto auto minmax(0, 1fr) auto`), dan jarak `clamp(10px, 1.6vh, 16px)`. Padding dashboard (18px 22px 24px). Header (21–29px), angka KPI `clamp(30px, 5.1vh, 47px)`, tanpa tinggi minimum kartu. Kanvas/SVG peta mengikuti ruang tersisa tanpa tinggi minimum. Kolom analisis memakai `minmax(156px, 2fr) minmax(0, 5fr)` dengan jarak (10px). Tabel mengisi sisa panel, menggulir internal pada semua mode, dengan baris `clamp(30px, 4.8vh, 43px)`. Detail/tren tetap berada di bawah ringkasan pada aliran dokumen biasa; jangan memotong halaman memakai `overflow: hidden` atau CSS zoom.
 
 - Pada ≥ 1650px, tabel menjadi (14px), lencana (18px), dan kanvas peta minimal (340px).
 - Pada ≤ 1190px, padding kontainer (22px 20px), header membungkus, kolom overview (0.95fr / 1.05fr), jarak (15px), dan pilihan banyak wilayah menjadi empat kolom.
 - Pada ≤ 960px, KPI menjadi dua kolom dengan jarak (13px), overview satu kolom, legenda dapat berjajar dan membungkus, heading tren bertumpuk, serta detail menjadi dua kolom. Kanvas peta minimal (360px), maksimum SVG (430px).
-- Pada ≤ 560px, padding kontainer (20px 14px), KPI tetap dua kolom dengan jarak (10px), filter membungkus selebar kontainer, legenda kembali vertikal, tabel minimal (530px) di dalam area gulir, tab tren dibagi rata, dan daftar multiwilayah menjadi dua kolom. Grafik tren setinggi (265px); kanvas peta minimal (250px). Lebar minimum body (320px).
+- Pada ≤ 560px, padding kontainer (20px 14px), KPI tetap dua kolom dengan jarak (10px), filter membungkus selebar kontainer, legenda kembali vertikal, tabel minimal (530px) di dalam area gulir, tab tren dibagi rata, dan daftar multiwilayah menjadi dua kolom. Grafik tren setinggi (300px); kanvas peta minimal (250px). Lebar minimum body (320px).
 
 ## Elevation & Depth
 
@@ -69,7 +71,7 @@ Panel utama, kartu, dan kontrol menggunakan bidang warna serta garis tepi tanpa 
 
 ## Shapes
 
-Panel dan kartu memakai `rounded.panel`; pada ponsel panel memakai `panel-mobile` dan KPI memakai `kpi-mobile`. Kontrol, tabel, tab, legenda, dan tooltip memakai ukuran terpisah dalam YAML. Garis panel dan kartu (1px); batas wilayah peta putih (1.4px), bergabung membulat, dan memakai `vector-effect: non-scaling-stroke`. Hover/fokus wilayah memakai garis gelap (2px); pilihan aktif (2.8px). Kota memiliki penanda lingkaran (r 5.5) dengan garis dasar (1.1px), menjadi (2.5px) saat aktif, hover, atau fokus. Sumber: `src/styles/index.css` dan `src/components/MapPanel.tsx`.
+Panel dan kartu memakai `rounded.panel`; pada ponsel panel memakai `panel-mobile` dan KPI memakai `kpi-mobile`. Kontrol, tabel, tab, legenda, dan tooltip memakai ukuran terpisah dalam YAML. Garis panel dan kartu (1px); batas wilayah peta putih (1.4px), bergabung membulat, dan memakai `vector-effect: non-scaling-stroke`. Hover/fokus wilayah memakai garis gelap (2px); pilihan aktif (2.8px). Kota memiliki penanda lingkaran (r 6) dengan garis dasar (1.1px), menjadi (2.5px) saat aktif, hover, atau fokus. Sumber: `src/styles/index.css` dan `src/components/MapPanel.tsx`.
 
 ## Components
 
@@ -81,11 +83,13 @@ Panel dan kartu memakai `rounded.panel`; pada ponsel panel memakai `panel-mobile
 
 **Fokus dan navigasi.** Aturan global `:focus-visible` menampilkan outline (3px solid) dengan warna `focus`, offset umum (4px); select dalam bingkai memakai offset (0). Tautan analisis tren menuju heading tren melalui anchor. Skip link muncul di posisi kiri/atas (15px) ketika fokus. Tidak ada bilah navigasi aplikasi terpisah. Tombol mode tren memakai `aria-pressed`, bukan peran tab ARIA.
 
-**Peta.** Geometri yang diberikan diproyeksikan melalui `geoIdentity().reflectY(true)`; bukan gambar ilustrasi. Geser/pan aktif, tombol zoom memakai faktor (1.4) dengan rentang skala (1–6), roda mouse tidak memicu zoom. Hover dan fokus membuka tooltip; klik, Enter, atau Space memilih wilayah. Escape menutup tooltip. Wilayah di luar cakupan tetap dapat dipilih dan ditampilkan abu-abu. Pilihan wilayah memperbarui filter, memunculkan detail, dan diikuti mode satu wilayah pada tren sampai pengguna mengganti kontrol tren. Sumber: `MapPanel.tsx`, `App.tsx`, `TrendPanel.tsx`.
+**Peta.** Geometri yang diberikan diproyeksikan melalui `geoIdentity().reflectY(true)`; bukan gambar ilustrasi. Geser/pan aktif, tombol zoom memakai faktor (1.4) dengan rentang skala (1–6), roda mouse tidak memicu zoom. Hover dan fokus membuka tooltip; klik, Enter, atau Space memilih wilayah. Escape menutup tooltip. Wilayah di luar cakupan tetap dapat dipilih dan ditampilkan abu-abu. Pola kategori dilapiskan pada geometri dan penanda kota dengan `pointer-events: none` serta `aria-hidden="true"`, sehingga target interaksi aslinya tetap dapat diklik dan difokuskan. Pilihan wilayah memperbarui filter, memunculkan detail, dan diikuti mode satu wilayah pada tren sampai pengguna mengganti kontrol tren. Sumber: `MapPanel.tsx`, `App.tsx`, `TrendPanel.tsx`.
 
-**Grafik batang dan peringkat.** Batang horizontal memakai kategori semantik, ujung membulat (8px), tinggi (26px), label angka, serta garis target putus-putus (5 4). Tabel awalnya menampilkan lima peringkat; pencarian, tampilkan semua, dan pengurutan kolom bekerja pada cakupan filter. Urutan awal prevalensi menurun. Lencana memakai pasangan warna kategori; nilai perubahan positif merah (#a12b30), nilai nonpositif hijau (#216a49), dan nilai tidak tersedia abu-abu. Hover baris memakai `row-hover`; pilihan memakai `row-selected`. Sumber: `ComparisonChart.tsx`, `RankingTable.tsx`, stylesheet.
+**Grafik batang dan peringkat.** Batang horizontal memakai kategori warna/pola bersama, sudut (2px), tinggi (20px), label angka, sumbu prevalensi terlihat, dan garis target 14% putus-putus (5 3). Batang berawal dari nol tanpa sisa latar abu-abu seperti progress bar. Batang dan tren memakai `prevalenceScale(all)` dari seluruh dataset: rentang saat ini 0–40%, tick utama setiap 10 poin; filter tidak mengubah skala. Tabel awalnya menampilkan lima peringkat; pencarian, tampilkan semua, dan pengurutan kolom bekerja pada cakupan filter. Urutan awal prevalensi menurun. Lencana memakai pasangan warna kategori; nilai perubahan positif merah (#a12b30), nilai nonpositif hijau (#216a49), dan nilai tidak tersedia abu-abu. Hover baris memakai `row-hover`; pilihan memakai `row-selected`. Sumber: `ComparisonChart.tsx`, `RankingTable.tsx`, `visualEncoding.ts`, stylesheet.
 
-**Tren.** Empat mode: rata-rata, satu wilayah, multiwilayah (maksimal lima), serta kota vs kabupaten. Tombol aktif putih dengan bobot (650) di dalam track abu-abu. Garis seri (2.5px), titik (r 4.5, garis 2px), titik aktif (r 6). Tahun 2020 memiliki nilai null, `connectNulls={false}`, dan anotasi data tidak tersedia; tidak ada interpolasi. Animasi Recharts dinonaktifkan untuk batang dan garis. Sumber: `TrendPanel.tsx`, `ComparisonChart.tsx`.
+**Tren.** Empat mode: rata-rata, satu wilayah, multiwilayah (maksimal lima), serta kota vs kabupaten. Tombol aktif putih dengan bobot (650) di dalam track abu-abu. Semua garis memakai `series-ink` (2px). Urutan identitas seri ialah lingkaran/garis utuh, persegi/7 4, belah ketupat/2 4, segitiga/9 3 2 3, dan silang/12 4. Simbol beradius dasar (4.7), aktif (6.5), dengan isian kategori dan garis tepi (1.5px). Legenda seri menampilkan bentuk/pola garis; legenda kategori terpisah menjelaskan warna/pola prevalensi. Bidang latar kategori tipis berada pada 0–14 (opacity .065), 14–20 (.10), dan 20–40 (.045); bidang merupakan konteks ambang, sementara nilai mentah menentukan kategori tepat di batas. Sumbu tahun numerik 2019–2022 menjaga jarak tahun. Tahun 2020 memiliki nilai null, `connectNulls={false}`, anotasi data tidak tersedia, serta bidang netral bergaris vertikal pada 2019.75–2020.25; tidak ada interpolasi. Label nilai langsung muncul pada mode satu seri. Animasi Recharts dinonaktifkan untuk batang dan garis. Sumber: `TrendPanel.tsx`, `ComparisonChart.tsx`, `visualEncoding.ts`, `visuals/Encoding.tsx`.
+
+**The Stable Scale Rule.** Batang dan tren berbagi skala nol dari seluruh dataset (saat ini 0–40%); filter mengubah observasi, bukan panjang relatif atau ketinggian nilai. Garis target tetap 14%.
 
 **Gerak.** Perubahan isi wilayah peta memakai transisi `fill .18s`. Halaman menggunakan scroll halus, dan indikator loading berputar (1s linear infinite). `prefers-reduced-motion: reduce` menonaktifkan animasi/transisi dan mengganti scroll menjadi otomatis. Sumber: stylesheet.
 
@@ -94,13 +98,13 @@ Panel dan kartu memakai `rounded.panel`; pada ponsel panel memakai `panel-mobile
 ### Do:
 
 - **Do** Pertahankan urutan KPI pastel serta komposisi overview dan tren yang ditetapkan referensi pengguna.
-- **Do** Gunakan kategori dari `CATEGORIES` bersama label, rentang, dan nilai yang dapat dibaca.
+- **Do** Gunakan kategori dari `CATEGORIES` bersama warna/pola yang konsisten, rentang, dan nilai yang dapat dibaca.
 - **Do** Pertahankan fokus keyboard, keadaan terpilih, area gulir tabel, dan perubahan tata letak pada breakpoint yang tercatat.
 - **Do** Perbarui token berdasarkan sumber kode saat implementasi berubah.
 
 ### Don't:
 
 - **Don't** Mengganti referensi terang yang ditetapkan pengguna dengan tema atau identitas visual baru.
-- **Don't** Mengubah batas kategori berdasarkan angka yang sudah dibulatkan atau memakai warna seri tren sebagai kategori risiko.
+- **Don't** Mengubah batas kategori berdasarkan angka yang sudah dibulatkan, memakai warna tambahan untuk identitas seri tren, atau mengubah skala saat filter berubah.
 - **Don't** Menyambung garis melewati 2020 atau menggambar data yang tidak tersedia.
 - **Don't** Menganggap contoh sidecar sebagai komponen baru atau mengubah tampilan aplikasi dari dokumentasi ini.

@@ -5,3 +5,5 @@ test-results/
 playwright-report/
 .impeccable/review/
 .playwright-mcp/
+.impeccable/baseline-preview/
+.impeccable/baseline-preview/

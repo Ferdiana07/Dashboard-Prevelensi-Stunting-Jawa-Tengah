@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-16T19:24:12+07:00",
+  "generatedAt": "2026-11-18T10:59:45+07:00",
   "title": "Design System: Dashboard Prioritas Intervensi Stunting Jawa Tengah",
   "extensions": {
     "colorMeta": {
@@ -40,9 +40,10 @@
         "role": "secondary",
         "displayName": "Pastel hijau KPI"
       },
-      "trend-blue": {
+      "series-ink": {
         "role": "tertiary",
-        "displayName": "Biru seri tren"
+        "displayName": "Tinta netral seri tren",
+        "purpose": "Semua garis dan tepi simbol tren; identitas seri memakai bentuk/pola garis, isian titik memakai kategori prevalensi. src/lib/visualEncoding.ts."
       }
     },
     "typographyMeta": {
@@ -120,12 +121,147 @@
       "overviewRows": "auto auto minmax(0, 1fr) auto",
       "overviewGap": "clamp(10px, 1.6vh, 16px)",
       "dashboardPadding": "18px 22px 24px",
-      "analysisRows": "minmax(125px, 2fr) minmax(0, 5fr)",
+      "analysisRows": "minmax(156px, 2fr) minmax(0, 5fr)",
       "tableOverflow": "auto",
       "tableRowHeight": "clamp(30px, 4.8vh, 43px)",
       "mapHeight": "available grid space",
       "supplementaryPanels": "normal document flow below overview",
-      "source": "src/styles/index.css"
+      "source": "src/styles/index.css",
+      "analysisGap": "10px"
+    },
+    "visualEncoding": {
+      "sources": [
+        "src/lib/visualEncoding.ts",
+        "src/components/visuals/Encoding.tsx",
+        "src/components/ComparisonChart.tsx",
+        "src/components/TrendPanel.tsx",
+        "src/components/MapPanel.tsx",
+        "src/styles/index.css"
+      ],
+      "quantitativeScale": {
+        "source": "prevalenceScale(all)",
+        "domainCurrentDataset": [
+          0,
+          40
+        ],
+        "ticksCurrentDataset": [
+          0,
+          10,
+          20,
+          30,
+          40
+        ],
+        "extentRule": "max(30, ceil(dataset maximum / 10) * 10)",
+        "filterInvariant": true,
+        "target": 14
+      },
+      "categories": {
+        "achieved": {
+          "range": "≤ 14%",
+          "pattern": "solid"
+        },
+        "moderate": {
+          "range": "> 14% hingga < 20%",
+          "pattern": "dots"
+        },
+        "high": {
+          "range": "≥ 20%",
+          "pattern": "diagonal hatch"
+        }
+      },
+      "categoryUsage": "Warna dari CATEGORIES, pola konsisten pada peta, batang, dan swatch legenda. Isian titik tren memakai kategori nilai mentah.",
+      "patternInteraction": {
+        "pointerEvents": "none",
+        "ariaHidden": true,
+        "cityMarkerRadius": 6
+      },
+      "bar": {
+        "height": 20,
+        "radius": 2,
+        "visibleAxis": "Prevalensi (%)",
+        "grayProgressRemainder": false,
+        "targetDash": "5 3"
+      },
+      "trend": {
+        "strokeToken": "series-ink",
+        "strokeWidth": 2,
+        "pointRadius": 4.7,
+        "activePointRadius": 6.5,
+        "pointStrokeWidth": 1.5,
+        "seriesStyles": [
+          {
+            "shape": "circle",
+            "dash": null
+          },
+          {
+            "shape": "square",
+            "dash": "7 4"
+          },
+          {
+            "shape": "diamond",
+            "dash": "2 4"
+          },
+          {
+            "shape": "triangle",
+            "dash": "9 3 2 3"
+          },
+          {
+            "shape": "cross",
+            "dash": "12 4"
+          }
+        ],
+        "separateLegends": [
+          "series shape/dash",
+          "category color/pattern/range"
+        ],
+        "categoryBackgrounds": [
+          {
+            "range": [
+              0,
+              14
+            ],
+            "category": "achieved",
+            "opacity": 0.065
+          },
+          {
+            "range": [
+              14,
+              20
+            ],
+            "category": "moderate",
+            "opacity": 0.1
+          },
+          {
+            "range": [
+              20,
+              40
+            ],
+            "category": "high",
+            "opacity": 0.045
+          }
+        ],
+        "yearAxis": "numeric 2019–2022",
+        "missingYear": {
+          "year": 2020,
+          "value": null,
+          "connectNulls": false,
+          "band": [
+            2019.75,
+            2020.25
+          ],
+          "pattern": "neutral vertical lines"
+        },
+        "height": "320px",
+        "mobileHeight": "300px",
+        "mobileMaxWidth": "560px"
+      },
+      "labels": {
+        "source": "prevalenceLabel",
+        "defaultDecimals": 1,
+        "extraPrecision": "Only when one-decimal rounding would cross a category boundary.",
+        "example": "19,96% remains moderate; do not label it 20,0%."
+      },
+      "preserved": "Existing layout, KPI formulas, source datasets, category thresholds and semantic colors. Former PALETTE/trend-* series colors are retired."
     }
   },
   "components": [
@@ -198,20 +334,31 @@
     "keyCharacteristics": [
       "Kanvas terang dan panel putih dengan garis tepi tipis.",
       "Empat warna pastel untuk membedakan jenis indikator.",
-      "Merah–kuning–hijau untuk kategori prevalensi, didampingi rentang angka.",
+      "Merah–kuning–hijau dengan pola polos, titik, dan arsiran bersama serta rentang angka untuk kategori prevalensi.",
       "Inter dengan angka tabular dan hierarki angka KPI yang kuat.",
       "Kontrol ringkas, fokus keyboard terlihat, serta tata letak yang menjadi satu kolom pada layar kecil."
     ],
-    "rules": [],
+    "rules": [
+      {
+        "name": "The Shared Category Rule",
+        "body": "Kategori selalu ditentukan dari nilai mentah. Warna, pola, rentang legenda, dan isian titik tren harus menunjuk kategori yang sama. Label batang, tooltip grafik, dan label tren memakai `prevalenceLabel`: satu desimal secara umum, dengan presisi tambahan hanya bila pembulatan akan menyeberangi batas kategori (misalnya 19,96% tetap kuning, bukan dilabeli 20,0%).",
+        "section": "colors"
+      },
+      {
+        "name": "The Stable Scale Rule",
+        "body": "Batang dan tren berbagi skala nol dari seluruh dataset (saat ini 0–40%); filter mengubah observasi, bukan panjang relatif atau ketinggian nilai. Garis target tetap 14%.",
+        "section": "components"
+      }
+    ],
     "dos": [
       "**Do** Pertahankan urutan KPI pastel serta komposisi overview dan tren yang ditetapkan referensi pengguna.",
-      "**Do** Gunakan kategori dari `CATEGORIES` bersama label, rentang, dan nilai yang dapat dibaca.",
+      "**Do** Gunakan kategori dari `CATEGORIES` bersama warna/pola yang konsisten, rentang, dan nilai yang dapat dibaca.",
       "**Do** Pertahankan fokus keyboard, keadaan terpilih, area gulir tabel, dan perubahan tata letak pada breakpoint yang tercatat.",
       "**Do** Perbarui token berdasarkan sumber kode saat implementasi berubah."
     ],
     "donts": [
       "**Don't** Mengganti referensi terang yang ditetapkan pengguna dengan tema atau identitas visual baru.",
-      "**Don't** Mengubah batas kategori berdasarkan angka yang sudah dibulatkan atau memakai warna seri tren sebagai kategori risiko.",
+      "**Don't** Mengubah batas kategori berdasarkan angka yang sudah dibulatkan, memakai warna tambahan untuk identitas seri tren, atau mengubah skala saat filter berubah.",
       "**Don't** Menyambung garis melewati 2020 atau menggambar data yang tidak tersedia.",
       "**Don't** Menganggap contoh sidecar sebagai komponen baru atau mengubah tampilan aplikasi dari dokumentasi ini."
     ]

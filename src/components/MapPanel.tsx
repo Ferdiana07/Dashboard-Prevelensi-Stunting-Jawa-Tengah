@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { geoIdentity, geoPath } from 'd3-geo'
 import { select } from 'd3-selection'
 import { zoom, zoomIdentity, type ZoomBehavior } from 'd3-zoom'
-import { MapPin, Minus, Plus, RotateCcw } from 'lucide-react'
+import { Minus, Plus, RotateCcw } from 'lucide-react'
 import type { FeatureCollection, MultiPolygon, Polygon } from 'geojson'
 import { CATEGORIES, category, changeFrom2019, changeLabel, previousChange, TARGET } from '../lib/calculations'
 import { percent, signed } from '../lib/format'
 import type { Boundaries, StuntingRow, Year } from '../types'
+import { CategoryLegend, CategoryPatterns } from './visuals/Encoding'
 
 interface Props { boundaries: Boundaries; rows: StuntingRow[]; all: StuntingRow[]; year: Year; selected: string | null; onSelect: (code: string) => void; resetKey: number }
 function partition(boundaries: Boundaries) {
@@ -23,6 +24,7 @@ function partition(boundaries: Boundaries) {
 }
 
 export function MapPanel({ boundaries, rows, all, year, selected, onSelect, resetKey }: Props) {
+  const prefix = `map-${useId().replace(/:/g, '')}`
   const svg = useRef<SVGSVGElement>(null)
   const layer = useRef<SVGGElement>(null)
   const behavior = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null)
@@ -63,7 +65,9 @@ export function MapPanel({ boundaries, rows, all, year, selected, onSelect, rese
       const code = String(feature.properties?.kode_wilayah)
       const row = byCode.get(code)
       const name = yearRows.find(row => row.code === code)?.name ?? code
-      return <path key={code} d={draw(feature) ?? undefined} data-region={inset ? undefined : code}
+      const d = draw(feature) ?? undefined
+      const kind = row ? category(row.prevalence) : null
+      return <g key={code}><path d={d} data-region={inset ? undefined : code}
         className={`map-region ${selected === code ? 'selected' : ''} ${row ? '' : 'out-of-scope'}`}
         fill={row ? CATEGORIES[category(row.prevalence)].color : '#e2e5e9'}
         role="button" tabIndex={0} aria-label={`${name}${inset ? ', Kepulauan Karimunjawa' : ''}, ${row ? percent(row.prevalence) : 'di luar cakupan'}, ${year}`}
@@ -71,21 +75,26 @@ export function MapPanel({ boundaries, rows, all, year, selected, onSelect, rese
         onPointerMove={e => { if (e.pointerType !== 'touch') show(code, e.clientX, e.clientY) }} onPointerLeave={() => setHover(null)}
         onFocus={() => show(code)} onBlur={() => setHover(null)} onClick={() => { setHover(null); onSelect(code) }}
         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(code) } if (e.key === 'Escape') setHover(null) }}><title>{name}</title></path>
+        {kind && kind !== 'achieved' && <path className="category-pattern map-pattern" d={d} fill={`url(#${prefix}-${kind})`} pointerEvents="none" aria-hidden="true" />}
+      </g>
     })
   }
   return <section className="panel map-panel" aria-labelledby="map-title">
-    <div className="map-heading"><div><h2 id="map-title">Peta Prevalensi Stunting</h2><p>Kabupaten/Kota di Jawa Tengah ({year})</p></div><MapPin size={20} className="subtle-icon" aria-hidden="true" /></div>
+    <div className="map-heading"><div><h2 id="map-title">Peta Prevalensi Stunting</h2><p>Kabupaten/Kota di Jawa Tengah ({year})</p></div></div>
     <div className="map-canvas" ref={container}>
       <svg ref={svg} viewBox="0 0 760 440" aria-label={`Peta interaktif prevalensi stunting Jawa Tengah ${year}`}>
+        <CategoryPatterns prefix={prefix} />
         <g ref={layer}>{features(main, path)}
           {main.features.filter(feature => yearRows.find(row => row.code === feature.properties.kode_wilayah)?.type === 'Kota').map(feature => {
             const code = feature.properties.kode_wilayah
             const row = byCode.get(code)
             const [cx, cy] = path.centroid(feature)
-            return <circle key={code} cx={cx} cy={cy} r={5.5} className={`city-marker ${selected === code ? 'selected' : ''}`} fill={row ? CATEGORIES[category(row.prevalence)].color : '#e2e5e9'}
+            return <g key={code}><circle cx={cx} cy={cy} r={6} className={`city-marker ${selected === code ? 'selected' : ''}`} fill={row ? CATEGORIES[category(row.prevalence)].color : '#e2e5e9'}
               role="button" tabIndex={0} aria-label={`Titik ${feature.properties.wilayah}`} aria-pressed={selected === code} onClick={() => onSelect(code)}
               onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(code) } }} onFocus={() => show(code)} onBlur={() => setHover(null)}
               onPointerMove={e => show(code, e.clientX, e.clientY)} onPointerLeave={() => setHover(null)} />
+              {row && category(row.prevalence) !== 'achieved' && <circle cx={cx} cy={cy} r={6} className="category-pattern" fill={`url(#${prefix}-${category(row.prevalence)})`} pointerEvents="none" aria-hidden="true" />}
+            </g>
           })}
         </g>
         <g className="inset"><rect x={15} y={12} width={145} height={110} rx={9} fill="white" stroke="#dce0e5" /><text x={25} y={29}>Kep. Karimunjawa</text>{features(islands, islandPath, true)}</g>
@@ -98,6 +107,6 @@ export function MapPanel({ boundaries, rows, all, year, selected, onSelect, rese
         <span className="tooltip-hint">Klik untuk melihat detail wilayah</span>
       </div>}
     </div>
-    <div className="map-footer"><h3>Prevalensi Stunting</h3><div className="map-legend">{Object.entries(CATEGORIES).map(([key, info]) => <div key={key}><span className="legend-swatch" style={{ background: info.color }} /><span>{info.range} <span className="legend-count">({rows.filter(row => category(row.prevalence) === key).length} wilayah)</span></span></div>)}</div><p className="map-help">Klik wilayah untuk detail · Geser peta untuk menjelajah · Titik menandai kota</p></div>
+    <div className="map-footer"><h3>Prevalensi Stunting</h3><CategoryLegend className="map-legend" counts={{ achieved: rows.filter(row => category(row.prevalence) === 'achieved').length, moderate: rows.filter(row => category(row.prevalence) === 'moderate').length, high: rows.filter(row => category(row.prevalence) === 'high').length }} /><p className="map-help">Klik wilayah untuk detail · Geser peta untuk menjelajah · Titik menandai kota</p></div>
   </section>
 }

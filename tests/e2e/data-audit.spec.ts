@@ -12,6 +12,11 @@ interface RawRow {
 const source = Papa.parse<RawRow>(readFileSync('public/data/stunting.csv', 'utf8'), { header: true, skipEmptyLines: true }).data
 const display = (value: number) => value.toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 const pct = (value: number) => `${display(value)}%`
+const chartPct = (value: number) => {
+  const rounded = Number(value.toFixed(1))
+  const band = (number: number) => number <= 14 ? 0 : number < 20 ? 1 : 2
+  return band(rounded) === band(value) ? pct(value) : `${value.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
+}
 const delta = (value: number | null) => value === null ? '—' : `${value > 0 ? '+' : ''}${display(value)} pp`
 const units = (value: string) => Math.round(Number(value) * 100)
 const difference = (end: string, start: string) => (units(end) - units(start)) / 100
@@ -49,8 +54,8 @@ for (const year of [2019, 2021, 2022]) {
       expect(actual.paths, `${year}/${scope}: all 35 map colors`).toEqual(selected(year, 'all').map(row => [row.kode_wilayah, rows.includes(row) ? color(row) : '#e2e5e9']))
       const counts = [achieved, rows.filter(row => Number(row.prevalensi) > 14 && Number(row.prevalensi) < 20).length, rows.filter(row => Number(row.prevalensi) >= 20).length]
       actual.legend.forEach((label, index) => expect(label, `${year}/${scope}: legend`).toContain(`(${counts[index]} wilayah)`))
-      if (cities !== null) expect(actual.bars).toContain(pct(cities))
-      if (districts !== null) expect(actual.bars).toContain(pct(districts))
+      if (cities !== null) expect(actual.bars).toContain(chartPct(cities))
+      if (districts !== null) expect(actual.bars).toContain(chartPct(districts))
       const expectedBars = [cities, districts].filter((value): value is number => value !== null).map(value => value <= 14 ? '#08a33e' : value < 20 ? '#ffd000' : '#ed2429')
       expect(actual.barColors, `${year}/${scope}: bar category colors`).toEqual(expectedBars)
       const sorted = [...rows].sort((a, b) => Number(b.prevalensi) - Number(a.prevalensi) || a.kode_wilayah.localeCompare(b.kode_wilayah))
@@ -127,7 +132,7 @@ test('audit every individual trend point against the source, plus average and gr
       await dots.nth(index).hover({ force: true })
       const tooltip = panel.locator('.recharts-tooltip-wrapper')
       await expect(tooltip).toContainText(`Tahun ${year}`)
-      await expect(tooltip).toContainText(pct(Number(source.find(item => item.kode_wilayah === row.kode_wilayah && Number(item.tahun) === year)!.prevalensi)))
+      await expect(tooltip).toContainText(chartPct(Number(source.find(item => item.kode_wilayah === row.kode_wilayah && Number(item.tahun) === year)!.prevalensi)))
     }
   }
   await page.getByRole('button', { name: 'Rata-rata', exact: true }).click()
@@ -135,7 +140,7 @@ test('audit every individual trend point against the source, plus average and gr
     await page.locator('#region').selectOption(scope)
     for (const [index, year] of [2019, 2021, 2022].entries()) {
       await panel.locator('.recharts-line-dot').nth(index).hover({ force: true })
-      await expect(panel.locator('.recharts-tooltip-wrapper')).toContainText(pct(average(selected(year, scope))!))
+      await expect(panel.locator('.recharts-tooltip-wrapper')).toContainText(chartPct(average(selected(year, scope))!))
     }
   }
   await page.getByRole('button', { name: 'Kota vs Kab.', exact: true }).click()
@@ -143,8 +148,8 @@ test('audit every individual trend point against the source, plus average and gr
   for (const [index, year] of [2019, 2021, 2022].entries()) {
     await panel.locator('.recharts-line-dot').nth(index).hover({ force: true })
     const tooltip = panel.locator('.recharts-tooltip-wrapper')
-    await expect(tooltip).toContainText(pct(average(selected(year, 'Kota'))!))
-    await expect(tooltip).toContainText(pct(average(selected(year, 'Kabupaten'))!))
+    await expect(tooltip).toContainText(chartPct(average(selected(year, 'Kota'))!))
+    await expect(tooltip).toContainText(chartPct(average(selected(year, 'Kabupaten'))!))
   }
   await page.getByRole('button', { name: 'Multiwilayah', exact: true }).click()
   const choices = panel.locator('.multi-select input')
@@ -153,7 +158,7 @@ test('audit every individual trend point against the source, plus average and gr
   for (const [index, year] of [2019, 2021, 2022].entries()) {
     await panel.locator('.recharts-line-dot').nth(index).hover({ force: true })
     for (const row of selected(2019, 'all').slice(0, 3)) {
-      await expect(panel.locator('.recharts-tooltip-wrapper')).toContainText(pct(Number(source.find(item => item.kode_wilayah === row.kode_wilayah && Number(item.tahun) === year)!.prevalensi)))
+      await expect(panel.locator('.recharts-tooltip-wrapper')).toContainText(chartPct(Number(source.find(item => item.kode_wilayah === row.kode_wilayah && Number(item.tahun) === year)!.prevalensi)))
     }
   }
 })

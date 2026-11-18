@@ -181,7 +181,7 @@ Pemetaan **marks dan channels** mengikuti kerangka Munzner (2014) dalam laporan.
 | Peta choropleth | Area/poligon | Kelas prevalensi, bukan besaran kontinu | Spatial region untuk lokasi; hue untuk kategori |
 | Horizontal bar chart | Batang horizontal dan garis acuan | Length dan position pada skala yang sama, dimulai dari nol | Label dan posisi vertikal membedakan kota/kabupaten |
 | Tabel peringkat | Teks dalam baris | Position melalui urutan peringkat | Nama wilayah dan hue lencana kategori |
-| Grafik tren, tambahan implementasi | Garis dan titik pengamatan | Position pada sumbu tahun numerik dan prevalensi | Nama dan warna seri membedakan wilayah/kelompok |
+| Grafik tren, tambahan implementasi | Garis dan titik pengamatan | Position pada sumbu tahun numerik dan prevalensi dengan domain tetap | Bentuk titik dan pola garis membedakan seri; warna titik menunjukkan kategori prevalensi |
 
 Tata letak mengikuti tiga zona dalam laporan: **zona atas** untuk ringkasan eksekutif, **zona tengah/kiri** untuk sebaran spasial, dan **zona samping/kanan** untuk perbandingan serta peringkat. Penerapan prinsip desain pada website:
 
@@ -190,6 +190,10 @@ Tata letak mengikuti tiga zona dalam laporan: **zona atas** untuk ringkasan ekse
 - **Overview First:** empat scorecard dan peta memberi gambaran awal.
 - **Zoom and Filter:** tahun, cakupan wilayah, zoom, dan pan dapat digunakan untuk mempersempit eksplorasi.
 - **Details on Demand:** hover/fokus, klik wilayah, tabel, dan panel detail menyediakan rincian sesuai kebutuhan.
+
+Perbaikan untuk **Visual Reverse-Mapping Test / Blinded Chart Masking** menambahkan pola polos–titik–arsir pada kategori peta/batang, menampilkan sumbu batang dari nol tanpa sisa progress abu-abu, dan menggunakan skala yang tetap untuk seluruh dataset (saat ini 0–40%) pada grafik batang dan tren. Identitas seri tren memakai bentuk/pola garis, sedangkan warna titik mengikuti ambang 14%/20%. Label grafik memakai presisi tambahan jika pembulatan akan menyeberangi kategori, misalnya rata-rata 2021 **19,96%**; format scorecard tetap satu desimal.
+
+Evaluasi sebelum/sesudah, pemetaan marks/channels, aturan masking, dan panduan uji tersedia di [VISUAL_ENCODING.md](VISUAL_ENCODING.md). Stimulus panel tersamar, grayscale, serta mobile ada di [docs/visual-encoding](docs/visual-encoding). Hasil pengenalan makna oleh responden belum dikumpulkan.
 
 ## Cara kerja filter dan interaksi
 
@@ -224,7 +228,7 @@ Menurut laporan, data 2019 belum dicocokkan dengan publikasi survei nasional. Pe
 
 Vitest memeriksa data 105 baris, join 35 kode, batas kategori, semua KPI acuan, K5/K6, perbedaan periode pembanding, pembulatan, filter, dan penolakan data tidak valid. Playwright memeriksa perubahan filter, sinkronisasi keyboard/peta/detail/tren, tooltip, pencarian, sorting, zoom, ekspor, empat mode tren, batas lima seri, loading/error state, console browser, dan overflow pada 360–1672 px. Screenshot desktop/mobile tersimpan di `.impeccable/review/` setelah tes browser berjalan.
 
-Hasil pemeriksaan implementasi tercatat dalam [VALIDATION.md](VALIDATION.md): **35 tes unit** dan **19 tes browser** lulus pada audit terakhir, 18 November 2026. Audit tambahan membandingkan tampilan pada 114 kombinasi tahun/cakupan, tooltip dan detail 105 pengamatan, 105 titik tren wilayah, rata-rata tren sesuai cakupan, perbandingan kelompok, multiwilayah, dan ekspor CSV dengan data sumber. Angka ini terpisah dari **35 pemeriksaan data** dan **12 pemeriksaan batas wilayah** yang dilaporkan kelompok pada tahap pembersihan; pemeriksaan tahap pembersihan tersebut tidak diklaim sebagai tes yang dijalankan oleh website.
+Hasil pemeriksaan implementasi tercatat dalam [VALIDATION.md](VALIDATION.md): **46 tes unit** dan **24 tes browser** lulus pada verifikasi terakhir, 18 November 2026. Audit membandingkan 114 kombinasi tahun/cakupan, tooltip dan detail 105 pengamatan, seluruh titik tren wilayah, rata-rata sesuai cakupan, kelompok, multiwilayah, dan ekspor dengan data sumber. Lima tes tambahan memeriksa encoding dalam keadaan judul disamarkan. Angka ini terpisah dari **35 pemeriksaan data** dan **12 pemeriksaan batas wilayah** yang dilaporkan kelompok pada tahap pembersihan; pemeriksaan tahap pembersihan tersebut tidak diklaim sebagai tes yang dijalankan oleh website.
 
 ## Referensi
 
