@@ -6,8 +6,8 @@ Verifikasi awal dilaksanakan pada 16 November 2026, dilanjutkan audit data selur
 | --- | --- |
 | Parsing dan cakupan CSV | 105 baris; 35 wilayah pada masing-masing 2019, 2021, 2022 |
 | Join geometri | 35 kode unik, cocok satu-ke-satu dengan CSV |
-| Tes unit Vitest | 46 lulus, termasuk pemeriksaan encoding dan presisi label |
-| Tes browser Playwright Chromium | 24 lulus, termasuk audit data, regresi viewport, dan masking |
+| Tes unit Vitest | 52 lulus, termasuk encoding, presisi label, dan posisi tooltip |
+| Tes browser Playwright Chromium | 27 lulus, termasuk audit data, viewport, masking, dan tooltip |
 | TypeScript | Lulus, termasuk pemeriksaan pada build |
 | ESLint | Lulus |
 | Build produksi | Lulus tanpa peringatan ukuran chunk |
@@ -74,3 +74,9 @@ Audit memeriksa kesesuaian implementasi terhadap lampiran, bukan kebenaran hasil
 Perbaikan Munzner Level 3 memperkuat pola kategori, sumbu batang, skala tetap, bentuk titik/pola garis seri, serta encoding kekosongan 2020. Rumus KPI dan berkas CSV/GeoJSON tidak diubah. Label grafik menambah presisi bila pembulatan melintasi kategori, misalnya rata-rata 2021 tampil 19,96% pada titik kuning; scorecard tetap 20,0%.
 
 Seluruh 46 tes unit dan 24 tes browser lulus. Lima tes tambahan memeriksa encoding ketika judul, penjelasan, dan kontrol disamarkan, serta menghasilkan capture panel desktop, grayscale, dan mobile. Reviewer visual memeriksa capture tersebut dan tidak meminta perbaikan material. Ini bukan hasil uji pengenalan KPI/CBQ oleh responden. Lihat [VISUAL_ENCODING.md](VISUAL_ENCODING.md) untuk panduan dan batas interpretasi uji.
+
+## Perbaikan posisi tooltip
+
+Tooltip peta kini dirender sebagai portal dengan koordinat viewport dan `position: fixed`, bukan dibatasi oleh tinggi/lebar kotak peta. Jarak minimal 18px dipertahankan dari posisi kursor, dengan perpindahan sisi otomatis berdasarkan ukuran aktual popup. Viewport sempit memakai ruang di atas/bawah; tinggi popup dibatasi bila seluruh konten tidak muat. Popup tetap `pointer-events: none`, dan preview lama ditutup ketika scroll atau resize. Fokus keyboard, Escape, serta klik pemilihan wilayah tetap bekerja.
+
+Enam tes unit tambahan memeriksa posisi di 100 titik viewport dan kasus tepi; tiga tes browser memeriksa pelacakan kursor pada Wonogiri, perpindahan sisi di desktop/mobile, klik, keyboard, Escape, dan scroll. Seluruh **52 tes unit dan 27 tes browser** lulus, beserta build/TypeScript dan lint. Review visual terbatas pada posisi tooltip tidak menemukan masalah material.

@@ -200,6 +200,7 @@ Evaluasi sebelum/sesudah, pemetaan marks/channels, aturan masking, dan panduan u
 Pada desktop (lebar ≥1100 px dan tinggi area browser ≥600 px), ringkasan utama menyesuaikan tinggi layar melalui `100svh`: header, empat KPI, peta, grafik, tabel, dan tombol ekspor berada dalam satu layar. Tabel dapat digulir di dalam panel pada layar pendek atau ketika seluruh wilayah ditampilkan. Detail dan analisis tren berada di bawah ringkasan dan dapat diakses dengan menggulir halaman. Tablet, ponsel, dan jendela yang sangat pendek memakai aliran halaman biasa agar isi tetap terbaca.
 
 - Tahun default 2022. Tidak ada pilihan 2020.
+- Tooltip peta mengikuti kursor dengan jarak minimal 18px. Posisi berpindah sisi saat mendekati tepi layar berdasarkan ukuran popup sebenarnya; popup tidak menerima pointer sehingga klik wilayah tetap bekerja. Escape, scroll, atau resize menutup preview yang sudah tidak relevan.
 - Filter wilayah mencakup semua wilayah, 29 kabupaten, 6 kota, atau satu wilayah berdasarkan kode, sehingga kabupaten/kota dengan nama sama tetap terpisah.
 - KPI, legenda, warna peta, perbandingan, dan peringkat memakai cakupan yang sama. Klik peta, titik kota, atau nama di tabel memilih satu wilayah, memperbarui dropdown, menyorotnya, membuka detail, dan mengarahkan tren ke wilayah itu.
 - Grafik batang menampilkan satu kelompok saja jika cakupan hanya memiliki satu tipe; ada penjelasan mengapa perbandingan dua kelompok tidak tersedia.
@@ -228,7 +229,7 @@ Menurut laporan, data 2019 belum dicocokkan dengan publikasi survei nasional. Pe
 
 Vitest memeriksa data 105 baris, join 35 kode, batas kategori, semua KPI acuan, K5/K6, perbedaan periode pembanding, pembulatan, filter, dan penolakan data tidak valid. Playwright memeriksa perubahan filter, sinkronisasi keyboard/peta/detail/tren, tooltip, pencarian, sorting, zoom, ekspor, empat mode tren, batas lima seri, loading/error state, console browser, dan overflow pada 360–1672 px. Screenshot desktop/mobile tersimpan di `.impeccable/review/` setelah tes browser berjalan.
 
-Hasil pemeriksaan implementasi tercatat dalam [VALIDATION.md](VALIDATION.md): **46 tes unit** dan **24 tes browser** lulus pada verifikasi terakhir, 18 November 2026. Audit membandingkan 114 kombinasi tahun/cakupan, tooltip dan detail 105 pengamatan, seluruh titik tren wilayah, rata-rata sesuai cakupan, kelompok, multiwilayah, dan ekspor dengan data sumber. Lima tes tambahan memeriksa encoding dalam keadaan judul disamarkan. Angka ini terpisah dari **35 pemeriksaan data** dan **12 pemeriksaan batas wilayah** yang dilaporkan kelompok pada tahap pembersihan; pemeriksaan tahap pembersihan tersebut tidak diklaim sebagai tes yang dijalankan oleh website.
+Hasil pemeriksaan implementasi tercatat dalam [VALIDATION.md](VALIDATION.md): **52 tes unit** dan **27 tes browser** lulus pada verifikasi terakhir, 18 November 2026. Audit membandingkan 114 kombinasi tahun/cakupan, tooltip dan detail 105 pengamatan, seluruh titik tren wilayah, rata-rata sesuai cakupan, kelompok, multiwilayah, dan ekspor dengan data sumber. Lima tes tambahan memeriksa encoding dalam keadaan judul disamarkan. Angka ini terpisah dari **35 pemeriksaan data** dan **12 pemeriksaan batas wilayah** yang dilaporkan kelompok pada tahap pembersihan; pemeriksaan tahap pembersihan tersebut tidak diklaim sebagai tes yang dijalankan oleh website.
 
 ## Referensi
 

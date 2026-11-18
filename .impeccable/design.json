@@ -262,6 +262,26 @@
         "example": "19,96% remains moderate; do not label it 20,0%."
       },
       "preserved": "Existing layout, KPI formulas, source datasets, category thresholds and semantic colors. Former PALETTE/trend-* series colors are retired."
+    },
+    "cursorTooltip": {
+      "position": "fixed",
+      "portal": "document.body",
+      "gap": "18px",
+      "viewportPadding": "8px",
+      "measurement": "offsetWidth and natural scrollHeight with ResizeObserver",
+      "placement": "quadrant flip, then cardinal side, then constrained vertical space",
+      "pointerEvents": "none",
+      "zIndex": 50,
+      "dismiss": [
+        "pointer leave",
+        "Escape",
+        "scroll",
+        "resize"
+      ],
+      "source": [
+        "src/components/map/CursorTooltip.tsx",
+        "src/lib/tooltipPosition.ts"
+      ]
     }
   },
   "components": [
