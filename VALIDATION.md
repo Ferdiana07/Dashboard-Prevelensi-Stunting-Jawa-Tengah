@@ -1,13 +1,13 @@
 # Hasil verifikasi implementasi
 
-Dilaksanakan pada 16 November 2026 menggunakan berkas lampiran pengguna.
+Verifikasi awal dilaksanakan pada 16 November 2026, dilanjutkan audit data seluruh komponen pada **18 November 2026**, menggunakan CSV dan GeoJSON lampiran pengguna.
 
 | Pemeriksaan | Hasil |
 | --- | --- |
 | Parsing dan cakupan CSV | 105 baris; 35 wilayah pada masing-masing 2019, 2021, 2022 |
 | Join geometri | 35 kode unik, cocok satu-ke-satu dengan CSV |
-| Tes unit Vitest | 33 lulus |
-| Tes browser Playwright Chromium | 13 lulus, termasuk regresi tinggi viewport |
+| Tes unit Vitest | 35 lulus |
+| Tes browser Playwright Chromium | 19 lulus, termasuk audit data menyeluruh dan regresi tinggi viewport |
 | TypeScript | Lulus, termasuk pemeriksaan pada build |
 | ESLint | Lulus |
 | Build produksi | Lulus tanpa peringatan ukuran chunk |
@@ -35,4 +35,36 @@ jateng.geojson
 196119A494297085B0EBA30ECAF594EA64FBA6328616DA4FD6117F1A444F581D
 ```
 
-Sumber upstream/lisensi GeoJSON dan metodologi survei tidak tercantum pada lampiran; keterbatasan tersebut dicatat di README dan tidak diganti dengan atribusi yang belum terverifikasi.
+Laporan kelompok yang kemudian dilampirkan mencantumkan sumber prevalensi dari Portal Satu Data Jawa Tengah, batas wilayah dari `cahyadsn/wilayah_boundaries`, serta arsip Zenodo. Atribusi mengikuti laporan; sumber upstream, lisensi, dan metode survei tidak diverifikasi ulang melalui audit lokal ini. Lihat README untuk rujukannya.
+
+## Audit seluruh komponen, 18 November 2026
+
+Referensi audit dibaca langsung dari CSV, tanpa menggunakan fungsi parsing, rumus, format, atau peringkat aplikasi untuk membentuk nilai pembanding tes browser. Geometri dan CSV lokal kembali dicocokkan melalui SHA-256 dengan lampiran asli; keduanya identik.
+
+| Komponen | Cakupan audit | Hasil |
+| --- | --- | --- |
+| Integritas data | 105 baris, 3 tahun, 35 kode unik per tahun, 29 kabupaten dan 6 kota | Cocok dengan lampiran |
+| Empat scorecard | 3 tahun × 38 cakupan: seluruh wilayah, kabupaten, kota, dan 35 wilayah individual | 114 kombinasi cocok |
+| Peta dan legenda | Warna seluruh 35 geometri serta jumlah kategori pada setiap kombinasi filter | Cocok; luar cakupan berwarna abu-abu |
+| Grafik kota–kabupaten | Rata-rata, label angka, dan warna batang sesuai ambang pada setiap cakupan | Cocok; satu kelompok tidak menghasilkan pembanding palsu |
+| Tabel | Seluruh nama, peringkat, prevalensi, jarak target, dan perubahan pada 114 kombinasi | Cocok setelah koreksi peringkat seri dan pembulatan |
+| Tooltip dan detail | 105 pengamatan; status target, jarak target, perubahan sejak 2019, tahun sebelumnya yang tersedia, dan tiga nilai riwayat | Cocok |
+| Tren satu wilayah | 35 wilayah × 3 tahun yang tersedia | Seluruh 105 titik cocok dengan CSV |
+| Tren rata-rata | Seluruh wilayah, kota, dan kabupaten untuk 3 tahun | Seluruh nilai cocok |
+| Tren kelompok dan multiwilayah | Kedua rata-rata provinsi serta tiga wilayah contoh pada 3 tahun | Label dan nilai cocok; cakupan kelompok provinsi dijelaskan |
+| Tahun 2020 | Tidak ada observasi/titik; garis terputus dan keterangan data tidak tersedia | Tidak ada interpolasi atau data buatan |
+| Ekspor CSV | Seluruh 105 pengamatan dari ekspor 3 tahun | Nilai sumber dan atribut turunan cocok |
+| Pemilihan setelah pencarian | Cari Semarang lalu pilih Brebes melalui peta | Baris pilihan terlihat dan pencarian lama dibersihkan |
+
+### Perbaikan yang ditemukan melalui audit
+
+1. **Peringkat seri:** dua nilai prevalensi yang sama sebelumnya mendapat nomor urut berbeda. Peringkat kini mengikuti aturan CSV: jumlah wilayah dengan prevalensi lebih besar + 1. Sragen dan Rembang pada 2022 sama-sama 24,3% dan peringkat 6.
+2. **Pembulatan tampilan:** pengurangan floating point `19.65 - 14` menghasilkan `5.649999999999999`, yang sebelumnya ditampilkan 5,6 pp. Galat aritmetika biner kini dinormalisasi hanya saat pemformatan sehingga jarak target Kebumen 2019 tampil **+5,7 pp**, sesuai nilai matematis 5,65. Perhitungan dan berkas sumber tidak diubah.
+3. **Sinkronisasi pencarian:** pencarian lama bisa menyembunyikan wilayah yang baru dipilih dari peta. Tabel kini memulai ulang pencarian/urutan saat cakupan wilayah berubah.
+4. **Teks perubahan nol:** ringkasan tren untuk Kabupaten Pekalongan pada 2019–2022 kini menyebut **tidak ada perubahan**, sesuai 23,5% pada kedua tahun.
+
+### Kedudukan analisis tren temporal
+
+Panel ini adalah **fitur pelengkap**, bukan panel pada gambar mockup utama. Prompt awal bagian F secara eksplisit meminta panel tren di bawah dashboard; laporan kelompok Subbab 4.2 juga menyarankannya untuk membandingkan antartahun tanpa mengandalkan ingatan pengguna. Data yang dipakai tetap berasal dari CSV yang sama: 2019, 2021, dan 2022. Panel ini tidak menambah tahun atau pengamatan baru.
+
+Audit memeriksa kesesuaian implementasi terhadap lampiran, bukan kebenaran hasil pengukuran survei di lapangan, keabsahan topologi/luas melalui alat GIS independen, atau pengujian kegunaan dengan responden.

@@ -30,7 +30,7 @@ export default function App() {
     <section className="dashboard-overview" aria-label="Ringkasan dashboard">
     <header className="page-header"><h1>Dashboard Prioritas Intervensi Stunting Kabupaten/Kota di Jawa Tengah</h1><Filters year={year} region={region} areas={areas} onYear={setYear} onRegion={setRegion} onReset={reset} /></header>
     <div id="overview"><Scorecards rows={rows} /></div>
-    <div className="dashboard-grid"><MapPanel boundaries={data.boundaries} rows={rows} all={data.rows} year={year} selected={selected} onSelect={setRegion} resetKey={resetKey} /><div className="analysis-column"><ComparisonChart rows={rows} year={year} /><RankingTable key={resetKey} rows={rows} all={data.rows} year={year} selected={selected} onSelect={setRegion} /></div></div>
+    <div className="dashboard-grid"><MapPanel boundaries={data.boundaries} rows={rows} all={data.rows} year={year} selected={selected} onSelect={setRegion} resetKey={resetKey} /><div className="analysis-column"><ComparisonChart rows={rows} year={year} /><RankingTable key={`${resetKey}:${region}`} rows={rows} all={data.rows} year={year} selected={selected} onSelect={setRegion} /></div></div>
     <div className="overview-footer"><p><span className="status-dot" />{rows.length} wilayah · {year} · {scope}</p><div><a href="#trend-title">Lihat analisis tren</a><button className="export-button" onClick={() => exportCsv(rows, data.rows)}><Download size={15} />Ekspor CSV cakupan</button></div></div>
     </section>
     {selectedRow && <RegionDetails row={selectedRow} all={data.rows} onClear={() => setRegion('all')} />}

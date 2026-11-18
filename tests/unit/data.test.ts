@@ -4,10 +4,13 @@ import { parseCsv, validateBoundaries, validateDataset } from '../../src/lib/dat
 import { CATEGORIES, category, changeFrom2019, changeLabel, filterRows, mean, metrics, previousChange, TARGET } from '../../src/lib/calculations'
 import { percent, signed } from '../../src/lib/format'
 import { YEARS, type Boundaries } from '../../src/types'
+import Papa from 'papaparse'
+import { prevalenceRank } from '../../src/lib/calculations'
 
 const csv = readFileSync('public/data/stunting.csv', 'utf8')
 const geo = JSON.parse(readFileSync('public/data/jateng.geojson', 'utf8')) as Boundaries
 const { rows } = validateDataset(csv, geo)
+const source = Papa.parse<Record<string, string>>(csv, { header: true, skipEmptyLines: true }).data
 
 describe('data asli dan geometri', () => {
   it('memuat 105 baris dan 35 kode per tahun', () => {
@@ -36,6 +39,18 @@ describe('data asli dan geometri', () => {
   })
 })
 describe('enam KPI dengan presisi asli', () => {
+  it('mencocokkan peringkat, kategori, jarak target, dan perubahan seluruh 105 baris sumber', () => {
+    for (const original of source) {
+      const row = rows.find(item => item.code === original.kode_wilayah && item.year === Number(original.tahun))!
+      const cohort = rows.filter(item => item.year === row.year)
+      expect(prevalenceRank(cohort, row.prevalence)).toBe(Number(original.peringkat))
+      expect(row.prevalence - TARGET).toBeCloseTo(Number(original.k5_jarak_target), 10)
+      expect({ achieved: 'Rendah', moderate: 'Sedang', high: 'Tinggi' }[category(row.prevalence)]).toBe(original.kategori)
+      const start = rows.find(item => item.code === row.code && item.year === 2019)!
+      const end = rows.find(item => item.code === row.code && item.year === 2022)!
+      expect(end.prevalence - start.prevalence).toBeCloseTo(Number(original.k6_perubahan_2019_2022), 10)
+    }
+  })
   it.each([
     [2019, '27,1%', 35, '3,1 pp', '0,0%'],
     [2021, '20,0%', 32, '1,0 pp', '8,6%'],
@@ -94,5 +109,11 @@ describe('cakupan filter dan kategori batas', () => {
   it('menangani himpunan kosong dan format angka negatif', () => {
     expect(metrics([]).average).toBeNull(); expect(metrics([]).gap).toBeNull(); expect(metrics([]).achievement).toBeNull()
     expect(signed(null)).toBe('—'); expect(signed(-2.15)).toBe('-2,2 pp')
+  })
+  it('membulatkan selisih desimal matematis, tanpa terpengaruh galat floating point', () => {
+    expect(signed(19.65 - 14)).toBe('+5,7 pp')
+    expect(signed(14 - 19.65)).toBe('-5,7 pp')
+    expect(signed(29.1 - 34.65)).toBe('-5,6 pp')
+    expect(percent(19.65)).toBe('19,7%')
   })
 })

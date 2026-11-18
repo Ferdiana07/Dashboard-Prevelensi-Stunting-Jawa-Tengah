@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ArrowDown, ArrowUp, ArrowUpDown, Search } from 'lucide-react'
-import { category, CATEGORIES, changeFrom2019, changeLabel, TARGET } from '../lib/calculations'
+import { category, CATEGORIES, changeFrom2019, changeLabel, prevalenceRank, TARGET } from '../lib/calculations'
 import { percent, signed } from '../lib/format'
 import type { StuntingRow, Year } from '../types'
 
@@ -33,7 +33,7 @@ export function RankingTable({ rows, all, year, selected, onSelect }: Props) {
           const delta = changeFrom2019(all, row)
           const info = CATEGORIES[category(row.prevalence)]
           return <tr key={row.code} className={selected === row.code ? 'selected-row' : ''}>
-            <td><span className="rank-badge">{ranked.findIndex(item => item.code === row.code) + 1}</span></td><th scope="row"><button className="area-name" onClick={() => onSelect(row.code)} aria-pressed={selected === row.code}>{row.name}</button></th><td><span className="prevalence-badge" style={{ background: info.soft, color: info.text }}>{percent(row.prevalence)}</span></td><td>{signed(row.prevalence - TARGET)}</td><td title={delta === null ? '2019 adalah tahun awal pembanding, bukan data prevalensi yang hilang' : undefined} className={delta === null ? 'muted' : delta > 0 ? 'change-up' : 'change-down'}>{signed(delta)}</td>
+            <td><span className="rank-badge">{prevalenceRank(rows, row.prevalence)}</span></td><th scope="row"><button className="area-name" onClick={() => onSelect(row.code)} aria-pressed={selected === row.code}>{row.name}</button></th><td><span className="prevalence-badge" style={{ background: info.soft, color: info.text }}>{percent(row.prevalence)}</span></td><td>{signed(row.prevalence - TARGET)}</td><td title={delta === null ? '2019 adalah tahun awal pembanding, bukan data prevalensi yang hilang' : undefined} className={delta === null ? 'muted' : delta > 0 ? 'change-up' : 'change-down'}>{signed(delta)}</td>
           </tr>
         })}</tbody>
       </table>{!visible.length && <div className="empty-state">Tidak ada wilayah yang cocok dengan “{query}”. <button className="text-button" onClick={() => setQuery('')}>Hapus pencarian</button></div>}
