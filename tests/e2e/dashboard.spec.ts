@@ -237,3 +237,15 @@ test('captures desktop and mobile and has no console or page errors', async ({ p
   await page.screenshot({ path: '.impeccable/review/mobile.png', fullPage: true })
   expect(errors).toEqual([])
 })
+
+test('footer credits the sources with links and keeps the raw data download', async ({ page }) => {
+  await ready(page)
+  const footer = page.locator('.page-footer')
+  await expect(footer).toContainText('Dinas Kesehatan Provinsi Jawa Tengah')
+  await expect(footer.getByRole('link', { name: 'Portal Satu Data Jawa Tengah' })).toHaveAttribute('href', 'https://data.jatengprov.go.id/dataset/42f-sdjt-prevalensi-stunting')
+  await expect(footer.getByRole('link', { name: 'cahyadsn/wilayah_boundaries' })).toHaveAttribute('href', 'https://github.com/cahyadsn/wilayah_boundaries')
+  await expect(footer.getByRole('link', { name: /10\.5281\/zenodo\.24267455/ })).toHaveAttribute('href', 'https://doi.org/10.5281/zenodo.24267455')
+  await expect(footer.getByRole('link', { name: 'Unduh data asli' })).toHaveAttribute('download', '')
+  await expect(footer).toContainText('CC-BY')
+  await expect(footer).toContainText('MIT')
+})
