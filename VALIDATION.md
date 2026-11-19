@@ -10,7 +10,7 @@ Verifikasi awal dilaksanakan pada 16 November 2026, dilanjutkan audit data selur
 | Tes browser Playwright Chromium | 52 lulus, termasuk audit data, viewport, masking, tooltip, label peta, penanda wilayah, label tren, dan mobile |
 | TypeScript | Lulus, termasuk pemeriksaan pada build |
 | ESLint | Lulus |
-| Build produksi | Lulus; peringatan chunk >500 kB (chunk visualization) sudah ada sebelum Tahap 3 |
+| Build produksi | Lulus (`vite v8.3.8`, chunk `visualization-*.js` 512,37 kB, gzip 145,30 kB) dengan peringatan asli: `(!) Some chunks are larger than 500 kB after minification. Consider: - Using dynamic import() to code-split the application - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.` Peringatan dan ukuran yang sama muncul pada commit `ca7906c` (sebelum Tahap 3). Ukuran 459,76 kB tanpa peringatan dari build lain tidak terreproduksi di lingkungan ini. |
 | Smoke test build produksi | HTTP 200, KPI default benar, 35 geometri, filter kota 15,8% |
 | Console browser | Tidak ada error atau warning pada tes tangkapan layar dan smoke test produksi |
 | Overflow halaman | Tidak ditemukan pada lebar 360, 390, 768, 1024, 1366, 1672 px |
@@ -101,7 +101,9 @@ Skip link juga **tidak dapat direproduksi** setelah klik mouse di Chromium (klik
 
 ### P13. Label tren
 
-Mode Rata-rata, Satu wilayah, dan Kota vs Kab. menampilkan label angka; Multiwilayah hanya lewat hover. Pada dua seri, seri bernilai lebih tinggi dilabeli di atas titik dan yang lebih rendah di bawah (2021: 20,1% di atas, 19,1% di bawah). Tes memeriksa tidak ada label yang saling menimpa atau menutupi penanda pada 2019, 2021, 2022. Titik 2019 tetap tanpa garis penyambung dan 2020 tanpa label. Pada 2022 label 15,8% berada di atas garis target 14%, tetap terbaca karena halo putih.
+Mode Rata-rata, Satu wilayah, dan Kota vs Kab. menampilkan label angka; Multiwilayah hanya lewat hover. Pada dua seri, label seri yang lebih tinggi selalu di atas titik. Label seri yang lebih rendah ditaruh di bawah titik hanya bila selisih kedua nilai < 3 pp; bila lebih jauh, keduanya di atas. Dengan data ini: 2019 selisih 3,1 pp (keduanya di atas), 2021 selisih 1,0 pp (Kota 19,1% di bawah, Kab. 20,1% di atas), 2022 selisih 5,9 pp (keduanya di atas, sehingga 15,8% tidak menumpang garis target 14%). Tes memeriksa posisi per tahun, tidak ada label yang saling menimpa, dan label 15,8% tidak menyentuh garis 14%. Titik 2019 tetap tanpa garis penyambung dan 2020 tanpa label.
+
+Keterbatasan yang diketahui: pada 2019 selisih 3,1 pp hanya sekitar 16 px, sehingga label Kota 24,5% yang ditaruh di atas titiknya menimpa penanda persegi Kabupaten 27,6%. Tes hanya mengizinkan pasangan ini; tabrakan lain tetap menggagalkan tes.
 
 ### P14. Mobile
 
