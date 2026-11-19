@@ -7,10 +7,12 @@ Verifikasi awal dilaksanakan pada 16 November 2026, dilanjutkan audit data selur
 | Parsing dan cakupan CSV | 105 baris; 35 wilayah pada masing-masing 2019, 2021, 2022 |
 | Join geometri | 35 kode unik, cocok satu-ke-satu dengan CSV |
 | Tes unit Vitest | 75 lulus, termasuk pembulatan, ekspor vs CSV sumber, K6, encoding, dan posisi tooltip |
-| Tes browser Playwright Chromium | 52 lulus, termasuk audit data, viewport, masking, tooltip, label peta, penanda wilayah, label tren, dan mobile |
+| Tes browser Playwright Chromium | 53 lulus, termasuk audit data, viewport, masking, tooltip, label peta, penanda wilayah, label tren, dan mobile |
 | TypeScript | Lulus, termasuk pemeriksaan pada build |
 | ESLint | Lulus |
-| Build produksi | Lulus (`vite v8.3.8`, chunk `visualization-*.js` 512,37 kB, gzip 145,30 kB) dengan peringatan asli: `(!) Some chunks are larger than 500 kB after minification. Consider: - Using dynamic import() to code-split the application - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.` Peringatan dan ukuran yang sama muncul pada commit `ca7906c` (sebelum Tahap 3). Ukuran 459,76 kB tanpa peringatan dari build lain tidak terreproduksi di lingkungan ini. |
+| Build produksi, sesuai lockfile (Windows, `npm ci`, recharts 3.10.1, rolldown 1.2.19) | Lulus; chunk `visualization` 460,02 kB (gzip 131,63 kB), tanpa peringatan ukuran chunk. Sebelum perubahan label P13 angkanya 459,76 kB. |
+| Build produksi, lokal Windows dengan `node_modules` menyimpang dari lockfile (recharts 3.11.0) | Lulus; chunk `visualization` 512,37 kB dengan peringatan Vite: `(!) Some chunks are larger than 500 kB after minification. Consider: - Using dynamic import() to code-split the application - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.` Bukan acuan rilis. |
+| Build Vercel (Linux, mengikuti lockfile) | Belum diperiksa dari sisi pengembang ini; log build Vercel dicek oleh pemilik repo. |
 | Smoke test build produksi | HTTP 200, KPI default benar, 35 geometri, filter kota 15,8% |
 | Console browser | Tidak ada error atau warning pada tes tangkapan layar dan smoke test produksi |
 | Overflow halaman | Tidak ditemukan pada lebar 360, 390, 768, 1024, 1366, 1672 px |
@@ -101,9 +103,7 @@ Skip link juga **tidak dapat direproduksi** setelah klik mouse di Chromium (klik
 
 ### P13. Label tren
 
-Mode Rata-rata, Satu wilayah, dan Kota vs Kab. menampilkan label angka; Multiwilayah hanya lewat hover. Pada dua seri, label seri yang lebih tinggi selalu di atas titik. Label seri yang lebih rendah ditaruh di bawah titik hanya bila selisih kedua nilai < 3 pp; bila lebih jauh, keduanya di atas. Dengan data ini: 2019 selisih 3,1 pp (keduanya di atas), 2021 selisih 1,0 pp (Kota 19,1% di bawah, Kab. 20,1% di atas), 2022 selisih 5,9 pp (keduanya di atas, sehingga 15,8% tidak menumpang garis target 14%). Tes memeriksa posisi per tahun, tidak ada label yang saling menimpa, dan label 15,8% tidak menyentuh garis 14%. Titik 2019 tetap tanpa garis penyambung dan 2020 tanpa label.
-
-Keterbatasan yang diketahui: pada 2019 selisih 3,1 pp hanya sekitar 16 px, sehingga label Kota 24,5% yang ditaruh di atas titiknya menimpa penanda persegi Kabupaten 27,6%. Tes hanya mengizinkan pasangan ini; tabrakan lain tetap menggagalkan tes.
+Mode Rata-rata, Satu wilayah, dan Kota vs Kab. menampilkan label angka; Multiwilayah hanya lewat hover. Pada dua seri, label seri yang lebih tinggi selalu di atas titik. Label seri yang lebih rendah ditaruh di bawah titik bila jarak kedua titik di layar kurang dari 28 px (tinggi label di atas titik ±22 px ditambah jari-jari penanda ±5 px), selain itu keduanya di atas. Jarak dihitung dari skala sumbu Y Recharts, sehingga ikut berubah menurut tinggi grafik. Pada desktop 1672 px: 2019 (selisih 3,1 pp) dan 2021 (1,0 pp) Kota di bawah, 2022 (5,9 pp) keduanya di atas, sehingga 15,8% tidak menumpang garis target 14%. Tes berjalan pada 1672 px dan 390 px, memeriksa posisi menurut aturan 28 px, tidak ada label yang saling menimpa, tidak ada label yang menutupi penanda mana pun (tanpa pengecualian), dan tidak ada label di garis 14%. Titik 2019 tetap tanpa garis penyambung dan 2020 tanpa label.
 
 ### P14. Mobile
 
