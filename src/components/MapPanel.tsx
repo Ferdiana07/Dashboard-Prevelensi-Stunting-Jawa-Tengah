@@ -36,6 +36,8 @@ export function MapPanel({ boundaries, rows, all, year, selected, onSelect, rese
   const [view, setView] = useState<ZoomTransform>(zoomIdentity)
   // Zoom controls and text scale are measured in viewBox units so labels can steer clear of the HTML buttons.
   const [measured, setMeasured] = useState<{ controls: Box | null; scale: number }>({ controls: null, scale: 1 })
+  // Region showing a keyboard focus ring (drawn as an outline that follows the region border, never a box).
+  const [focusRing, setFocusRing] = useState<string | null>(null)
   const [hover, setHover] = useState<{ code: string; x: number; y: number } | null>(null)
   const { main, islands } = useMemo(() => partition(boundaries), [boundaries])
   // Planar equirectangular view of supplied longitude/latitude. No ring rewinding or simplification.
@@ -125,7 +127,7 @@ export function MapPanel({ boundaries, rows, all, year, selected, onSelect, rese
         aria-pressed={selected === code}
         aria-describedby={hover?.code === code ? `${prefix}-tooltip` : undefined}
         onPointerMove={e => { if (e.pointerType !== 'touch') show(code, e.clientX, e.clientY) }} onPointerLeave={() => setHover(null)}
-        onFocus={e => focus(code, e.currentTarget)} onBlur={() => setHover(null)} onClick={() => { setHover(null); onSelect(code) }}
+        onFocus={e => { focus(code, e.currentTarget); setFocusRing(e.currentTarget.matches(':focus-visible') ? code : null) }} onBlur={() => { setHover(null); setFocusRing(null) }} onClick={() => { setHover(null); onSelect(code) }}
         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(code) } if (e.key === 'Escape') setHover(null) }}><title>{name}</title></path>
         {kind && kind !== 'achieved' && <path className="category-pattern map-pattern" d={d} fill={`url(#${prefix}-${kind})`} pointerEvents="none" aria-hidden="true" />}
       </g>
@@ -137,6 +139,13 @@ export function MapPanel({ boundaries, rows, all, year, selected, onSelect, rese
       <svg ref={svg} viewBox="0 0 760 440" aria-label={`Peta interaktif prevalensi stunting Jawa Tengah ${year}`}>
         <CategoryPatterns prefix={prefix} />
         <g ref={layer}>{features(main, path)}
+          <g className="region-outlines" aria-hidden="true" pointerEvents="none">
+            {([['selected', selected], ['focus', focusRing]] as const).map(([kind, code]) => {
+              const feature = code ? main.features.find(item => item.properties.kode_wilayah === code) : undefined
+              const d = feature ? path(feature) ?? undefined : undefined
+              return d ? <g key={kind} data-outline={kind} data-code={code}><path className="outline-halo" d={d} /><path className={`outline-${kind}`} d={d} /></g> : null
+            })}
+          </g>
           {main.features.filter(feature => yearRows.find(row => row.code === feature.properties.kode_wilayah)?.type === 'Kota').map(feature => {
             const code = feature.properties.kode_wilayah
             const row = byCode.get(code)
