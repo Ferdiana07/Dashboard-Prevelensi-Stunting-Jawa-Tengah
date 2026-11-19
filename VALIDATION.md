@@ -6,8 +6,8 @@ Verifikasi awal dilaksanakan pada 16 November 2026, dilanjutkan audit data selur
 | --- | --- |
 | Parsing dan cakupan CSV | 105 baris; 35 wilayah pada masing-masing 2019, 2021, 2022 |
 | Join geometri | 35 kode unik, cocok satu-ke-satu dengan CSV |
-| Tes unit Vitest | 66 lulus, termasuk pembulatan, ekspor vs CSV sumber, K6, encoding, dan posisi tooltip |
-| Tes browser Playwright Chromium | 27 lulus, termasuk audit data, viewport, masking, dan tooltip |
+| Tes unit Vitest | 71 lulus, termasuk pembulatan, ekspor vs CSV sumber, K6, encoding, dan posisi tooltip |
+| Tes browser Playwright Chromium | 40 lulus, termasuk audit data, viewport, masking, dan tooltip |
 | TypeScript | Lulus, termasuk pemeriksaan pada build |
 | ESLint | Lulus |
 | Build produksi | Lulus tanpa peringatan ukuran chunk |
@@ -48,12 +48,12 @@ Referensi audit dibaca langsung dari CSV, tanpa menggunakan fungsi parsing, rumu
 | Peta dan legenda | Warna seluruh 35 geometri serta jumlah kategori pada setiap kombinasi filter | Cocok; luar cakupan berwarna abu-abu |
 | Grafik kota–kabupaten | Rata-rata, label angka, dan warna batang sesuai ambang pada setiap cakupan | Cocok; satu kelompok tidak menghasilkan pembanding palsu |
 | Tabel | Seluruh nama, peringkat, prevalensi, jarak target, dan perubahan pada 9 kombinasi cakupan | Cocok setelah koreksi peringkat seri dan pembulatan |
-| Tooltip dan detail | 105 pengamatan; status target, jarak target, perubahan sejak 2019, tahun sebelumnya yang tersedia, dan tiga nilai riwayat | Cocok |
+| Tooltip dan detail | 105 pengamatan; status target, jarak target, perubahan 2019→2022, dan tiga nilai riwayat (tanpa Δ tahun sebelumnya) | Cocok |
 | Tren satu wilayah | 35 wilayah × 3 tahun yang tersedia | Seluruh 105 titik cocok dengan CSV |
 | Tren rata-rata | Seluruh wilayah, kota, dan kabupaten untuk 3 tahun | Seluruh nilai cocok |
 | Tren kelompok dan multiwilayah | Kedua rata-rata provinsi serta tiga wilayah contoh pada 3 tahun | Label dan nilai cocok; cakupan kelompok provinsi dijelaskan |
 | Tahun 2020 | Tidak ada observasi/titik; garis terputus dan keterangan data tidak tersedia | Tidak ada interpolasi atau data buatan |
-| Ekspor CSV | Seluruh 105 pengamatan dari ekspor 3 tahun | Nilai sumber dan atribut turunan cocok |
+| Ekspor CSV | Seluruh 105 pengamatan dari ekspor 3 tahun | 10 kolom dan seluruh nilai sama dengan baris CSV sumber; tes unit membandingkan ekspor semua tahun dan cakupan dengan sumber |
 | Pemilihan setelah pencarian | Cari Semarang lalu pilih Brebes melalui peta | Baris pilihan terlihat dan pencarian lama dibersihkan |
 
 ### Perbaikan yang ditemukan melalui audit

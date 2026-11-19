@@ -1,5 +1,5 @@
 import { roundHalfAway } from './format'
-import { YEARS, type Scope, type StuntingRow, type Year } from '../types'
+import { type Scope, type StuntingRow, type Year } from '../types'
 
 export const TARGET = 14
 export const CATEGORIES = {
@@ -25,6 +25,12 @@ export function metrics(rows: StuntingRow[]) {
     achievement: rows.length ? achieved / rows.length * 100 : null,
     district, city, gap: district === null || city === null ? null : district - city }
 }
+// Note under the K4 card: the card stays green, the wording avoids implying progress when there is none.
+export function achievementNote(achieved: number, total: number) {
+  if (achieved === 0) return 'belum ada wilayah yang mencapai target'
+  if (achieved === total) return 'semua wilayah mencapai target'
+  return `baru ${achieved} dari ${total} wilayah`
+}
 export function valueAt(rows: StuntingRow[], code: string, year: number) {
   return rows.find(row => row.code === code && row.year === year)?.prevalence ?? null
 }
@@ -36,8 +42,9 @@ export function k6Change(rows: StuntingRow[], code: string) {
   const end = valueAt(rows, code, 2022)
   return start === null || end === null ? null : end - start
 }
-export function previousChange(rows: StuntingRow[], row: StuntingRow) {
-  const previousYear = [...YEARS].reverse().find(year => year < row.year)
-  const previous = previousYear ? valueAt(rows, row.code, previousYear) : null
-  return { year: previousYear ?? null, delta: previous === null ? null : row.prevalence - previous }
+// The heading follows the active sort so the title never contradicts the row order.
+export function rankingTitle(sort: 'prevalence' | 'target' | 'change', descending: boolean, year: Year) {
+  if (sort === 'prevalence') return `${descending ? 'Prevalensi Tertinggi' : 'Prevalensi Terendah'}, ${year}`
+  if (sort === 'target') return `${descending ? 'Jarak ke Target Terbesar' : 'Jarak ke Target Terkecil'}, ${year}`
+  return descending ? 'Kenaikan Terbesar / Penurunan Terkecil 2019→2022' : 'Penurunan Terbesar 2019→2022'
 }

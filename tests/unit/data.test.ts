@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { parseCsv, validateBoundaries, validateDataset } from '../../src/lib/data'
-import { CATEGORIES, category, K6_LABEL, k6Change, filterRows, mean, metrics, previousChange, TARGET } from '../../src/lib/calculations'
+import { achievementNote, rankingTitle, CATEGORIES, category, K6_LABEL, k6Change, filterRows, mean, metrics, TARGET } from '../../src/lib/calculations'
 import { percent, signed } from '../../src/lib/format'
 import { YEARS, type Boundaries } from '../../src/types'
 import Papa from 'papaparse'
@@ -78,19 +78,13 @@ describe('enam KPI dengan presisi asli', () => {
   it('menghitung K5 terbesar +15,1 pp untuk Brebes', () => {
     expect(Math.max(...filterRows(rows, 2022, 'all').map(row => row.prevalence - TARGET))).toBeCloseTo(15.1)
   })
-  it('membedakan K6 Temanggung +3,11 pp dari perubahan 2021 +8,4 pp', () => {
+  it('K6 Temanggung +3,11 pp', () => {
     const temanggung = rows.find(row => row.name === 'Kab. Temanggung' && row.year === 2022)!
     expect(k6Change(rows, temanggung.code)).toBeCloseTo(3.11)
-    expect(previousChange(rows, temanggung).year).toBe(2021)
-    expect(previousChange(rows, temanggung).delta).toBeCloseTo(8.4)
   })
   it('menghitung K6 meningkat terbesar untuk Pati +3,62 pp', () => {
     const result = filterRows(rows, 2022, 'all').sort((a, b) => k6Change(rows, b.code)! - k6Change(rows, a.code)!)[0]
     expect(result.name).toBe('Kab. Pati'); expect(k6Change(rows, result.code)).toBeCloseTo(3.62)
-  })
-  it('menggunakan 2019 sebagai tahun sebelumnya untuk 2021, dan tanpa pembanding pada 2019', () => {
-    expect(previousChange(rows, filterRows(rows, 2021, 'all')[0]).year).toBe(2019)
-    expect(previousChange(rows, rows[0])).toEqual({ year: null, delta: null })
   })
   it('K6 selalu 2019 ke 2022, sama dengan kolom k6_perubahan_2019_2022 untuk semua tahun', () => {
     expect(K6_LABEL).toBe('K6: 2019→2022')
@@ -133,5 +127,37 @@ describe('cakupan filter dan kategori batas', () => {
     expect(signed(14 - 19.65)).toBe('-5,7 pp')
     expect(signed(29.1 - 34.65)).toBe('-5,6 pp')
     expect(percent(19.65)).toBe('19,7%')
+  })
+})
+
+describe('teks kartu K4', () => {
+  it('memilih kalimat sesuai jumlah wilayah yang mencapai target', () => {
+    expect(achievementNote(0, 35)).toBe('belum ada wilayah yang mencapai target')
+    expect(achievementNote(35, 35)).toBe('semua wilayah mencapai target')
+    expect(achievementNote(6, 6)).toBe('semua wilayah mencapai target')
+    expect(achievementNote(2, 35)).toBe('baru 2 dari 35 wilayah')
+  })
+  it('sesuai data asli untuk setiap tahun dan cakupan', () => {
+    const rows = parseCsv(readFileSync('public/data/stunting.csv', 'utf8'))
+    const expected: Record<string, string> = {
+      '2019:all': 'belum ada wilayah yang mencapai target', '2019:Kota': 'belum ada wilayah yang mencapai target', '2019:Kabupaten': 'belum ada wilayah yang mencapai target',
+      '2021:all': 'baru 3 dari 35 wilayah', '2021:Kota': 'baru 1 dari 6 wilayah', '2021:Kabupaten': 'baru 2 dari 29 wilayah',
+      '2022:all': 'baru 2 dari 35 wilayah', '2022:Kota': 'baru 2 dari 6 wilayah', '2022:Kabupaten': 'belum ada wilayah yang mencapai target',
+    }
+    for (const year of YEARS) for (const scope of ['all', 'Kota', 'Kabupaten'] as const) {
+      const { achieved, total } = metrics(filterRows(rows, year, scope))
+      expect(achievementNote(achieved, total), `${year} ${scope}`).toBe(expected[`${year}:${scope}`])
+    }
+  })
+})
+
+describe('judul tabel mengikuti urutan aktif', () => {
+  it('prevalensi, jarak target, dan K6 di dua arah', () => {
+    expect(rankingTitle('prevalence', true, 2022)).toBe('Prevalensi Tertinggi, 2022')
+    expect(rankingTitle('prevalence', false, 2021)).toBe('Prevalensi Terendah, 2021')
+    expect(rankingTitle('target', true, 2022)).toBe('Jarak ke Target Terbesar, 2022')
+    expect(rankingTitle('target', false, 2019)).toBe('Jarak ke Target Terkecil, 2019')
+    expect(rankingTitle('change', true, 2022)).toBe('Kenaikan Terbesar / Penurunan Terkecil 2019→2022')
+    expect(rankingTitle('change', false, 2021)).toBe('Penurunan Terbesar 2019→2022')
   })
 })

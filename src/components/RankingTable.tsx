@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ArrowDown, ArrowUp, ArrowUpDown, Search } from 'lucide-react'
-import { category, CATEGORIES, K6_LABEL, k6Change, K6_NOTE, prevalenceRank, TARGET } from '../lib/calculations'
+import { category, CATEGORIES, K6_LABEL, k6Change, K6_NOTE, prevalenceRank, rankingTitle, TARGET } from '../lib/calculations'
 import { percent, signed } from '../lib/format'
 import type { StuntingRow, Year } from '../types'
 
@@ -35,10 +35,10 @@ export function RankingTable({ rows, all, year, selected, onSelect }: Props) {
   }
   function sortIcon(key: Sort) { return sort === key ? descending ? <ArrowDown size={12} /> : <ArrowUp size={12} /> : <ArrowUpDown size={12} /> }
   return <section className="panel ranking-panel" aria-labelledby="ranking-title">
-    <h2 id="ranking-title">Peringkat Wilayah <span>(Prevalensi Tertinggi, {year})</span></h2>
+    <h2 id="ranking-title">Peringkat Wilayah <span>({rankingTitle(sort, descending, year)})</span></h2>
     <div className="table-toolbar"><div className="search-wrap"><Search size={15} aria-hidden="true" /><input aria-label="Cari wilayah" placeholder="Cari kabupaten / kota…" value={query} onChange={e => setQuery(e.target.value)} /></div><button className="text-button" onClick={() => setShowAll(!showAll)}>{showAll ? 'Tampilkan 5 besar' : `Lihat semua (${rows.length})`}</button></div>
     <div className={`table-scroll ${showAll ? 'expanded' : ''}`} tabIndex={0} aria-label="Tabel peringkat wilayah, dapat digulir">
-      <table><thead><tr><th scope="col" className="rank-col">No.</th><th scope="col">Kabupaten/Kota</th><th scope="col" aria-sort={sort === 'prevalence' ? descending ? 'descending' : 'ascending' : 'none'}><button onClick={() => sortBy('prevalence')}>Prevalensi {sortIcon('prevalence')}</button></th><th scope="col" aria-sort={sort === 'target' ? descending ? 'descending' : 'ascending' : 'none'}><button onClick={() => sortBy('target')} title="Selisih prevalensi terhadap target 14%">Target {sortIcon('target')}</button></th><th scope="col" aria-sort={sort === 'change' ? descending ? 'descending' : 'ascending' : 'none'}><button onClick={() => sortBy('change')} title="Prevalensi 2022 dikurangi prevalensi 2019, tidak bergantung pada tahun yang dipilih">{K6_LABEL} {sortIcon('change')}</button></th></tr></thead>
+      <table><thead><tr><th scope="col" className="rank-col">Peringkat prevalensi</th><th scope="col">Kabupaten/Kota</th><th scope="col" aria-sort={sort === 'prevalence' ? descending ? 'descending' : 'ascending' : 'none'}><button onClick={() => sortBy('prevalence')}>Prevalensi {sortIcon('prevalence')}</button></th><th scope="col" aria-sort={sort === 'target' ? descending ? 'descending' : 'ascending' : 'none'}><button onClick={() => sortBy('target')} title="Selisih prevalensi terhadap target 14%">Target {sortIcon('target')}</button></th><th scope="col" aria-sort={sort === 'change' ? descending ? 'descending' : 'ascending' : 'none'}><button onClick={() => sortBy('change')} title="Prevalensi 2022 dikurangi prevalensi 2019, tidak bergantung pada tahun yang dipilih">{K6_LABEL} {sortIcon('change')}</button></th></tr></thead>
         <tbody>{visible.map(row => {
           const delta = k6Change(all, row.code)
           const info = CATEGORIES[category(row.prevalence)]

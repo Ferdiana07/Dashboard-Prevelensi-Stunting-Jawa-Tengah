@@ -19,7 +19,7 @@ export function parseCsv(text: string): StuntingRow[] {
     const key = `${year}-${code}`
     if (seen.has(key)) throw new Error(`Duplikat tahun dan kode wilayah: ${key}.`)
     seen.add(key)
-    return { code, name: raw.wilayah.trim(), type: raw.tipe_wilayah, year, prevalence } as StuntingRow
+    return { code, name: raw.wilayah.trim(), sourceName: (raw.nama_asli ?? raw.wilayah).trim(), type: raw.tipe_wilayah, year, prevalence } as StuntingRow
   })
   const referenceCodes = rows.filter(row => row.year === 2019).map(row => row.code).sort().join(',')
   for (const year of YEARS) {
