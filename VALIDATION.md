@@ -80,3 +80,11 @@ Seluruh 46 tes unit dan 24 tes browser lulus. Lima tes tambahan memeriksa encodi
 Tooltip peta kini dirender sebagai portal dengan koordinat viewport dan `position: fixed`, bukan dibatasi oleh tinggi/lebar kotak peta. Jarak minimal 18px dipertahankan dari posisi kursor, dengan perpindahan sisi otomatis berdasarkan ukuran aktual popup. Viewport sempit memakai ruang di atas/bawah; tinggi popup dibatasi bila seluruh konten tidak muat. Popup tetap `pointer-events: none`, dan preview lama ditutup ketika scroll atau resize. Fokus keyboard, Escape, serta klik pemilihan wilayah tetap bekerja.
 
 Enam tes unit tambahan memeriksa posisi di 100 titik viewport dan kasus tepi; tiga tes browser memeriksa pelacakan kursor pada Wonogiri, perpindahan sisi di desktop/mobile, klik, keyboard, Escape, dan scroll. Seluruh **52 tes unit dan 27 tes browser** lulus, beserta build/TypeScript dan lint. Review visual terbatas pada posisi tooltip tidak menemukan masalah material.
+
+## Tahap 3: polesan visual (P10–P14)
+
+### P11. Tabel 10 baris menyimpang dari mockup Tugas 3
+
+Mockup Tugas 3 menampilkan lima baris. Dashboard sekarang menampilkan **10 baris** secara default. Alasannya: pada layar desktop panel peringkat punya ruang vertikal yang cukup untuk lebih dari lima baris, dan dengan 10 baris pembaca langsung melihat sepertiga wilayah teratas tanpa menekan tombol. Tombol berubah menjadi "Lihat semua (N)" / "Tampilkan 10 besar" dan hanya muncul bila jumlah wilayah dalam cakupan lebih dari 10. Cakupan Kota (6 wilayah) langsung tampil seluruhnya.
+
+Syarat tinggi tetap berlaku: header sampai baris ekspor muat dalam viewport 1280×600, 1366×650, 1366×768, 1536×730, dan 1672×941. Tabel menggulir di dalam panel dan tidak memanjangkan halaman ringkasan; tes Playwright memeriksa kelima ukuran itu dengan 10 baris tampil.
