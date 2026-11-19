@@ -113,12 +113,13 @@ describe('cakupan filter dan kategori batas', () => {
     expect(kpi.gap).toBeNull(); expect(kpi.district).toBeNull()
   })
   it('membedakan Kabupaten Semarang dan Kota Semarang lewat kode', () => {
-    expect(filterRows(rows, 2022, '3322')[0].name).toBe('Kab. Semarang')
-    expect(filterRows(rows, 2022, '3374')[0].name).toBe('Kota Semarang')
+    expect(rows.find(row => row.year === 2022 && row.code === '3322')!.name).toBe('Kab. Semarang')
+    expect(rows.find(row => row.year === 2022 && row.code === '3374')!.name).toBe('Kota Semarang')
   })
-  it('memfilter tepat 29 kabupaten dan satu wilayah individual', () => {
+  it('memfilter cakupan: 29 kabupaten, 6 kota, 35 semua; satu wilayah tidak pernah menjadi cakupan', () => {
     expect(filterRows(rows, 2021, 'Kabupaten')).toHaveLength(29)
-    expect(filterRows(rows, 2019, '3301')).toHaveLength(1)
+    expect(filterRows(rows, 2021, 'Kota')).toHaveLength(6)
+    expect(filterRows(rows, 2021, 'all')).toHaveLength(35)
   })
   it.each([[0, 'achieved'], [14, 'achieved'], [14.001, 'moderate'], [19.999, 'moderate'], [20, 'high'], [100, 'high']])('mengategorikan batas %s', (value, expected) => {
     expect(category(Number(value))).toBe(expected)

@@ -18,7 +18,17 @@ export function RankingTable({ rows, all, year, selected, onSelect }: Props) {
       const bv = sort === 'change' ? k6Change(all, b.code) ?? 0 : b.prevalence
       return (descending ? bv - av : av - bv) || a.code.localeCompare(b.code)
     })
-  const visible = showAll ? filtered : filtered.slice(0, 5)
+  const base = showAll ? filtered : filtered.slice(0, 5)
+  // A selected region stays in the table even when it falls outside the default list (unless a search hides it on purpose).
+  const selectedRow = selected && !query ? ranked.find(row => row.code === selected) : undefined
+  const visible = selectedRow && !base.some(row => row.code === selectedRow.code) ? [...base, selectedRow] : base
+  const [seenSelection, setSeenSelection] = useState(selected)
+  if (selected !== seenSelection) {
+    setSeenSelection(selected)
+    // Picking a region from the map or dropdown clears a search that would hide it.
+    const picked = rows.find(row => row.code === selected)
+    if (picked && !picked.name.toLocaleLowerCase('id-ID').includes(query.toLocaleLowerCase('id-ID'))) setQuery('')
+  }
   function sortBy(key: Sort) {
     if (key === sort) setDescending(!descending)
     else { setSort(key); setDescending(true) }
@@ -36,7 +46,7 @@ export function RankingTable({ rows, all, year, selected, onSelect }: Props) {
             <td><span className="rank-badge">{prevalenceRank(rows, row.prevalence)}</span></td><th scope="row"><button className="area-name" onClick={() => onSelect(row.code)} aria-pressed={selected === row.code}>{row.name}</button></th><td><span className="prevalence-badge" style={{ background: info.soft, color: info.text }}>{percent(row.prevalence)}</span></td><td>{signed(row.prevalence - TARGET)}</td><td className={delta === null || Math.abs(delta) < 0.005 ? 'muted' : delta > 0 ? 'change-up' : 'change-down'}>{signed(delta)}</td>
           </tr>
         })}</tbody>
-      </table>{!visible.length && <div className="empty-state">Tidak ada wilayah yang cocok dengan “{query}”. <button className="text-button" onClick={() => setQuery('')}>Hapus pencarian</button></div>}
+      </table>{!filtered.length && <div className="empty-state">Tidak ada wilayah yang cocok dengan “{query}”. <button className="text-button" onClick={() => setQuery('')}>Hapus pencarian</button></div>}
     </div>
     <p className="table-note">Target: selisih dari 14% · {K6_NOTE}<br />pp = poin persentase · Peringkat berdasarkan cakupan filter</p>
   </section>

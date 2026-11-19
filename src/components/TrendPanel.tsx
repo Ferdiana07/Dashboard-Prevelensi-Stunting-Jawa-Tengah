@@ -2,13 +2,13 @@ import { useId, useState } from 'react'
 import { CartesianGrid, LabelList, Legend, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { category, CATEGORIES, k6Change, filterRows, mean, roundingShiftsCategory, TARGET } from '../lib/calculations'
 import { exactPercent, percent, signed } from '../lib/format'
-import type { RegionFilter, StuntingRow, Year } from '../types'
+import type { Scope, StuntingRow, Year } from '../types'
 import { prevalenceScale, SERIES_INK, SERIES_STYLES } from '../lib/visualEncoding'
 import { CategoryLegend, SeriesSymbol } from './visuals/Encoding'
 
 type Mode = 'average' | 'area' | 'multiple' | 'groups'
-interface Props { all: StuntingRow[]; region: RegionFilter; year: Year; areas: StuntingRow[]; selected: string | null }
-export function TrendPanel({ all, region, year, areas, selected }: Props) {
+interface Props { all: StuntingRow[]; scope: Scope; year: Year; areas: StuntingRow[]; selected: string | null }
+export function TrendPanel({ all, scope, year, areas, selected }: Props) {
   const prefix = `trend-${useId().replace(/:/g, '')}`
   const { maximum, ticks } = prevalenceScale(all)
   const [mode, setMode] = useState<Mode>('average')
@@ -19,20 +19,20 @@ export function TrendPanel({ all, region, year, areas, selected }: Props) {
   const followSelected = selected !== null && override !== selected
   const effectiveMode = followSelected ? 'area' : mode
   const effectiveArea = followSelected ? selected : area
-  const series = (effectiveMode === 'average' ? [{ key: 'average', name: region === 'all' ? 'Rata-rata 35 wilayah' : region === 'Kota' || region === 'Kabupaten' ? `Rata-rata ${region.toLowerCase()}` : areas.find(row => row.code === region)?.name ?? 'Rata-rata cakupan' }]
+  const series = (effectiveMode === 'average' ? [{ key: 'average', name: scope === 'all' ? 'Rata-rata 35 wilayah' : `Rata-rata ${scope.toLowerCase()}` }]
     : effectiveMode === 'groups' ? [{ key: 'Kota', name: 'Rata-rata kota' }, { key: 'Kabupaten', name: 'Rata-rata kabupaten' }]
     : (effectiveMode === 'area' ? [effectiveArea] : codes).filter((code): code is string => code !== null).map(code => ({ key: code, name: areas.find(row => row.code === code)?.name ?? code })))
     .map((item, index) => ({ ...item, ...SERIES_STYLES[index % SERIES_STYLES.length] }))
   const data = [2019, 2020, 2021, 2022].map(t => {
     const point: Record<string, number | null> = { year: t }
     for (const item of series) {
-      point[item.key] = t === 2020 ? null : effectiveMode === 'average' ? mean(filterRows(all, t as Year, region))
+      point[item.key] = t === 2020 ? null : effectiveMode === 'average' ? mean(filterRows(all, t as Year, scope))
         : effectiveMode === 'groups' ? mean(all.filter(row => row.year === t && row.type === item.key))
         : all.find(row => row.year === t && row.code === item.key)?.prevalence ?? null
     }
     return point
   })
-  const focusRows = filterRows(all, year, region)
+  const focusRows = filterRows(all, year, scope)
   const changes = focusRows.map(row => ({ row, delta: k6Change(all, row.code) })).filter((item): item is { row: StuntingRow; delta: number } => item.delta !== null).sort((a, b) => b.delta - a.delta)
   // Labels show one decimal, but categories come from the unrounded value; say so when they disagree.
   const roundingNotes = series.flatMap(item => data.filter(row => row[item.key] !== null && row[item.key] !== undefined && roundingShiftsCategory(row[item.key]!)).map(row => `${item.name} ${row.year} = ${exactPercent(row[item.key]!)}, ditampilkan ${percent(row[item.key]!)}`))

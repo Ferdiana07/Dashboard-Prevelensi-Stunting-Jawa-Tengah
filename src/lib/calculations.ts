@@ -1,5 +1,5 @@
 import { roundHalfAway } from './format'
-import { YEARS, type RegionFilter, type StuntingRow, type Year } from '../types'
+import { YEARS, type Scope, type StuntingRow, type Year } from '../types'
 
 export const TARGET = 14
 export const CATEGORIES = {
@@ -14,8 +14,8 @@ export const roundingShiftsCategory = (value: number) => category(roundHalfAway(
 export const mean = (rows: StuntingRow[]) => rows.length ? rows.reduce((sum, row) => sum + row.prevalence, 0) / rows.length : null
 // Match the source's competition ranking: equal values share a rank (1, 2, 2, 4).
 export const prevalenceRank = (rows: StuntingRow[], value: number) => 1 + rows.filter(row => row.prevalence > value).length
-export function filterRows(rows: StuntingRow[], year: Year, region: RegionFilter) {
-  return rows.filter(row => row.year === year && (region === 'all' || row.type === region || row.code === region))
+export function filterRows(rows: StuntingRow[], year: Year, scope: Scope) {
+  return rows.filter(row => row.year === year && (scope === 'all' || row.type === scope))
 }
 export function metrics(rows: StuntingRow[]) {
   const district = mean(rows.filter(row => row.type === 'Kabupaten'))
