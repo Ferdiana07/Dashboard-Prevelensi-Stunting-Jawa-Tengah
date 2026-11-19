@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { parseCsv, validateBoundaries, validateDataset } from '../../src/lib/data'
-import { achievementNote, CATEGORIES, category, K6_LABEL, k6Change, filterRows, mean, metrics, TARGET } from '../../src/lib/calculations'
+import { achievementNote, rankingTitle, CATEGORIES, category, K6_LABEL, k6Change, filterRows, mean, metrics, TARGET } from '../../src/lib/calculations'
 import { percent, signed } from '../../src/lib/format'
 import { YEARS, type Boundaries } from '../../src/types'
 import Papa from 'papaparse'
@@ -148,5 +148,16 @@ describe('teks kartu K4', () => {
       const { achieved, total } = metrics(filterRows(rows, year, scope))
       expect(achievementNote(achieved, total), `${year} ${scope}`).toBe(expected[`${year}:${scope}`])
     }
+  })
+})
+
+describe('judul tabel mengikuti urutan aktif', () => {
+  it('prevalensi, jarak target, dan K6 di dua arah', () => {
+    expect(rankingTitle('prevalence', true, 2022)).toBe('Prevalensi Tertinggi, 2022')
+    expect(rankingTitle('prevalence', false, 2021)).toBe('Prevalensi Terendah, 2021')
+    expect(rankingTitle('target', true, 2022)).toBe('Jarak ke Target Terbesar, 2022')
+    expect(rankingTitle('target', false, 2019)).toBe('Jarak ke Target Terkecil, 2019')
+    expect(rankingTitle('change', true, 2022)).toBe('Kenaikan Terbesar atau Penurunan Paling Lambat 2019→2022')
+    expect(rankingTitle('change', false, 2021)).toBe('Penurunan Terbesar 2019→2022')
   })
 })

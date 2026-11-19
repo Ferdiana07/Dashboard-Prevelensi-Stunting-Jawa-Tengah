@@ -6,8 +6,8 @@ Verifikasi awal dilaksanakan pada 16 November 2026, dilanjutkan audit data selur
 | --- | --- |
 | Parsing dan cakupan CSV | 105 baris; 35 wilayah pada masing-masing 2019, 2021, 2022 |
 | Join geometri | 35 kode unik, cocok satu-ke-satu dengan CSV |
-| Tes unit Vitest | 66 lulus, termasuk pembulatan, ekspor vs CSV sumber, K6, encoding, dan posisi tooltip |
-| Tes browser Playwright Chromium | 27 lulus, termasuk audit data, viewport, masking, dan tooltip |
+| Tes unit Vitest | 71 lulus, termasuk pembulatan, ekspor vs CSV sumber, K6, encoding, dan posisi tooltip |
+| Tes browser Playwright Chromium | 40 lulus, termasuk audit data, viewport, masking, dan tooltip |
 | TypeScript | Lulus, termasuk pemeriksaan pada build |
 | ESLint | Lulus |
 | Build produksi | Lulus tanpa peringatan ukuran chunk |

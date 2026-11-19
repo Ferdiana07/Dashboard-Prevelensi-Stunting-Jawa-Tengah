@@ -42,3 +42,9 @@ export function k6Change(rows: StuntingRow[], code: string) {
   const end = valueAt(rows, code, 2022)
   return start === null || end === null ? null : end - start
 }
+// The heading follows the active sort so the title never contradicts the row order.
+export function rankingTitle(sort: 'prevalence' | 'target' | 'change', descending: boolean, year: Year) {
+  if (sort === 'prevalence') return `${descending ? 'Prevalensi Tertinggi' : 'Prevalensi Terendah'}, ${year}`
+  if (sort === 'target') return `${descending ? 'Jarak ke Target Terbesar' : 'Jarak ke Target Terkecil'}, ${year}`
+  return descending ? 'Kenaikan Terbesar atau Penurunan Paling Lambat 2019→2022' : 'Penurunan Terbesar 2019→2022'
+}
