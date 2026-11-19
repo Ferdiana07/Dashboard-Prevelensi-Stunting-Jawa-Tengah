@@ -241,6 +241,7 @@ tbody .selected-row { background: #eaf3fc; }
 .series-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px 24px; padding: 7px 0 0; margin: 0; list-style: none; color: #34465b; font-size: 11px; }
 .series-legend li { display: flex; align-items: center; gap: 7px; min-width: 0; }
 .series-legend svg { flex-shrink: 0; }
+.trend-value-label { font-size: 12px; font-weight: 650; fill: #34465b; stroke: #fff; stroke-width: 3.2px; stroke-linejoin: round; paint-order: stroke; pointer-events: none; }
 .trend-observation { stroke-linejoin: round; }
 @media (max-width: 560px) {
   .comparison-legend { font-size: 10px; gap: 5px 12px; }

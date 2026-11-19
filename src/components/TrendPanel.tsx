@@ -45,6 +45,18 @@ export function TrendPanel({ all, scope, year, areas, selected }: Props) {
     return <SeriesSymbol className={active ? 'trend-active-point' : 'recharts-line-dot trend-observation'} shape={item.shape} cx={cx} cy={cy} radius={active ? 6.5 : 4.7}
       fill={CATEGORIES[kind].color} stroke={SERIES_INK} strokeWidth={1.5} data-year={payload?.year ?? undefined} data-value={value} data-category={kind} data-series={item.key} />
   }
+  // Value labels for modes with at most two series (Multiwilayah relies on hover). With two series the higher
+  // value is labelled above its point and the lower one below it, so close values (2021: 20,1% vs 19,1%) never collide.
+  const labelled = effectiveMode !== 'multiple' && series.length <= 2
+  function valueLabel(seriesIndex: number) {
+    return (input: unknown) => {
+      const { x, y, index, value } = input as { x?: number; y?: number; index?: number; value?: number | null }
+      if (x === undefined || y === undefined || index === undefined || value === undefined || value === null) return null
+      const other = series.length === 2 ? data[index][series[1 - seriesIndex].key] : null
+      const below = other !== null && other !== undefined && (value < other || (value === other && seriesIndex === 1))
+      return <text className="trend-value-label" x={x} y={below ? y + 19 : y - 11} textAnchor="middle" data-series={series[seriesIndex].key} data-year={data[index].year ?? undefined} data-position={below ? 'below' : 'above'}>{percent(value)}</text>
+    }
+  }
   function seriesLegend() {
     return <ul className="series-legend" aria-label="Identitas seri: bentuk titik dan pola garis">{series.map(item => <li key={item.key}>
       <svg width="41" height="18" viewBox="0 0 41 18" aria-hidden="true"><path d="M1 9H40" stroke={SERIES_INK} strokeWidth="2" strokeDasharray={item.dash} /><SeriesSymbol shape={item.shape} cx={20} cy={9} radius={3.6} fill="#fff" stroke={SERIES_INK} strokeWidth={1.4} /></svg><span>{item.name}</span>
@@ -72,8 +84,8 @@ export function TrendPanel({ all, scope, year, areas, selected }: Props) {
           <ReferenceLine x={2020} stroke="#a6afbb" strokeDasharray="3 5" label={{ value: '2020: data tidak tersedia', position: 'insideTopRight', fill: '#596574', fontSize: 10, className: 'chart-explanation' }} />
           <Tooltip labelFormatter={label => `Tahun ${label}`} formatter={value => { const v = Number(value); return [exactPercent(v) === percent(v) ? percent(v) : `${percent(v)} (tepat ${exactPercent(v)})`] }} contentStyle={{ borderRadius: 10, border: '1px solid #dce0e5', fontSize: 13 }} />
           <Legend content={seriesLegend} />
-          {series.map(item => <Line key={item.key} type="linear" dataKey={item.key} name={item.name} stroke={SERIES_INK} strokeWidth={2} strokeDasharray={item.dash} dot={input => point(item, input)} activeDot={input => point(item, input, true)} connectNulls={false} isAnimationActive={false}>
-            {series.length === 1 && <LabelList dataKey={item.key} position="top" offset={10} formatter={value => value === null || value === undefined ? '' : percent(Number(value))} fill="#34465b" fontSize={12} fontWeight={650} />}
+          {series.map((item, seriesIndex) => <Line key={item.key} type="linear" dataKey={item.key} name={item.name} stroke={SERIES_INK} strokeWidth={2} strokeDasharray={item.dash} dot={input => point(item, input)} activeDot={input => point(item, input, true)} connectNulls={false} isAnimationActive={false}>
+            {labelled && <LabelList dataKey={item.key} content={valueLabel(seriesIndex)} />}
           </Line>)}
         </LineChart>
       </ResponsiveContainer>
