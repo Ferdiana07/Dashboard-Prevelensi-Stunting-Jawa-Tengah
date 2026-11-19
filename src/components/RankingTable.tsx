@@ -6,6 +6,7 @@ import type { StuntingRow, Year } from '../types'
 
 interface Props { rows: StuntingRow[]; all: StuntingRow[]; year: Year; selected: string | null; onSelect: (code: string) => void }
 type Sort = 'prevalence' | 'target' | 'change'
+export const DEFAULT_ROWS = 10
 export function RankingTable({ rows, all, year, selected, onSelect }: Props) {
   const [query, setQuery] = useState('')
   const [showAll, setShowAll] = useState(false)
@@ -18,7 +19,7 @@ export function RankingTable({ rows, all, year, selected, onSelect }: Props) {
       const bv = sort === 'change' ? k6Change(all, b.code) ?? 0 : b.prevalence
       return (descending ? bv - av : av - bv) || a.code.localeCompare(b.code)
     })
-  const base = showAll ? filtered : filtered.slice(0, 5)
+  const base = showAll ? filtered : filtered.slice(0, DEFAULT_ROWS)
   // A selected region stays in the table even when it falls outside the default list (unless a search hides it on purpose).
   const selectedRow = selected && !query ? ranked.find(row => row.code === selected) : undefined
   const visible = selectedRow && !base.some(row => row.code === selectedRow.code) ? [...base, selectedRow] : base
@@ -36,7 +37,7 @@ export function RankingTable({ rows, all, year, selected, onSelect }: Props) {
   function sortIcon(key: Sort) { return sort === key ? descending ? <ArrowDown size={12} /> : <ArrowUp size={12} /> : <ArrowUpDown size={12} /> }
   return <section className="panel ranking-panel" aria-labelledby="ranking-title">
     <h2 id="ranking-title">Peringkat Wilayah <span>({rankingTitle(sort, descending, year)})</span></h2>
-    <div className="table-toolbar"><div className="search-wrap"><Search size={15} aria-hidden="true" /><input aria-label="Cari wilayah" placeholder="Cari kabupaten / kota…" value={query} onChange={e => setQuery(e.target.value)} /></div><button className="text-button" onClick={() => setShowAll(!showAll)}>{showAll ? 'Tampilkan 5 besar' : `Lihat semua (${rows.length})`}</button></div>
+    <div className="table-toolbar"><div className="search-wrap"><Search size={15} aria-hidden="true" /><input aria-label="Cari wilayah" placeholder="Cari kabupaten / kota…" value={query} onChange={e => setQuery(e.target.value)} /></div>{rows.length > DEFAULT_ROWS && <button className="text-button" onClick={() => setShowAll(!showAll)}>{showAll ? `Tampilkan ${DEFAULT_ROWS} besar` : `Lihat semua (${rows.length})`}</button>}</div>
     <div className={`table-scroll ${showAll ? 'expanded' : ''}`} tabIndex={0} aria-label="Tabel peringkat wilayah, dapat digulir">
       <table><thead><tr><th scope="col" className="rank-col">Peringkat prevalensi</th><th scope="col">Kabupaten/Kota</th><th scope="col" aria-sort={sort === 'prevalence' ? descending ? 'descending' : 'ascending' : 'none'}><button onClick={() => sortBy('prevalence')}>Prevalensi {sortIcon('prevalence')}</button></th><th scope="col" aria-sort={sort === 'target' ? descending ? 'descending' : 'ascending' : 'none'}><button onClick={() => sortBy('target')} title="Selisih prevalensi terhadap target 14%">Target {sortIcon('target')}</button></th><th scope="col" aria-sort={sort === 'change' ? descending ? 'descending' : 'ascending' : 'none'}><button onClick={() => sortBy('change')} title="Prevalensi 2022 dikurangi prevalensi 2019, tidak bergantung pada tahun yang dipilih">{K6_LABEL} {sortIcon('change')}</button></th></tr></thead>
         <tbody>{visible.map(row => {

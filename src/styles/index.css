@@ -51,10 +51,22 @@ h1 { font-size: clamp(22px, 1.75vw, 31px); line-height: 1.21; letter-spacing: -.
 .map-canvas > svg { width: 100%; height: auto; max-height: 410px; overflow: hidden; touch-action: none; cursor: grab; }
 .map-canvas > svg:active { cursor: grabbing; }
 .map-region { stroke: #fff; stroke-width: 1.4px; stroke-linejoin: round; vector-effect: non-scaling-stroke; cursor: pointer; transition: fill .18s; }
-.map-region:hover, .map-region:focus-visible { stroke: #172a40; stroke-width: 2px; outline: none; }
+.map-region, .city-marker, .map-canvas > svg { -webkit-tap-highlight-color: transparent; }
+.map-region, .map-region:focus, .map-region:focus-visible, .city-marker:focus, .city-marker:focus-visible { outline: none; }
+.map-region:hover { stroke: #172a40; stroke-width: 2px; }
 .map-region.selected { stroke: #14243a; stroke-width: 2.8px; }
+/* Selected and keyboard-focused markers follow the region border and sit above neighbouring polygons. */
+.region-outlines path { fill: none; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+.region-outlines .outline-halo { stroke: #fff; stroke-width: 6px; }
+.region-outlines .outline-selected { stroke: #14243a; stroke-width: 2.8px; }
+.region-outlines .outline-focus { stroke: #2469a9; stroke-width: 3.6px; }
 .city-marker { stroke: #28333e; stroke-width: 1.1px; vector-effect: non-scaling-stroke; cursor: pointer; }
-.city-marker:hover, .city-marker:focus-visible, .city-marker.selected { stroke-width: 2.5px; stroke: #0d263c; outline: none; }
+.city-marker:hover, .city-marker.selected { stroke-width: 2.5px; stroke: #0d263c; }
+.city-marker:focus-visible { stroke-width: 3px; stroke: #2469a9; }
+.map-label text { font-weight: 650; fill: #14243a; stroke: #fff; stroke-width: 3.6px; stroke-linejoin: round; paint-order: stroke; }
+.map-label .leader-halo { stroke: #fff; stroke-width: 3px; stroke-linecap: round; }
+.map-label .leader { stroke: #14243a; stroke-width: 1px; }
+.map-label .leader-dot { fill: #14243a; stroke: #fff; stroke-width: 1px; }
 .inset text { font-size: 11px; fill: #5b6470; font-weight: 550; }
 .map-controls { position: absolute; right: 6px; top: 10px; display: flex; flex-direction: column; gap: 5px; }
 .map-controls button { width: 32px; height: 32px; }
@@ -90,6 +102,12 @@ tbody th, tbody td { padding: 7px; border-top: 1px solid #dadddf; height: 45px; 
 tbody th { font-weight: 550; }
 tbody tr:hover { background: #f4f7fa; }
 tbody .selected-row { background: #eaf3fc; }
+/* Region name stays visible while the table scrolls sideways on narrow screens; cells need a solid background so scrolled columns do not show through. */
+thead th:nth-child(2), tbody th { position: sticky; left: 0; }
+tbody th { background: #fff; z-index: 1; box-shadow: 1px 0 0 #dadddf; }
+thead th:nth-child(2) { z-index: 3; box-shadow: 1px 0 0 #cfd3d8; }
+tbody tr:hover th { background: #f4f7fa; }
+tbody .selected-row th { background: #eaf3fc; }
 .rank-badge { display: inline-flex; width: 25px; height: 25px; align-items: center; justify-content: center; background: #e6e6e7; border-radius: 6px; font-weight: 700; font-size: 14px; }
 .area-name { background: none; border: 0; text-align: left; font-weight: 550; padding: 5px 0; }
 .area-name:hover { color: #235d94; text-decoration: underline; text-underline-offset: 3px; }
@@ -157,7 +175,7 @@ tbody .selected-row { background: #eaf3fc; }
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 .detail-panel { scroll-margin-top: 12px; }
 .skip-link { position: fixed; left: 15px; top: -80px; background: #fff; border: 2px solid #235c94; padding: 11px; border-radius: 7px; z-index: 20; }
-.skip-link:focus { top: 15px; }
+.skip-link:focus-visible { top: 15px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (min-width: 1650px) { table { font-size: 14px; } thead th { font-size: 11px; padding: 8px; } tbody th, tbody td { height: 44px; padding: 6px 8px; } .prevalence-badge { font-size: 18px; min-width: 80px; } .table-note { font-size: 10px; } .search-wrap input, .text-button { font-size: 12px; } .map-canvas { min-height: 340px; } }
 @media (max-width: 1190px) { .dashboard { padding: 22px 20px; } .page-header { flex-wrap: wrap; gap: 17px; margin-bottom: 22px; } h1 { max-width: 900px; font-size: 29px; text-wrap: initial; } .filters { margin-left: auto; } .scorecard { padding: 16px; min-height: 132px; } .scorecard h2 { font-size: 16px; } .score-value { font-size: 35px; margin-top: 9px; } .score-note { font-size: 12px; } .dashboard-grid { gap: 15px; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); } .map-panel { padding: 19px 17px 17px; } .comparison-panel, .ranking-panel { padding-left: 14px; padding-right: 14px; } .map-canvas { min-height: 275px; } .map-heading p { font-size: 14px; } .map-legend > div { font-size: 14px; } .trend-heading { align-items: flex-start; } .multi-select > div { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
@@ -229,6 +247,7 @@ tbody .selected-row { background: #eaf3fc; }
 .series-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px 24px; padding: 7px 0 0; margin: 0; list-style: none; color: #34465b; font-size: 11px; }
 .series-legend li { display: flex; align-items: center; gap: 7px; min-width: 0; }
 .series-legend svg { flex-shrink: 0; }
+.trend-value-label { font-size: 12px; font-weight: 650; fill: #34465b; stroke: #fff; stroke-width: 3.2px; stroke-linejoin: round; paint-order: stroke; pointer-events: none; }
 .trend-observation { stroke-linejoin: round; }
 @media (max-width: 560px) {
   .comparison-legend { font-size: 10px; gap: 5px 12px; }
@@ -237,4 +256,6 @@ tbody .selected-row { background: #eaf3fc; }
   .trend-category-legend { gap: 6px 12px; font-size: 10px; margin-top: 14px; }
   .series-legend { gap: 6px 14px; font-size: 10px; }
 }
+/* Same breakpoint as the detail grid dropping to two columns: the lone third card (K6) takes the whole second row. */
+@media (max-width: 960px) { .detail-values > div:nth-child(3) { grid-column: span 2; } }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
