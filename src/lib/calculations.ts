@@ -28,13 +28,16 @@ export function metrics(rows: StuntingRow[]) {
 export function valueAt(rows: StuntingRow[], code: string, year: number) {
   return rows.find(row => row.code === code && row.year === year)?.prevalence ?? null
 }
-export function changeFrom2019(rows: StuntingRow[], row: StuntingRow) {
-  const baseline = valueAt(rows, row.code, 2019)
-  return row.year === 2019 || baseline === null ? null : row.prevalence - baseline
+// K6 is always the 2019 to 2022 change, whatever year is selected.
+export const K6_LABEL = 'K6: 2019→2022'
+export const K6_NOTE = 'K6 = prevalensi 2022 − prevalensi 2019, sama untuk semua tahun yang dipilih'
+export function k6Change(rows: StuntingRow[], code: string) {
+  const start = valueAt(rows, code, 2019)
+  const end = valueAt(rows, code, 2022)
+  return start === null || end === null ? null : end - start
 }
 export function previousChange(rows: StuntingRow[], row: StuntingRow) {
   const previousYear = [...YEARS].reverse().find(year => year < row.year)
   const previous = previousYear ? valueAt(rows, row.code, previousYear) : null
   return { year: previousYear ?? null, delta: previous === null ? null : row.prevalence - previous }
 }
-export function changeLabel(year: Year) { return year === 2019 ? 'Perubahan dari 2019' : `Perubahan 2019–${year}` }

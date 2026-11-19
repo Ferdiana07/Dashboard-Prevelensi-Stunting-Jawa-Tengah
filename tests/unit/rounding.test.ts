@@ -28,12 +28,13 @@ describe('pembulatan setengah menjauhi nol', () => {
 })
 
 describe('ekspor CSV identik dengan CSV sumber', () => {
-  it('k5_jarak_target_pp sama dengan k5_jarak_target untuk semua baris', () => {
+  it('K5 dan K6 sama dengan k5_jarak_target dan k6_perubahan_2019_2022 untuk semua 105 baris', () => {
     const exported = buildExportRows(rows, rows)
     expect(exported).toHaveLength(source.length)
     for (const row of exported) {
       const original = source.find(item => item.kode_wilayah === row.kode_wilayah && Number(item.tahun) === row.tahun)!
       expect(row.k5_jarak_target_pp).toBe(Number(original.k5_jarak_target))
+      expect(row.k6_perubahan_2019_2022_pp).toBe(Number(original.k6_perubahan_2019_2022))
     }
   })
 })

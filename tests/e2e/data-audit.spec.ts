@@ -62,14 +62,13 @@ for (const year of [2019, 2021, 2022]) {
       const expected = sorted.map(row => [
         String(scope === 'all' ? Number(row.peringkat) : 1 + rows.filter(other => Number(other.prevalensi) > Number(row.prevalensi)).length),
         row.wilayah, pct(Number(row.prevalensi)), delta(Number(row.k5_jarak_target)),
-        year === 2019 ? '—' : delta(difference(row.prevalensi, source.find(item => item.kode_wilayah === row.kode_wilayah && item.tahun === '2019')!.prevalensi)),
+        delta(Number(row.k6_perubahan_2019_2022)),
       ])
       expect(actual.table, `${year}/${scope}: names, source ranks, prevalence, target and changes`).toEqual(expected)
       if (rows.length === 1) {
         const row = rows[0]
-        const baseline = source.find(item => item.kode_wilayah === row.kode_wilayah && item.tahun === '2019')!
         const previous = year === 2019 ? null : source.find(item => item.kode_wilayah === row.kode_wilayah && Number(item.tahun) === (year === 2021 ? 2019 : 2021))!
-        const change = year === 2019 ? null : difference(row.prevalensi, baseline.prevalensi)
+        const change = Number(row.k6_perubahan_2019_2022)
         const previousChange = previous ? difference(row.prevalensi, previous.prevalensi) : null
         await expect(page.locator('.detail-values strong')).toHaveText([pct(Number(row.prevalensi)), delta(Number(row.k5_jarak_target)), delta(change), delta(previousChange)])
         await expect(page.locator('.detail-history > span > strong')).toHaveText([2019, 2021, 2022].map(t => pct(Number(source.find(item => item.kode_wilayah === row.kode_wilayah && Number(item.tahun) === t)!.prevalensi))))
@@ -110,10 +109,8 @@ test('audit exported values for all 105 source observations', async ({ page }) =
       const actual = exported.find(item => item.kode_wilayah === row.kode_wilayah)!
       expect(actual.wilayah).toBe(row.wilayah)
       expect(Number(actual.prevalensi)).toBe(Number(row.prevalensi))
-      expect(Number(actual.k5_jarak_target_pp)).toBeCloseTo(Number(row.k5_jarak_target), 10)
-      const field = year === 2022 ? 'k6_perubahan_2019_2022_pp' : 'perubahan_dari_2019_pp'
-      if (year === 2019) expect(actual[field]).toBe('')
-      else expect(Number(actual[field])).toBeCloseTo(Number(row.prevalensi) - Number(source.find(item => item.kode_wilayah === row.kode_wilayah && item.tahun === '2019')!.prevalensi), 10)
+      expect(Number(actual.k6_perubahan_2019_2022_pp)).toBe(Number(row.k6_perubahan_2019_2022))
+      expect(Number(actual.k5_jarak_target_pp)).toBe(Number(row.k5_jarak_target))
     }
   }
 })

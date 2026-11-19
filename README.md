@@ -24,7 +24,7 @@ Empat **Critical Business Questions (CBQ)** menjadi dasar pemilihan indikator da
 | CBQ | Pertanyaan | Dukungan pada website |
 | --- | --- | --- |
 | 1 · Wilayah prioritas | Kabupaten/kota mana yang prevalensinya paling tinggi dan perlu diprioritaskan? | Peta, tabel peringkat, pencarian, dan detail wilayah |
-| 2 · Perubahan 2019–2022 | Wilayah mana yang prevalensinya naik atau turunnya paling lambat? | Kolom perubahan, pengurutan perubahan, dan grafik tren |
+| 2 · Perubahan 2019–2022 | Wilayah mana yang prevalensinya naik atau turunnya paling lambat? | Kolom K6, pengurutan K6, dan grafik tren |
 | 3 · Capaian target | Wilayah mana yang belum mencapai target 14% dan seberapa besar kesenjangannya? | Scorecard, kategori peta, dan kolom Target |
 | 4 · Kota dan kabupaten | Kelompok wilayah mana yang paling tertinggal? | Selisih rata-rata, grafik batang horizontal, dan tren kelompok |
 
@@ -34,7 +34,7 @@ Laporan menilai **mockup statis**. Repositori ini merupakan implementasi interak
 
 | Temuan atau saran dalam laporan | Implementasi pada website |
 | --- | --- |
-| Kolom “Δ thn sebelumnya” belum sesuai definisi K6 | Kolom **Perubahan 2019–2022** menghitung 2022 − 2019; perubahan tahun sebelumnya ditampilkan terpisah pada tooltip/detail |
+| Kolom “Δ thn sebelumnya” belum sesuai definisi K6 | Kolom **K6: 2019→2022** selalu menghitung 2022 − 2019; perubahan tahun sebelumnya ditampilkan terpisah pada tooltip/detail |
 | Jarak ke target belum terlihat sebagai angka per wilayah | Kolom **Target**, tooltip peta, dan detail menampilkan prevalensi − 14% |
 | Perbandingan antartahun masih mengandalkan ingatan | Grafik tren menampilkan tahun yang tersedia berdampingan; 2020 menjadi celah tanpa estimasi |
 | Kartu capaian hijau bisa memberi kesan hasil sudah baik | Keterangan default **“baru 2 dari 35 wilayah”** memperjelas rendahnya proporsi capaian |
@@ -139,7 +139,7 @@ Pemetaan indikator ke idiom visual mengikuti laporan:
 | K5 | 1, 3 | Terbesar Brebes, +15,1 pp | Kategori pada peta; angka pada tabel, tooltip, dan detail |
 | K6 | 2 | 6 wilayah naik; kenaikan terbesar Pati, +3,62 pp | Tabel perubahan dan grafik tren |
 
-Antarmuka menggunakan label **Target** dan **Perubahan 2019–2022**, tanpa kode K5/K6. Pada 2021, label perubahan menjadi **Perubahan 2019–2021**. Pada 2019, perubahan dari baseline ditampilkan `—` karena 2019 adalah tahun awal pembanding; data prevalensinya tetap tersedia. Catatan tabel dan tooltip tanda tersebut menjelaskan alasannya. Tooltip dan detail memisahkan perubahan sejak 2019 dari perubahan terhadap **tahun sebelumnya yang tersedia**: 2019 untuk 2021, serta 2021 untuk 2022. Temanggung, misalnya, memiliki perubahan 2019–2022 +3,11 pp, sedangkan perubahan 2021–2022 adalah +8,4 pp.
+Kolom perubahan berlabel **K6: 2019→2022** dan nilainya selalu 2022 − 2019 pada semua tahun yang dipilih (termasuk 2019 dan 2021), dengan catatan di bawah tabel. Berlaku juga untuk tooltip, panel detail, pengurutan, dan ringkasan tren. Tooltip dan detail memisahkan perubahan sejak 2019 dari perubahan terhadap **tahun sebelumnya yang tersedia**: 2019 untuk 2021, serta 2021 untuk 2022. Temanggung, misalnya, memiliki perubahan 2019–2022 +3,11 pp, sedangkan perubahan 2021–2022 adalah +8,4 pp.
 
 Nilai acuan yang diuji terhadap data asli:
 

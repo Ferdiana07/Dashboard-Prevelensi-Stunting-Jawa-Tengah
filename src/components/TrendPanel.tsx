@@ -1,6 +1,6 @@
 import { useId, useState } from 'react'
 import { CartesianGrid, LabelList, Legend, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { category, CATEGORIES, changeFrom2019, filterRows, mean, roundingShiftsCategory, TARGET } from '../lib/calculations'
+import { category, CATEGORIES, k6Change, filterRows, mean, roundingShiftsCategory, TARGET } from '../lib/calculations'
 import { exactPercent, percent, signed } from '../lib/format'
 import type { RegionFilter, StuntingRow, Year } from '../types'
 import { prevalenceScale, SERIES_INK, SERIES_STYLES } from '../lib/visualEncoding'
@@ -33,7 +33,7 @@ export function TrendPanel({ all, region, year, areas, selected }: Props) {
     return point
   })
   const focusRows = filterRows(all, year, region)
-  const changes = focusRows.map(row => ({ row, delta: changeFrom2019(all, row) })).filter((item): item is { row: StuntingRow; delta: number } => item.delta !== null).sort((a, b) => b.delta - a.delta)
+  const changes = focusRows.map(row => ({ row, delta: k6Change(all, row.code) })).filter((item): item is { row: StuntingRow; delta: number } => item.delta !== null).sort((a, b) => b.delta - a.delta)
   // Labels show one decimal, but categories come from the unrounded value; say so when they disagree.
   const roundingNotes = series.flatMap(item => data.filter(row => row[item.key] !== null && row[item.key] !== undefined && roundingShiftsCategory(row[item.key]!)).map(row => `${item.name} ${row.year} = ${exactPercent(row[item.key]!)}, ditampilkan ${percent(row[item.key]!)}`))
   function chooseMode(value: Mode) { setMode(value); setOverride(selected); if (selected) setArea(selected) }
@@ -78,6 +78,6 @@ export function TrendPanel({ all, region, year, areas, selected }: Props) {
         </LineChart>
       </ResponsiveContainer>
     </div>}
-    <div className="trend-notes"><p>2020 tidak memiliki data. Garis dibiarkan terputus; tidak ada interpolasi atau estimasi.</p>{roundingNotes.length > 0 && <p className="rounding-note">{roundingNotes.join('; ')}; kategori ditentukan sebelum pembulatan.</p>}{changes[0] && <p><strong>{changes[0].delta > 0 ? 'Peningkatan terbesar' : changes[0].delta < 0 ? 'Penurunan paling lambat' : 'Tidak ada perubahan'} dalam cakupan:</strong> {changes[0].row.name}, {signed(changes[0].delta)} (2019–{year}).</p>}</div>
+    <div className="trend-notes"><p>2020 tidak memiliki data. Garis dibiarkan terputus; tidak ada interpolasi atau estimasi.</p>{roundingNotes.length > 0 && <p className="rounding-note">{roundingNotes.join('; ')}; kategori ditentukan sebelum pembulatan.</p>}{changes[0] && <p><strong>{changes[0].delta > 0 ? 'Peningkatan terbesar' : changes[0].delta < 0 ? 'Penurunan paling lambat' : 'Tidak ada perubahan'} dalam cakupan:</strong> {changes[0].row.name}, {signed(changes[0].delta)} (2019–2022).</p>}</div>
   </section>
 }

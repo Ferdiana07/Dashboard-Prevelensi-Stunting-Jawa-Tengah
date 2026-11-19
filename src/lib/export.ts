@@ -1,5 +1,5 @@
 import Papa from 'papaparse'
-import { changeFrom2019, previousChange, TARGET } from './calculations'
+import { k6Change, previousChange, TARGET } from './calculations'
 import { roundHalfAway } from './format'
 import type { StuntingRow } from '../types'
 
@@ -10,7 +10,7 @@ const clean = (value: number | null) => value === null ? null : roundHalfAway(va
 export function buildExportRows(visible: StuntingRow[], all: StuntingRow[]) {
   return visible.map(row => ({ kode_wilayah: row.code, wilayah: row.name, tipe_wilayah: row.type, tahun: row.year, prevalensi: row.prevalence,
     k5_jarak_target_pp: clean(row.prevalence - TARGET),
-    [row.year === 2022 ? 'k6_perubahan_2019_2022_pp' : 'perubahan_dari_2019_pp']: clean(changeFrom2019(all, row)),
+    k6_perubahan_2019_2022_pp: clean(k6Change(all, row.code)),
     tahun_pembanding_sebelumnya: previousChange(all, row).year,
     perubahan_tahun_sebelumnya_pp: clean(previousChange(all, row).delta),
   }))
