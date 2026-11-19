@@ -6,11 +6,11 @@ Verifikasi awal dilaksanakan pada 16 November 2026, dilanjutkan audit data selur
 | --- | --- |
 | Parsing dan cakupan CSV | 105 baris; 35 wilayah pada masing-masing 2019, 2021, 2022 |
 | Join geometri | 35 kode unik, cocok satu-ke-satu dengan CSV |
-| Tes unit Vitest | 71 lulus, termasuk pembulatan, ekspor vs CSV sumber, K6, encoding, dan posisi tooltip |
-| Tes browser Playwright Chromium | 40 lulus, termasuk audit data, viewport, masking, dan tooltip |
+| Tes unit Vitest | 75 lulus, termasuk pembulatan, ekspor vs CSV sumber, K6, encoding, dan posisi tooltip |
+| Tes browser Playwright Chromium | 52 lulus, termasuk audit data, viewport, masking, tooltip, label peta, penanda wilayah, label tren, dan mobile |
 | TypeScript | Lulus, termasuk pemeriksaan pada build |
 | ESLint | Lulus |
-| Build produksi | Lulus tanpa peringatan ukuran chunk |
+| Build produksi | Lulus; peringatan chunk >500 kB (chunk visualization) sudah ada sebelum Tahap 3 |
 | Smoke test build produksi | HTTP 200, KPI default benar, 35 geometri, filter kota 15,8% |
 | Console browser | Tidak ada error atau warning pada tes tangkapan layar dan smoke test produksi |
 | Overflow halaman | Tidak ditemukan pada lebar 360, 390, 768, 1024, 1366, 1672 px |
@@ -83,8 +83,28 @@ Enam tes unit tambahan memeriksa posisi di 100 titik viewport dan kasus tepi; ti
 
 ## Tahap 3: polesan visual (P10–P14)
 
+### P10. Label wilayah Rendah
+
+Label "nama nilai" (contoh Kota Semarang 10,4%) tampil untuk wilayah berkategori Rendah pada tahun terpilih dan dalam cakupan filter: 2019 tanpa label; 2021 Kab. Grobogan 9,6%, Kab. Wonogiri 14,0%, Kota Magelang 13,3%; 2022 Kota Semarang 10,4%, Kota Magelang 13,9%. Wilayah kecil memakai leader line. Label digambar di luar layer zoom sehingga ikut zoom/pan dengan ukuran huruf tetap, berhalo putih, dan `aria-hidden`. Tata letak menghindari label lain, kotak inset Karimunjawa, dan tombol zoom; tes bounding box memeriksa semuanya pada 1672, 1366, dan 390 px untuk 2021 dan 2022. Bila tidak ada tempat bebas, label dihilangkan daripada menimpa elemen lain.
+
 ### P11. Tabel 10 baris menyimpang dari mockup Tugas 3
 
 Mockup Tugas 3 menampilkan lima baris. Dashboard sekarang menampilkan **10 baris** secara default. Alasannya: pada layar desktop panel peringkat punya ruang vertikal yang cukup untuk lebih dari lima baris, dan dengan 10 baris pembaca langsung melihat sepertiga wilayah teratas tanpa menekan tombol. Tombol berubah menjadi "Lihat semua (N)" / "Tampilkan 10 besar" dan hanya muncul bila jumlah wilayah dalam cakupan lebih dari 10. Cakupan Kota (6 wilayah) langsung tampil seluruhnya.
 
 Syarat tinggi tetap berlaku: header sampai baris ekspor muat dalam viewport 1280×600, 1366×650, 1366×768, 1536×730, dan 1672×941. Tabel menggulir di dalam panel dan tidak memanjangkan halaman ringkasan; tes Playwright memeriksa kelima ukuran itu dengan 10 baris tampil.
+
+### P12. Penanda wilayah dan skip link
+
+Penanda wilayah terpilih kini berupa overlay outline yang mengikuti batas wilayah dan digambar di atas tetangganya (sebelumnya garis tepi sebagian tertutup path tetangga). Fokus keyboard memakai overlay biru dengan cara yang sama. Kotak persegi **tidak dapat direproduksi di Chromium**: outline pada path sudah `none` pada semua keadaan. Sumber yang masuk akal di perangkat sentuh adalah tap highlight bawaan browser pada elemen SVG, sehingga `-webkit-tap-highlight-color: transparent` dan `outline: none` untuk semua status fokus kini diterapkan pada path dan penanda kota. Ini belum diuji di Safari atau perangkat sentuh fisik.
+
+Skip link juga **tidak dapat direproduksi** setelah klik mouse di Chromium (klik tautan tren, reset, dropdown, peta, area kosong); ia hanya muncul setelah Tab. Aturan `.skip-link:focus` diganti `:focus-visible` agar fokus non-keyboard tidak pernah menampilkannya. Penyebab pasti di browser lain belum terbukti.
+
+### P13. Label tren
+
+Mode Rata-rata, Satu wilayah, dan Kota vs Kab. menampilkan label angka; Multiwilayah hanya lewat hover. Pada dua seri, seri bernilai lebih tinggi dilabeli di atas titik dan yang lebih rendah di bawah (2021: 20,1% di atas, 19,1% di bawah). Tes memeriksa tidak ada label yang saling menimpa atau menutupi penanda pada 2019, 2021, 2022. Titik 2019 tetap tanpa garis penyambung dan 2020 tanpa label. Pada 2022 label 15,8% berada di atas garis target 14%, tetap terbaca karena halo putih.
+
+### P14. Mobile
+
+Kolom nama wilayah di tabel sticky dengan latar solid (termasuk baris terpilih/hover), scroll horizontal dipertahankan. Kartu K6 di panel detail span 2 kolom pada breakpoint yang sama dengan saat grid menjadi 2 kolom (maks 960 px); diuji pada 390, 768, 960 (span) dan 961 px (tiga kolom).
+
+Screenshot desktop 1672×941 dan mobile 390 px untuk 2021 dan 2022 berada di `.impeccable/review/p10-*.png` (tidak dilacak Git).
