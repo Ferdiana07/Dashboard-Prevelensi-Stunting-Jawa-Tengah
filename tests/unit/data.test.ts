@@ -7,6 +7,13 @@ import { YEARS, type Boundaries } from '../../src/types'
 import Papa from 'papaparse'
 import { prevalenceRank } from '../../src/lib/calculations'
 
+describe('nama kategori', () => {
+  it('memakai Rendah, Sedang, Tinggi dengan rentang di legenda', () => {
+    expect(Object.values(CATEGORIES).map(item => item.label)).toEqual(['Rendah', 'Sedang', 'Tinggi'])
+    expect(Object.values(CATEGORIES).map(item => item.range)).toEqual(['≤ 14%', '> 14% – < 20%', '≥ 20%'])
+  })
+})
+
 const csv = readFileSync('public/data/stunting.csv', 'utf8')
 const geo = JSON.parse(readFileSync('public/data/jateng.geojson', 'utf8')) as Boundaries
 const { rows } = validateDataset(csv, geo)

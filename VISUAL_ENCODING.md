@@ -28,9 +28,9 @@ Pola adalah **redundansi data**, bukan dekorasi. Lapisan pola tidak menerima poi
 
 | Kategori | Ambang dari nilai asli | Hue | Pola area |
 | --- | --- | --- | --- |
-| Mencapai target | ≤14% | Hijau `#08a33e` | Polos |
-| Perlu perhatian | >14% dan <20% | Kuning `#ffd000` | Titik |
-| Prioritas tinggi | ≥20% | Merah `#ed2429` | Arsir diagonal |
+| Rendah | ≤14% | Hijau `#08a33e` | Polos |
+| Sedang | >14% dan <20% | Kuning `#ffd000` | Titik |
+| Tinggi | ≥20% | Merah `#ed2429` | Arsir diagonal |
 
 Identitas seri tren ditentukan bentuk/pola garis, bukan warna titik. Satu seri dapat memiliki titik berbeda warna karena nilainya berubah. Glyph legenda seri memakai warna netral agar tidak menyiratkan bahwa suatu wilayah selalu berada pada kategori tertentu.
 

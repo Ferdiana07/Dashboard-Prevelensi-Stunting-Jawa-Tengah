@@ -163,9 +163,9 @@ Peta D3 menggunakan tampilan planar equirectangular koordinat bujur/lintang deng
 
 | Kategori dalam laporan / label website | Ambang asli, sebelum pembulatan | Warna | 2019 | 2021 | 2022 |
 | --- | --- | --- | --- | --- | --- |
-| Rendah / Mencapai target | ≤ 14% | Hijau | 0 | 3 | 2 |
-| Sedang / Perlu perhatian | > 14% dan < 20% | Kuning | 4 | 12 | 15 |
-| Tinggi / Prioritas tinggi | ≥ 20% | Merah | 31 | 20 | 18 |
+| Rendah | ≤ 14% | Hijau | 0 | 3 | 2 |
+| Sedang | > 14% dan < 20% | Kuning | 4 | 12 | 15 |
+| Tinggi | ≥ 20% | Merah | 31 | 20 | 18 |
 
 Laporan menyusun tiga kategori tersebut dengan menggabungkan acuan target nasional 14% untuk 2024 dan ambang prevalensi tinggi 20% yang dirujuk dari de Onis dkk. (2019). Ini merupakan klasifikasi operasional kelompok, bukan salinan lengkap lima kelas WHO. Target 14% digunakan sebagai **acuan historis periode analisis**, bukan klaim target terbaru.
 

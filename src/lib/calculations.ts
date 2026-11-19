@@ -3,9 +3,9 @@ import { YEARS, type RegionFilter, type StuntingRow, type Year } from '../types'
 
 export const TARGET = 14
 export const CATEGORIES = {
-  achieved: { label: 'Mencapai target', range: '≤ 14%', color: '#08a33e', soft: '#dcf4e2', text: '#11652e' },
-  moderate: { label: 'Perlu perhatian', range: '> 14% – < 20%', color: '#ffd000', soft: '#fff3bf', text: '#735600' },
-  high: { label: 'Prioritas tinggi', range: '≥ 20%', color: '#ed2429', soft: '#ffdada', text: '#9d1c22' },
+  achieved: { label: 'Rendah', range: '≤ 14%', color: '#08a33e', soft: '#dcf4e2', text: '#11652e' },
+  moderate: { label: 'Sedang', range: '> 14% – < 20%', color: '#ffd000', soft: '#fff3bf', text: '#735600' },
+  high: { label: 'Tinggi', range: '≥ 20%', color: '#ed2429', soft: '#ffdada', text: '#9d1c22' },
 }
 // Categories are derived from unrounded values; 14 belongs to achieved and 20 to high.
 export function category(value: number) { return value <= TARGET ? 'achieved' : value < 20 ? 'moderate' : 'high' }
