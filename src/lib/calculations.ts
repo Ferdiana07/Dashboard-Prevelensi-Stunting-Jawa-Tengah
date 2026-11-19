@@ -25,6 +25,12 @@ export function metrics(rows: StuntingRow[]) {
     achievement: rows.length ? achieved / rows.length * 100 : null,
     district, city, gap: district === null || city === null ? null : district - city }
 }
+// Note under the K4 card: the card stays green, the wording avoids implying progress when there is none.
+export function achievementNote(achieved: number, total: number) {
+  if (achieved === 0) return 'belum ada wilayah yang mencapai target'
+  if (achieved === total) return 'semua wilayah mencapai target'
+  return `baru ${achieved} dari ${total} wilayah`
+}
 export function valueAt(rows: StuntingRow[], code: string, year: number) {
   return rows.find(row => row.code === code && row.year === year)?.prevalence ?? null
 }

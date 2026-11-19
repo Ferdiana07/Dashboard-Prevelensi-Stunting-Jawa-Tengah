@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { parseCsv, validateBoundaries, validateDataset } from '../../src/lib/data'
-import { CATEGORIES, category, K6_LABEL, k6Change, filterRows, mean, metrics, previousChange, TARGET } from '../../src/lib/calculations'
+import { achievementNote, CATEGORIES, category, K6_LABEL, k6Change, filterRows, mean, metrics, previousChange, TARGET } from '../../src/lib/calculations'
 import { percent, signed } from '../../src/lib/format'
 import { YEARS, type Boundaries } from '../../src/types'
 import Papa from 'papaparse'
@@ -133,5 +133,26 @@ describe('cakupan filter dan kategori batas', () => {
     expect(signed(14 - 19.65)).toBe('-5,7 pp')
     expect(signed(29.1 - 34.65)).toBe('-5,6 pp')
     expect(percent(19.65)).toBe('19,7%')
+  })
+})
+
+describe('teks kartu K4', () => {
+  it('memilih kalimat sesuai jumlah wilayah yang mencapai target', () => {
+    expect(achievementNote(0, 35)).toBe('belum ada wilayah yang mencapai target')
+    expect(achievementNote(35, 35)).toBe('semua wilayah mencapai target')
+    expect(achievementNote(6, 6)).toBe('semua wilayah mencapai target')
+    expect(achievementNote(2, 35)).toBe('baru 2 dari 35 wilayah')
+  })
+  it('sesuai data asli untuk setiap tahun dan cakupan', () => {
+    const rows = parseCsv(readFileSync('public/data/stunting.csv', 'utf8'))
+    const expected: Record<string, string> = {
+      '2019:all': 'belum ada wilayah yang mencapai target', '2019:Kota': 'belum ada wilayah yang mencapai target', '2019:Kabupaten': 'belum ada wilayah yang mencapai target',
+      '2021:all': 'baru 3 dari 35 wilayah', '2021:Kota': 'baru 1 dari 6 wilayah', '2021:Kabupaten': 'baru 2 dari 29 wilayah',
+      '2022:all': 'baru 2 dari 35 wilayah', '2022:Kota': 'baru 2 dari 6 wilayah', '2022:Kabupaten': 'belum ada wilayah yang mencapai target',
+    }
+    for (const year of YEARS) for (const scope of ['all', 'Kota', 'Kabupaten'] as const) {
+      const { achieved, total } = metrics(filterRows(rows, year, scope))
+      expect(achievementNote(achieved, total), `${year} ${scope}`).toBe(expected[`${year}:${scope}`])
+    }
   })
 })
