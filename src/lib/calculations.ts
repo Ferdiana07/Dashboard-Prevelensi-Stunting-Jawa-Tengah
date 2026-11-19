@@ -46,5 +46,5 @@ export function k6Change(rows: StuntingRow[], code: string) {
 export function rankingTitle(sort: 'prevalence' | 'target' | 'change', descending: boolean, year: Year) {
   if (sort === 'prevalence') return `${descending ? 'Prevalensi Tertinggi' : 'Prevalensi Terendah'}, ${year}`
   if (sort === 'target') return `${descending ? 'Jarak ke Target Terbesar' : 'Jarak ke Target Terkecil'}, ${year}`
-  return descending ? 'Kenaikan Terbesar atau Penurunan Paling Lambat 2019→2022' : 'Penurunan Terbesar 2019→2022'
+  return descending ? 'Kenaikan Terbesar / Penurunan Terkecil 2019→2022' : 'Penurunan Terbesar 2019→2022'
 }

@@ -283,7 +283,7 @@ test('table title follows the active sort and the number column is named', async
   await page.getByRole('button', { name: 'Target', exact: true }).click()
   await expect(title).toContainText('Jarak ke Target Terkecil, 2022')
   await page.getByRole('button', { name: 'K6: 2019→2022' }).click()
-  await expect(title).toContainText('Kenaikan Terbesar atau Penurunan Paling Lambat 2019→2022')
+  await expect(title).toContainText('Kenaikan Terbesar / Penurunan Terkecil 2019→2022')
   await expect(page.locator('tbody .area-name').first()).toHaveText('Kab. Pati')
   await page.getByRole('button', { name: 'K6: 2019→2022' }).click()
   await expect(title).toContainText('Penurunan Terbesar 2019→2022')

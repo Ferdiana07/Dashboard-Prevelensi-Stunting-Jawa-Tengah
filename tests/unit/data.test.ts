@@ -157,7 +157,7 @@ describe('judul tabel mengikuti urutan aktif', () => {
     expect(rankingTitle('prevalence', false, 2021)).toBe('Prevalensi Terendah, 2021')
     expect(rankingTitle('target', true, 2022)).toBe('Jarak ke Target Terbesar, 2022')
     expect(rankingTitle('target', false, 2019)).toBe('Jarak ke Target Terkecil, 2019')
-    expect(rankingTitle('change', true, 2022)).toBe('Kenaikan Terbesar atau Penurunan Paling Lambat 2019→2022')
+    expect(rankingTitle('change', true, 2022)).toBe('Kenaikan Terbesar / Penurunan Terkecil 2019→2022')
     expect(rankingTitle('change', false, 2021)).toBe('Penurunan Terbesar 2019→2022')
   })
 })
