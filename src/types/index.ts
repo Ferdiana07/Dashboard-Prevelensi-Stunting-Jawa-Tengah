@@ -8,6 +8,7 @@ export type Scope = 'all' | AreaType
 export interface StuntingRow {
   code: string
   name: string
+  sourceName: string
   type: AreaType
   year: Year
   prevalence: number

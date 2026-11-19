@@ -36,12 +36,13 @@ test('year and type filters update all scoped views correctly', async ({ page })
   await expect(page.locator('tbody tr').first().locator('td').last()).toHaveText('-15,9 pp')
   await expect(page.locator('.table-note')).toContainText('sama untuk semua tahun yang dipilih')
 })
-test('map tooltip distinguishes historical and previous-year changes', async ({ page }) => {
+test('map tooltip shows the 2019 to 2022 change and no previous-year delta', async ({ page }) => {
   await ready(page)
   await page.locator('[data-region="3323"]').hover({ force: true })
   await expect(page.getByRole('tooltip')).toContainText('Kab. Temanggung')
   await expect(page.getByRole('tooltip')).toContainText('+3,1 pp')
-  await expect(page.getByRole('tooltip')).toContainText('+8,4 pp')
+  await expect(page.getByRole('tooltip')).not.toContainText('+8,4 pp')
+  await expect(page.getByRole('tooltip')).not.toContainText('Δ dari')
   await expect(page.getByRole('tooltip')).toContainText('Belum tercapai')
 })
 test('keyboard map selection highlights a region and opens details without narrowing the scope', async ({ page }) => {
@@ -173,8 +174,10 @@ test('exports actual filtered rows as CSV', async ({ page }) => {
   const stream = await download.createReadStream()
   const chunks: Buffer[] = []; for await (const chunk of stream!) chunks.push(Buffer.from(chunk))
   const csv = Buffer.concat(chunks).toString('utf8')
-  expect(csv).toContain('k6_perubahan_2019_2022_pp')
-  expect(csv.split('\n')).toHaveLength(7)
+  const lines = csv.slice(csv.charCodeAt(0) === 0xFEFF ? 1 : 0).trim().split(/\r?\n/)
+  expect(lines[0]).toBe('kode_wilayah,wilayah,nama_asli,tipe_wilayah,tahun,prevalensi,peringkat,kategori,k5_jarak_target,k6_perubahan_2019_2022')
+  expect(lines).toHaveLength(7)
+  expect(csv).not.toContain('sebelumnya')
   expect(csv).toContain('Kota Semarang'); expect(csv).not.toContain('Kab. Brebes')
 })
 test('no horizontal document overflow at mobile, tablet, laptop, desktop sizes', async ({ page }) => {

@@ -1,5 +1,5 @@
 import { roundHalfAway } from './format'
-import { YEARS, type Scope, type StuntingRow, type Year } from '../types'
+import { type Scope, type StuntingRow, type Year } from '../types'
 
 export const TARGET = 14
 export const CATEGORIES = {
@@ -41,9 +41,4 @@ export function k6Change(rows: StuntingRow[], code: string) {
   const start = valueAt(rows, code, 2019)
   const end = valueAt(rows, code, 2022)
   return start === null || end === null ? null : end - start
-}
-export function previousChange(rows: StuntingRow[], row: StuntingRow) {
-  const previousYear = [...YEARS].reverse().find(year => year < row.year)
-  const previous = previousYear ? valueAt(rows, row.code, previousYear) : null
-  return { year: previousYear ?? null, delta: previous === null ? null : row.prevalence - previous }
 }
