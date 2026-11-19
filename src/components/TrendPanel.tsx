@@ -6,6 +6,7 @@ import type { Scope, StuntingRow, Year } from '../types'
 import { prevalenceScale, SERIES_INK, SERIES_STYLES } from '../lib/visualEncoding'
 import { CategoryLegend, SeriesSymbol } from './visuals/Encoding'
 
+const LABEL_SPLIT_PP = 3
 type Mode = 'average' | 'area' | 'multiple' | 'groups'
 interface Props { all: StuntingRow[]; scope: Scope; year: Year; areas: StuntingRow[]; selected: string | null }
 export function TrendPanel({ all, scope, year, areas, selected }: Props) {
@@ -45,15 +46,16 @@ export function TrendPanel({ all, scope, year, areas, selected }: Props) {
     return <SeriesSymbol className={active ? 'trend-active-point' : 'recharts-line-dot trend-observation'} shape={item.shape} cx={cx} cy={cy} radius={active ? 6.5 : 4.7}
       fill={CATEGORIES[kind].color} stroke={SERIES_INK} strokeWidth={1.5} data-year={payload?.year ?? undefined} data-value={value} data-category={kind} data-series={item.key} />
   }
-  // Value labels for modes with at most two series (Multiwilayah relies on hover). With two series the higher
-  // value is labelled above its point and the lower one below it, so close values (2021: 20,1% vs 19,1%) never collide.
+  // Value labels for modes with at most two series (Multiwilayah relies on hover). With two series the higher value
+  // is labelled above its point; the lower one goes below only when the two values are closer than LABEL_SPLIT_PP,
+  // so close values (2021: 20,1% vs 19,1%) never collide and far-apart ones keep both labels above (no label on the 14% line).
   const labelled = effectiveMode !== 'multiple' && series.length <= 2
   function valueLabel(seriesIndex: number) {
     return (input: unknown) => {
       const { x, y, index, value } = input as { x?: number; y?: number; index?: number; value?: number | null }
       if (x === undefined || y === undefined || index === undefined || value === undefined || value === null) return null
       const other = series.length === 2 ? data[index][series[1 - seriesIndex].key] : null
-      const below = other !== null && other !== undefined && (value < other || (value === other && seriesIndex === 1))
+      const below = other !== null && other !== undefined && Math.abs(value - other) < LABEL_SPLIT_PP && (value < other || (value === other && seriesIndex === 1))
       return <text className="trend-value-label" x={x} y={below ? y + 19 : y - 11} textAnchor="middle" data-series={series[seriesIndex].key} data-year={data[index].year ?? undefined} data-position={below ? 'below' : 'above'}>{percent(value)}</text>
     }
   }
