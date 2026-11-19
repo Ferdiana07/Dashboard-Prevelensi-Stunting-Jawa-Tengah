@@ -1,9 +1,9 @@
 import { useId, useState } from 'react'
 import { CartesianGrid, LabelList, Legend, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { category, CATEGORIES, changeFrom2019, filterRows, mean, TARGET } from '../lib/calculations'
-import { signed } from '../lib/format'
+import { category, CATEGORIES, changeFrom2019, filterRows, mean, roundingShiftsCategory, TARGET } from '../lib/calculations'
+import { exactPercent, percent, signed } from '../lib/format'
 import type { RegionFilter, StuntingRow, Year } from '../types'
-import { prevalenceLabel, prevalenceScale, SERIES_INK, SERIES_STYLES } from '../lib/visualEncoding'
+import { prevalenceScale, SERIES_INK, SERIES_STYLES } from '../lib/visualEncoding'
 import { CategoryLegend, SeriesSymbol } from './visuals/Encoding'
 
 type Mode = 'average' | 'area' | 'multiple' | 'groups'
@@ -34,6 +34,8 @@ export function TrendPanel({ all, region, year, areas, selected }: Props) {
   })
   const focusRows = filterRows(all, year, region)
   const changes = focusRows.map(row => ({ row, delta: changeFrom2019(all, row) })).filter((item): item is { row: StuntingRow; delta: number } => item.delta !== null).sort((a, b) => b.delta - a.delta)
+  // Labels show one decimal, but categories come from the unrounded value; say so when they disagree.
+  const roundingNotes = series.flatMap(item => data.filter(row => row[item.key] !== null && row[item.key] !== undefined && roundingShiftsCategory(row[item.key]!)).map(row => `${item.name} ${row.year} = ${exactPercent(row[item.key]!)}, ditampilkan ${percent(row[item.key]!)}`))
   function chooseMode(value: Mode) { setMode(value); setOverride(selected); if (selected) setArea(selected) }
   function point(item: (typeof series)[number], input: unknown, active = false) {
     const { cx, cy, payload } = input as { cx?: number; cy?: number; payload?: Record<string, number | null> }
@@ -68,14 +70,14 @@ export function TrendPanel({ all, region, year, areas, selected }: Props) {
           <ReferenceLine y={20} stroke="#a09aa0" strokeDasharray="2 4" />
           <ReferenceLine y={TARGET} stroke="#34465b" strokeWidth={1.4} strokeDasharray="5 3" label={{ value: '14%', position: 'insideTopRight', fill: '#34465b', fontSize: 11 }} />
           <ReferenceLine x={2020} stroke="#a6afbb" strokeDasharray="3 5" label={{ value: '2020: data tidak tersedia', position: 'insideTopRight', fill: '#596574', fontSize: 10, className: 'chart-explanation' }} />
-          <Tooltip labelFormatter={label => `Tahun ${label}`} formatter={value => [prevalenceLabel(Number(value))]} contentStyle={{ borderRadius: 10, border: '1px solid #dce0e5', fontSize: 13 }} />
+          <Tooltip labelFormatter={label => `Tahun ${label}`} formatter={value => { const v = Number(value); return [exactPercent(v) === percent(v) ? percent(v) : `${percent(v)} (tepat ${exactPercent(v)})`] }} contentStyle={{ borderRadius: 10, border: '1px solid #dce0e5', fontSize: 13 }} />
           <Legend content={seriesLegend} />
           {series.map(item => <Line key={item.key} type="linear" dataKey={item.key} name={item.name} stroke={SERIES_INK} strokeWidth={2} strokeDasharray={item.dash} dot={input => point(item, input)} activeDot={input => point(item, input, true)} connectNulls={false} isAnimationActive={false}>
-            {series.length === 1 && <LabelList dataKey={item.key} position="top" offset={10} formatter={value => value === null || value === undefined ? '' : prevalenceLabel(Number(value))} fill="#34465b" fontSize={12} fontWeight={650} />}
+            {series.length === 1 && <LabelList dataKey={item.key} position="top" offset={10} formatter={value => value === null || value === undefined ? '' : percent(Number(value))} fill="#34465b" fontSize={12} fontWeight={650} />}
           </Line>)}
         </LineChart>
       </ResponsiveContainer>
     </div>}
-    <div className="trend-notes"><p>2020 tidak memiliki data. Garis dibiarkan terputus; tidak ada interpolasi atau estimasi.</p>{changes[0] && <p><strong>{changes[0].delta > 0 ? 'Peningkatan terbesar' : changes[0].delta < 0 ? 'Penurunan paling lambat' : 'Tidak ada perubahan'} dalam cakupan:</strong> {changes[0].row.name}, {signed(changes[0].delta)} (2019–{year}).</p>}</div>
+    <div className="trend-notes"><p>2020 tidak memiliki data. Garis dibiarkan terputus; tidak ada interpolasi atau estimasi.</p>{roundingNotes.length > 0 && <p className="rounding-note">{roundingNotes.join('; ')}; kategori ditentukan sebelum pembulatan.</p>}{changes[0] && <p><strong>{changes[0].delta > 0 ? 'Peningkatan terbesar' : changes[0].delta < 0 ? 'Penurunan paling lambat' : 'Tidak ada perubahan'} dalam cakupan:</strong> {changes[0].row.name}, {signed(changes[0].delta)} (2019–{year}).</p>}</div>
   </section>
 }

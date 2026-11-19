@@ -1,3 +1,4 @@
+import { roundHalfAway } from './format'
 import { YEARS, type RegionFilter, type StuntingRow, type Year } from '../types'
 
 export const TARGET = 14
@@ -8,6 +9,8 @@ export const CATEGORIES = {
 }
 // Categories are derived from unrounded values; 14 belongs to achieved and 20 to high.
 export function category(value: number) { return value <= TARGET ? 'achieved' : value < 20 ? 'moderate' : 'high' }
+// True when the one-decimal label would sit on the other side of a category boundary (e.g. 19,96 shown as 20,0).
+export const roundingShiftsCategory = (value: number) => category(roundHalfAway(value, 1)) !== category(value)
 export const mean = (rows: StuntingRow[]) => rows.length ? rows.reduce((sum, row) => sum + row.prevalence, 0) / rows.length : null
 // Match the source's competition ranking: equal values share a rank (1, 2, 2, 4).
 export const prevalenceRank = (rows: StuntingRow[], value: number) => 1 + rows.filter(row => row.prevalence > value).length

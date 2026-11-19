@@ -11,6 +11,9 @@ export function roundHalfAway(value: number, digits = 1) {
   const scaled = text.includes('e') ? Math.round(clean * 10 ** digits) / 10 ** digits : Number(`${Math.round(Number(`${text}e${digits}`))}e-${digits}`)
   return value < 0 && scaled !== 0 ? -scaled : scaled
 }
+// Exact value (source precision, up to 2 decimals) for tooltips and rounding notes.
+const exactFormat = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 2 })
+export const exactPercent = (value: number) => `${exactFormat.format(roundHalfAway(value, 2))}%`
 // Display helpers: one decimal, Indonesian decimal comma.
 export const number = (value: number) => decimal.format(roundHalfAway(value, 1))
 export const percent = (value: number) => `${number(value)}%`
