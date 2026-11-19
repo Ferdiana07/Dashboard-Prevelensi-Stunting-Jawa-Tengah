@@ -1,14 +1,14 @@
 import { useId, useState } from 'react'
 import { CartesianGrid, LabelList, Legend, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { category, CATEGORIES, changeFrom2019, filterRows, mean, TARGET } from '../lib/calculations'
-import { signed } from '../lib/format'
-import type { RegionFilter, StuntingRow, Year } from '../types'
-import { prevalenceLabel, prevalenceScale, SERIES_INK, SERIES_STYLES } from '../lib/visualEncoding'
+import { category, CATEGORIES, k6Change, filterRows, mean, roundingShiftsCategory, TARGET } from '../lib/calculations'
+import { exactPercent, percent, signed } from '../lib/format'
+import type { Scope, StuntingRow, Year } from '../types'
+import { prevalenceScale, SERIES_INK, SERIES_STYLES } from '../lib/visualEncoding'
 import { CategoryLegend, SeriesSymbol } from './visuals/Encoding'
 
 type Mode = 'average' | 'area' | 'multiple' | 'groups'
-interface Props { all: StuntingRow[]; region: RegionFilter; year: Year; areas: StuntingRow[]; selected: string | null }
-export function TrendPanel({ all, region, year, areas, selected }: Props) {
+interface Props { all: StuntingRow[]; scope: Scope; year: Year; areas: StuntingRow[]; selected: string | null }
+export function TrendPanel({ all, scope, year, areas, selected }: Props) {
   const prefix = `trend-${useId().replace(/:/g, '')}`
   const { maximum, ticks } = prevalenceScale(all)
   const [mode, setMode] = useState<Mode>('average')
@@ -19,21 +19,23 @@ export function TrendPanel({ all, region, year, areas, selected }: Props) {
   const followSelected = selected !== null && override !== selected
   const effectiveMode = followSelected ? 'area' : mode
   const effectiveArea = followSelected ? selected : area
-  const series = (effectiveMode === 'average' ? [{ key: 'average', name: region === 'all' ? 'Rata-rata 35 wilayah' : region === 'Kota' || region === 'Kabupaten' ? `Rata-rata ${region.toLowerCase()}` : areas.find(row => row.code === region)?.name ?? 'Rata-rata cakupan' }]
+  const series = (effectiveMode === 'average' ? [{ key: 'average', name: scope === 'all' ? 'Rata-rata 35 wilayah' : `Rata-rata ${scope.toLowerCase()}` }]
     : effectiveMode === 'groups' ? [{ key: 'Kota', name: 'Rata-rata kota' }, { key: 'Kabupaten', name: 'Rata-rata kabupaten' }]
     : (effectiveMode === 'area' ? [effectiveArea] : codes).filter((code): code is string => code !== null).map(code => ({ key: code, name: areas.find(row => row.code === code)?.name ?? code })))
     .map((item, index) => ({ ...item, ...SERIES_STYLES[index % SERIES_STYLES.length] }))
   const data = [2019, 2020, 2021, 2022].map(t => {
     const point: Record<string, number | null> = { year: t }
     for (const item of series) {
-      point[item.key] = t === 2020 ? null : effectiveMode === 'average' ? mean(filterRows(all, t as Year, region))
+      point[item.key] = t === 2020 ? null : effectiveMode === 'average' ? mean(filterRows(all, t as Year, scope))
         : effectiveMode === 'groups' ? mean(all.filter(row => row.year === t && row.type === item.key))
         : all.find(row => row.year === t && row.code === item.key)?.prevalence ?? null
     }
     return point
   })
-  const focusRows = filterRows(all, year, region)
-  const changes = focusRows.map(row => ({ row, delta: changeFrom2019(all, row) })).filter((item): item is { row: StuntingRow; delta: number } => item.delta !== null).sort((a, b) => b.delta - a.delta)
+  const focusRows = filterRows(all, year, scope)
+  const changes = focusRows.map(row => ({ row, delta: k6Change(all, row.code) })).filter((item): item is { row: StuntingRow; delta: number } => item.delta !== null).sort((a, b) => b.delta - a.delta)
+  // Labels show one decimal, but categories come from the unrounded value; say so when they disagree.
+  const roundingNotes = series.flatMap(item => data.filter(row => row[item.key] !== null && row[item.key] !== undefined && roundingShiftsCategory(row[item.key]!)).map(row => `${item.name} ${row.year} = ${exactPercent(row[item.key]!)}, ditampilkan ${percent(row[item.key]!)}`))
   function chooseMode(value: Mode) { setMode(value); setOverride(selected); if (selected) setArea(selected) }
   function point(item: (typeof series)[number], input: unknown, active = false) {
     const { cx, cy, payload } = input as { cx?: number; cy?: number; payload?: Record<string, number | null> }
@@ -68,14 +70,14 @@ export function TrendPanel({ all, region, year, areas, selected }: Props) {
           <ReferenceLine y={20} stroke="#a09aa0" strokeDasharray="2 4" />
           <ReferenceLine y={TARGET} stroke="#34465b" strokeWidth={1.4} strokeDasharray="5 3" label={{ value: '14%', position: 'insideTopRight', fill: '#34465b', fontSize: 11 }} />
           <ReferenceLine x={2020} stroke="#a6afbb" strokeDasharray="3 5" label={{ value: '2020: data tidak tersedia', position: 'insideTopRight', fill: '#596574', fontSize: 10, className: 'chart-explanation' }} />
-          <Tooltip labelFormatter={label => `Tahun ${label}`} formatter={value => [prevalenceLabel(Number(value))]} contentStyle={{ borderRadius: 10, border: '1px solid #dce0e5', fontSize: 13 }} />
+          <Tooltip labelFormatter={label => `Tahun ${label}`} formatter={value => { const v = Number(value); return [exactPercent(v) === percent(v) ? percent(v) : `${percent(v)} (tepat ${exactPercent(v)})`] }} contentStyle={{ borderRadius: 10, border: '1px solid #dce0e5', fontSize: 13 }} />
           <Legend content={seriesLegend} />
           {series.map(item => <Line key={item.key} type="linear" dataKey={item.key} name={item.name} stroke={SERIES_INK} strokeWidth={2} strokeDasharray={item.dash} dot={input => point(item, input)} activeDot={input => point(item, input, true)} connectNulls={false} isAnimationActive={false}>
-            {series.length === 1 && <LabelList dataKey={item.key} position="top" offset={10} formatter={value => value === null || value === undefined ? '' : prevalenceLabel(Number(value))} fill="#34465b" fontSize={12} fontWeight={650} />}
+            {series.length === 1 && <LabelList dataKey={item.key} position="top" offset={10} formatter={value => value === null || value === undefined ? '' : percent(Number(value))} fill="#34465b" fontSize={12} fontWeight={650} />}
           </Line>)}
         </LineChart>
       </ResponsiveContainer>
     </div>}
-    <div className="trend-notes"><p>2020 tidak memiliki data. Garis dibiarkan terputus; tidak ada interpolasi atau estimasi.</p>{changes[0] && <p><strong>{changes[0].delta > 0 ? 'Peningkatan terbesar' : changes[0].delta < 0 ? 'Penurunan paling lambat' : 'Tidak ada perubahan'} dalam cakupan:</strong> {changes[0].row.name}, {signed(changes[0].delta)} (2019–{year}).</p>}</div>
+    <div className="trend-notes"><p>2020 tidak memiliki data. Garis dibiarkan terputus; tidak ada interpolasi atau estimasi.</p>{roundingNotes.length > 0 && <p className="rounding-note">{roundingNotes.join('; ')}; kategori ditentukan sebelum pembulatan.</p>}{changes[0] && <p><strong>{changes[0].delta > 0 ? 'Peningkatan terbesar' : changes[0].delta < 0 ? 'Penurunan paling lambat' : 'Tidak ada perubahan'} dalam cakupan:</strong> {changes[0].row.name}, {signed(changes[0].delta)} (2019–2022).</p>}</div>
   </section>
 }

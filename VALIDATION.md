@@ -6,7 +6,7 @@ Verifikasi awal dilaksanakan pada 16 November 2026, dilanjutkan audit data selur
 | --- | --- |
 | Parsing dan cakupan CSV | 105 baris; 35 wilayah pada masing-masing 2019, 2021, 2022 |
 | Join geometri | 35 kode unik, cocok satu-ke-satu dengan CSV |
-| Tes unit Vitest | 52 lulus, termasuk encoding, presisi label, dan posisi tooltip |
+| Tes unit Vitest | 66 lulus, termasuk pembulatan, ekspor vs CSV sumber, K6, encoding, dan posisi tooltip |
 | Tes browser Playwright Chromium | 27 lulus, termasuk audit data, viewport, masking, dan tooltip |
 | TypeScript | Lulus, termasuk pemeriksaan pada build |
 | ESLint | Lulus |
@@ -44,10 +44,10 @@ Referensi audit dibaca langsung dari CSV, tanpa menggunakan fungsi parsing, rumu
 | Komponen | Cakupan audit | Hasil |
 | --- | --- | --- |
 | Integritas data | 105 baris, 3 tahun, 35 kode unik per tahun, 29 kabupaten dan 6 kota | Cocok dengan lampiran |
-| Empat scorecard | 3 tahun × 38 cakupan: seluruh wilayah, kabupaten, kota, dan 35 wilayah individual | 114 kombinasi cocok |
+| Empat scorecard | 3 tahun × 3 cakupan (seluruh wilayah, kabupaten, kota); memilih satu dari 35 wilayah tidak mengubah scorecard | 9 kombinasi cakupan dan 105 pemilihan wilayah cocok |
 | Peta dan legenda | Warna seluruh 35 geometri serta jumlah kategori pada setiap kombinasi filter | Cocok; luar cakupan berwarna abu-abu |
 | Grafik kota–kabupaten | Rata-rata, label angka, dan warna batang sesuai ambang pada setiap cakupan | Cocok; satu kelompok tidak menghasilkan pembanding palsu |
-| Tabel | Seluruh nama, peringkat, prevalensi, jarak target, dan perubahan pada 114 kombinasi | Cocok setelah koreksi peringkat seri dan pembulatan |
+| Tabel | Seluruh nama, peringkat, prevalensi, jarak target, dan perubahan pada 9 kombinasi cakupan | Cocok setelah koreksi peringkat seri dan pembulatan |
 | Tooltip dan detail | 105 pengamatan; status target, jarak target, perubahan sejak 2019, tahun sebelumnya yang tersedia, dan tiga nilai riwayat | Cocok |
 | Tren satu wilayah | 35 wilayah × 3 tahun yang tersedia | Seluruh 105 titik cocok dengan CSV |
 | Tren rata-rata | Seluruh wilayah, kota, dan kabupaten untuk 3 tahun | Seluruh nilai cocok |
@@ -60,7 +60,7 @@ Referensi audit dibaca langsung dari CSV, tanpa menggunakan fungsi parsing, rumu
 
 1. **Peringkat seri:** dua nilai prevalensi yang sama sebelumnya mendapat nomor urut berbeda. Peringkat kini mengikuti aturan CSV: jumlah wilayah dengan prevalensi lebih besar + 1. Sragen dan Rembang pada 2022 sama-sama 24,3% dan peringkat 6.
 2. **Pembulatan tampilan:** pengurangan floating point `19.65 - 14` menghasilkan `5.649999999999999`, yang sebelumnya ditampilkan 5,6 pp. Galat aritmetika biner kini dinormalisasi hanya saat pemformatan sehingga jarak target Kebumen 2019 tampil **+5,7 pp**, sesuai nilai matematis 5,65. Perhitungan dan berkas sumber tidak diubah.
-3. **Sinkronisasi pencarian:** pencarian lama bisa menyembunyikan wilayah yang baru dipilih dari peta. Tabel kini memulai ulang pencarian/urutan saat cakupan wilayah berubah.
+3. **Sinkronisasi pencarian:** pencarian lama bisa menyembunyikan wilayah yang baru dipilih dari peta. Tabel memulai ulang pencarian/urutan saat cakupan berubah, dan mengosongkan pencarian bila pilihan wilayah akan tersembunyi olehnya.
 4. **Teks perubahan nol:** ringkasan tren untuk Kabupaten Pekalongan pada 2019–2022 kini menyebut **tidak ada perubahan**, sesuai 23,5% pada kedua tahun.
 
 ### Kedudukan analisis tren temporal
@@ -71,7 +71,7 @@ Audit memeriksa kesesuaian implementasi terhadap lampiran, bukan kebenaran hasil
 
 ## Verifikasi perbaikan visual encoding
 
-Perbaikan Munzner Level 3 memperkuat pola kategori, sumbu batang, skala tetap, bentuk titik/pola garis seri, serta encoding kekosongan 2020. Rumus KPI dan berkas CSV/GeoJSON tidak diubah. Label grafik menambah presisi bila pembulatan melintasi kategori, misalnya rata-rata 2021 tampil 19,96% pada titik kuning; scorecard tetap 20,0%.
+Perbaikan Munzner Level 3 memperkuat pola kategori, sumbu batang, skala tetap, bentuk titik/pola garis seri, serta encoding kekosongan 2020. Rumus KPI dan berkas CSV/GeoJSON tidak diubah. Semua panel memakai satu desimal; kategori ditentukan dari nilai asli. Bila pembulatan melintasi batas kategori (rata-rata 2021 = 19,96%, ditampilkan 20,0%, titik kuning), grafik tren memberi catatan.
 
 Seluruh 46 tes unit dan 24 tes browser lulus. Lima tes tambahan memeriksa encoding ketika judul, penjelasan, dan kontrol disamarkan, serta menghasilkan capture panel desktop, grayscale, dan mobile. Reviewer visual memeriksa capture tersebut dan tidak meminta perbaikan material. Ini bukan hasil uji pengenalan KPI/CBQ oleh responden. Lihat [VISUAL_ENCODING.md](VISUAL_ENCODING.md) untuk panduan dan batas interpretasi uji.
 

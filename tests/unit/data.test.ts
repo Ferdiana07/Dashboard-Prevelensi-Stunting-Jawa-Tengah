@@ -1,11 +1,18 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { parseCsv, validateBoundaries, validateDataset } from '../../src/lib/data'
-import { CATEGORIES, category, changeFrom2019, changeLabel, filterRows, mean, metrics, previousChange, TARGET } from '../../src/lib/calculations'
+import { CATEGORIES, category, K6_LABEL, k6Change, filterRows, mean, metrics, previousChange, TARGET } from '../../src/lib/calculations'
 import { percent, signed } from '../../src/lib/format'
 import { YEARS, type Boundaries } from '../../src/types'
 import Papa from 'papaparse'
 import { prevalenceRank } from '../../src/lib/calculations'
+
+describe('nama kategori', () => {
+  it('memakai Rendah, Sedang, Tinggi dengan rentang di legenda', () => {
+    expect(Object.values(CATEGORIES).map(item => item.label)).toEqual(['Rendah', 'Sedang', 'Tinggi'])
+    expect(Object.values(CATEGORIES).map(item => item.range)).toEqual(['≤ 14%', '> 14% – < 20%', '≥ 20%'])
+  })
+})
 
 const csv = readFileSync('public/data/stunting.csv', 'utf8')
 const geo = JSON.parse(readFileSync('public/data/jateng.geojson', 'utf8')) as Boundaries
@@ -73,19 +80,29 @@ describe('enam KPI dengan presisi asli', () => {
   })
   it('membedakan K6 Temanggung +3,11 pp dari perubahan 2021 +8,4 pp', () => {
     const temanggung = rows.find(row => row.name === 'Kab. Temanggung' && row.year === 2022)!
-    expect(changeFrom2019(rows, temanggung)).toBeCloseTo(3.11)
+    expect(k6Change(rows, temanggung.code)).toBeCloseTo(3.11)
     expect(previousChange(rows, temanggung).year).toBe(2021)
     expect(previousChange(rows, temanggung).delta).toBeCloseTo(8.4)
   })
   it('menghitung K6 meningkat terbesar untuk Pati +3,62 pp', () => {
-    const result = filterRows(rows, 2022, 'all').sort((a, b) => changeFrom2019(rows, b)! - changeFrom2019(rows, a)!)[0]
-    expect(result.name).toBe('Kab. Pati'); expect(changeFrom2019(rows, result)).toBeCloseTo(3.62)
+    const result = filterRows(rows, 2022, 'all').sort((a, b) => k6Change(rows, b.code)! - k6Change(rows, a.code)!)[0]
+    expect(result.name).toBe('Kab. Pati'); expect(k6Change(rows, result.code)).toBeCloseTo(3.62)
   })
   it('menggunakan 2019 sebagai tahun sebelumnya untuk 2021, dan tanpa pembanding pada 2019', () => {
     expect(previousChange(rows, filterRows(rows, 2021, 'all')[0]).year).toBe(2019)
     expect(previousChange(rows, rows[0])).toEqual({ year: null, delta: null })
-    expect(changeFrom2019(rows, rows[0])).toBeNull()
-    expect(changeLabel(2021)).not.toContain('K6')
+  })
+  it('K6 selalu 2019 ke 2022, sama dengan kolom k6_perubahan_2019_2022 untuk semua tahun', () => {
+    expect(K6_LABEL).toBe('K6: 2019→2022')
+    for (const item of source) expect(k6Change(rows, item.kode_wilayah)).toBeCloseTo(Number(item.k6_perubahan_2019_2022), 10)
+  })
+  it('K6: 6 wilayah naik, Kab. Pekalongan 0,0, penurunan terbesar Kab. Demak', () => {
+    const changes = filterRows(rows, 2019, 'all').map(row => ({ name: row.name, delta: k6Change(rows, row.code)! }))
+    const up = changes.filter(item => item.delta > 0.005).sort((a, b) => b.delta - a.delta)
+    expect(up.map(item => [item.name, Math.round(item.delta * 10) / 10])).toEqual([['Kab. Pati', 3.6], ['Kab. Temanggung', 3.1], ['Kab. Kebumen', 2.5], ['Kab. Purbalingga', 1.8], ['Kab. Rembang', 0.9], ['Kab. Wonogiri', 0.3]])
+    expect(Math.abs(changes.find(item => item.name === 'Kab. Pekalongan')!.delta)).toBeLessThan(0.005)
+    expect(changes.reduce((low, item) => item.delta < low.delta ? item : low).name).toBe('Kab. Demak')
+    expect(signed(changes.find(item => item.name === 'Kab. Demak')!.delta)).toBe('-19,6 pp')
   })
   it('tidak membulatkan sebelum menghitung', () => { expect(mean(filterRows(rows, 2019, 'all'))).toBeCloseTo(27.0968571428571, 10) })
 })
@@ -96,12 +113,13 @@ describe('cakupan filter dan kategori batas', () => {
     expect(kpi.gap).toBeNull(); expect(kpi.district).toBeNull()
   })
   it('membedakan Kabupaten Semarang dan Kota Semarang lewat kode', () => {
-    expect(filterRows(rows, 2022, '3322')[0].name).toBe('Kab. Semarang')
-    expect(filterRows(rows, 2022, '3374')[0].name).toBe('Kota Semarang')
+    expect(rows.find(row => row.year === 2022 && row.code === '3322')!.name).toBe('Kab. Semarang')
+    expect(rows.find(row => row.year === 2022 && row.code === '3374')!.name).toBe('Kota Semarang')
   })
-  it('memfilter tepat 29 kabupaten dan satu wilayah individual', () => {
+  it('memfilter cakupan: 29 kabupaten, 6 kota, 35 semua; satu wilayah tidak pernah menjadi cakupan', () => {
     expect(filterRows(rows, 2021, 'Kabupaten')).toHaveLength(29)
-    expect(filterRows(rows, 2019, '3301')).toHaveLength(1)
+    expect(filterRows(rows, 2021, 'Kota')).toHaveLength(6)
+    expect(filterRows(rows, 2021, 'all')).toHaveLength(35)
   })
   it.each([[0, 'achieved'], [14, 'achieved'], [14.001, 'moderate'], [19.999, 'moderate'], [20, 'high'], [100, 'high']])('mengategorikan batas %s', (value, expected) => {
     expect(category(Number(value))).toBe(expected)

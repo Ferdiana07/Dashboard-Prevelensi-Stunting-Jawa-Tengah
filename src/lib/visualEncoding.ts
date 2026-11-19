@@ -1,17 +1,4 @@
 import type { StuntingRow } from '../types'
-import { category } from './calculations'
-
-// A rounded label must never place a point on the other side of a color boundary.
-// Example: the 2021 mean is 19.96%, so a yellow point must not read "20.0%".
-export function prevalenceLabel(value: number) {
-  const normalized = Number(value.toPrecision(15))
-  for (let precision = 1; precision <= 6; precision++) {
-    const label = normalized.toLocaleString('id-ID', { minimumFractionDigits: precision, maximumFractionDigits: precision, useGrouping: false })
-    const rounded = Number(label.replace(',', '.'))
-    if (category(rounded) === category(value)) return label + '%'
-  }
-  return value.toLocaleString('id-ID', { maximumFractionDigits: 12, useGrouping: false }) + '%'
-}
 
 // Both quantitative charts use the same zero-based extent for the whole dataset.
 // Filtering changes the observations, never their apparent scale.

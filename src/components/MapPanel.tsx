@@ -4,7 +4,7 @@ import { select } from 'd3-selection'
 import { zoom, zoomIdentity, type ZoomBehavior } from 'd3-zoom'
 import { Minus, Plus, RotateCcw } from 'lucide-react'
 import type { FeatureCollection, MultiPolygon, Polygon } from 'geojson'
-import { CATEGORIES, category, changeFrom2019, changeLabel, previousChange, TARGET } from '../lib/calculations'
+import { CATEGORIES, category, K6_LABEL, k6Change, previousChange, TARGET } from '../lib/calculations'
 import { percent, signed } from '../lib/format'
 import type { Boundaries, StuntingRow, Year } from '../types'
 import { CategoryLegend, CategoryPatterns } from './visuals/Encoding'
@@ -115,7 +115,7 @@ export function MapPanel({ boundaries, rows, all, year, selected, onSelect, rese
       {hover && hovered && <CursorTooltip anchor={hover} id={`${prefix}-tooltip`}>
         <strong>{hovered.name}</strong><span className="tooltip-year">Tahun {year} · {byCode.has(hovered.code) ? 'Dalam cakupan' : 'Di luar cakupan'}</span>
         <div className="tooltip-value" style={{ color: CATEGORIES[category(hovered.prevalence)].text }}>{percent(hovered.prevalence)} <small>{CATEGORIES[category(hovered.prevalence)].label}</small></div>
-        <dl><div><dt>Target ≤ 14%</dt><dd>{hovered.prevalence <= TARGET ? 'Tercapai' : 'Belum tercapai'}</dd></div><div><dt>Jarak target</dt><dd>{signed(hovered.prevalence - TARGET)}</dd></div><div><dt>Δ dari {previous?.year ?? 'tahun sebelumnya'}</dt><dd>{signed(previous?.delta ?? null)}</dd></div><div><dt>{changeLabel(year)}</dt><dd>{signed(changeFrom2019(all, hovered))}</dd></div></dl>
+        <dl><div><dt>Target ≤ 14%</dt><dd>{hovered.prevalence <= TARGET ? 'Tercapai' : 'Belum tercapai'}</dd></div><div><dt>Jarak target</dt><dd>{signed(hovered.prevalence - TARGET)}</dd></div><div><dt>Δ dari {previous?.year ?? 'tahun sebelumnya'}</dt><dd>{signed(previous?.delta ?? null)}</dd></div><div><dt>{K6_LABEL}</dt><dd>{signed(k6Change(all, hovered.code))}</dd></div></dl>
         <span className="tooltip-hint">Klik untuk melihat detail wilayah</span>
       </CursorTooltip>}
     </div>

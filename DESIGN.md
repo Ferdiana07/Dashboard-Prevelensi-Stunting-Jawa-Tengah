@@ -28,7 +28,7 @@ Penjelasan berbahasa Indonesia, angka besar, dan label pendamping mendukung pemb
 
 ### Primary
 
-Warna semantik `achieved`, `moderate`, dan `high` berasal dari `CATEGORIES` di `src/lib/calculations.ts`. Hijau berarti mencapai target (≤ 14%), kuning berarti perlu perhatian (> 14% hingga < 20%), dan merah berarti prioritas tinggi (≥ 20%). Batas memakai nilai yang belum dibulatkan. Peta dan batang memakai warna utama beserta encoding redundan yang sama: hijau polos, kuning bertitik, merah berarsir diagonal. Legenda kategori pada peta, batang, dan tren menampilkan swatch serta rentang yang sama. Lencana tabel memakai pasangan `soft` dan `text` untuk menjaga keterbacaan.
+Warna semantik `achieved`, `moderate`, dan `high` berasal dari `CATEGORIES` di `src/lib/calculations.ts`. Hijau berarti kategori Rendah (≤ 14%, mencapai target), kuning berarti Sedang (> 14% hingga < 20%), dan merah berarti Tinggi (≥ 20%). Batas memakai nilai yang belum dibulatkan. Peta dan batang memakai warna utama beserta encoding redundan yang sama: hijau polos, kuning bertitik, merah berarsir diagonal. Legenda kategori pada peta, batang, dan tren menampilkan swatch serta rentang yang sama. Lencana tabel memakai pasangan `soft` dan `text` untuk menjaga keterbacaan.
 
 **The Shared Category Rule.** Kategori selalu ditentukan dari nilai mentah. Warna, pola, rentang legenda, dan isian titik tren harus menunjuk kategori yang sama. Label batang, tooltip grafik, dan label tren memakai `prevalenceLabel`: satu desimal secara umum, dengan presisi tambahan hanya bila pembulatan akan menyeberangi batas kategori (misalnya 19,96% tetap kuning, bukan dilabeli 20,0%).
 

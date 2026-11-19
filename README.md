@@ -24,7 +24,7 @@ Empat **Critical Business Questions (CBQ)** menjadi dasar pemilihan indikator da
 | CBQ | Pertanyaan | Dukungan pada website |
 | --- | --- | --- |
 | 1 · Wilayah prioritas | Kabupaten/kota mana yang prevalensinya paling tinggi dan perlu diprioritaskan? | Peta, tabel peringkat, pencarian, dan detail wilayah |
-| 2 · Perubahan 2019–2022 | Wilayah mana yang prevalensinya naik atau turunnya paling lambat? | Kolom perubahan, pengurutan perubahan, dan grafik tren |
+| 2 · Perubahan 2019–2022 | Wilayah mana yang prevalensinya naik atau turunnya paling lambat? | Kolom K6, pengurutan K6, dan grafik tren |
 | 3 · Capaian target | Wilayah mana yang belum mencapai target 14% dan seberapa besar kesenjangannya? | Scorecard, kategori peta, dan kolom Target |
 | 4 · Kota dan kabupaten | Kelompok wilayah mana yang paling tertinggal? | Selisih rata-rata, grafik batang horizontal, dan tren kelompok |
 
@@ -34,7 +34,7 @@ Laporan menilai **mockup statis**. Repositori ini merupakan implementasi interak
 
 | Temuan atau saran dalam laporan | Implementasi pada website |
 | --- | --- |
-| Kolom “Δ thn sebelumnya” belum sesuai definisi K6 | Kolom **Perubahan 2019–2022** menghitung 2022 − 2019; perubahan tahun sebelumnya ditampilkan terpisah pada tooltip/detail |
+| Kolom “Δ thn sebelumnya” belum sesuai definisi K6 | Kolom **K6: 2019→2022** selalu menghitung 2022 − 2019; perubahan tahun sebelumnya ditampilkan terpisah pada tooltip/detail |
 | Jarak ke target belum terlihat sebagai angka per wilayah | Kolom **Target**, tooltip peta, dan detail menampilkan prevalensi − 14% |
 | Perbandingan antartahun masih mengandalkan ingatan | Grafik tren menampilkan tahun yang tersedia berdampingan; 2020 menjadi celah tanpa estimasi |
 | Kartu capaian hijau bisa memberi kesan hasil sudah baik | Keterangan default **“baru 2 dari 35 wilayah”** memperjelas rendahnya proporsi capaian |
@@ -139,7 +139,7 @@ Pemetaan indikator ke idiom visual mengikuti laporan:
 | K5 | 1, 3 | Terbesar Brebes, +15,1 pp | Kategori pada peta; angka pada tabel, tooltip, dan detail |
 | K6 | 2 | 6 wilayah naik; kenaikan terbesar Pati, +3,62 pp | Tabel perubahan dan grafik tren |
 
-Antarmuka menggunakan label **Target** dan **Perubahan 2019–2022**, tanpa kode K5/K6. Pada 2021, label perubahan menjadi **Perubahan 2019–2021**. Pada 2019, perubahan dari baseline ditampilkan `—` karena 2019 adalah tahun awal pembanding; data prevalensinya tetap tersedia. Catatan tabel dan tooltip tanda tersebut menjelaskan alasannya. Tooltip dan detail memisahkan perubahan sejak 2019 dari perubahan terhadap **tahun sebelumnya yang tersedia**: 2019 untuk 2021, serta 2021 untuk 2022. Temanggung, misalnya, memiliki perubahan 2019–2022 +3,11 pp, sedangkan perubahan 2021–2022 adalah +8,4 pp.
+Kolom perubahan berlabel **K6: 2019→2022** dan nilainya selalu 2022 − 2019 pada semua tahun yang dipilih (termasuk 2019 dan 2021), dengan catatan di bawah tabel. Berlaku juga untuk tooltip, panel detail, pengurutan, dan ringkasan tren. Tooltip dan detail memisahkan perubahan sejak 2019 dari perubahan terhadap **tahun sebelumnya yang tersedia**: 2019 untuk 2021, serta 2021 untuk 2022. Temanggung, misalnya, memiliki perubahan 2019–2022 +3,11 pp, sedangkan perubahan 2021–2022 adalah +8,4 pp.
 
 Nilai acuan yang diuji terhadap data asli:
 
@@ -163,9 +163,9 @@ Peta D3 menggunakan tampilan planar equirectangular koordinat bujur/lintang deng
 
 | Kategori dalam laporan / label website | Ambang asli, sebelum pembulatan | Warna | 2019 | 2021 | 2022 |
 | --- | --- | --- | --- | --- | --- |
-| Rendah / Mencapai target | ≤ 14% | Hijau | 0 | 3 | 2 |
-| Sedang / Perlu perhatian | > 14% dan < 20% | Kuning | 4 | 12 | 15 |
-| Tinggi / Prioritas tinggi | ≥ 20% | Merah | 31 | 20 | 18 |
+| Rendah | ≤ 14% | Hijau | 0 | 3 | 2 |
+| Sedang | > 14% dan < 20% | Kuning | 4 | 12 | 15 |
+| Tinggi | ≥ 20% | Merah | 31 | 20 | 18 |
 
 Laporan menyusun tiga kategori tersebut dengan menggabungkan acuan target nasional 14% untuk 2024 dan ambang prevalensi tinggi 20% yang dirujuk dari de Onis dkk. (2019). Ini merupakan klasifikasi operasional kelompok, bukan salinan lengkap lima kelas WHO. Target 14% digunakan sebagai **acuan historis periode analisis**, bukan klaim target terbaru.
 
@@ -201,8 +201,8 @@ Pada desktop (lebar ≥1100 px dan tinggi area browser ≥600 px), ringkasan uta
 
 - Tahun default 2022. Tidak ada pilihan 2020.
 - Tooltip peta mengikuti kursor dengan jarak minimal 18px. Posisi berpindah sisi saat mendekati tepi layar berdasarkan ukuran popup sebenarnya; popup tidak menerima pointer sehingga klik wilayah tetap bekerja. Escape, scroll, atau resize menutup preview yang sudah tidak relevan.
-- Filter wilayah mencakup semua wilayah, 29 kabupaten, 6 kota, atau satu wilayah berdasarkan kode, sehingga kabupaten/kota dengan nama sama tetap terpisah.
-- KPI, legenda, warna peta, perbandingan, dan peringkat memakai cakupan yang sama. Klik peta, titik kota, atau nama di tabel memilih satu wilayah, memperbarui dropdown, menyorotnya, membuka detail, dan mengarahkan tren ke wilayah itu.
+- Filter cakupan: semua wilayah, 29 kabupaten, atau 6 kota. Wilayah individual dipilih berdasarkan kode (kabupaten/kota bernama sama tetap terpisah) tetapi tidak mengubah cakupan.
+- KPI, legenda, warna peta, perbandingan, dan peringkat memakai cakupan yang sama. Klik peta, titik kota, atau nama di tabel menyorot satu wilayah, memperbarui dropdown, membuka panel detail, dan mengarahkan tren ke wilayah itu; panel lain tetap pada cakupan filter. Wilayah terpilih tetap tampil di tabel walau di luar lima besar, dan detailnya memberi keterangan bila di luar cakupan. Tautan "Detail … ↓" di footer ringkasan memindahkan fokus ke judul panel detail; pilihan lewat dropdown menggulir ke panel (menghormati reduced motion) dan diumumkan lewat aria-live tanpa memindahkan fokus.
 - Grafik batang menampilkan satu kelompok saja jika cakupan hanya memiliki satu tipe; ada penjelasan mengapa perbandingan dua kelompok tidak tersedia.
 - Tabel default lima besar, bisa menampilkan semua hasil, mencari nama, dan mengurutkan prevalensi/K5/perubahan dua arah. Nomor peringkat tetap peringkat prevalensi dalam cakupan, meskipun urutan tampilan dipilih berdasarkan perubahan. Nilai prevalensi yang sama mendapat peringkat yang sama, sesuai CSV; contohnya dua wilayah peringkat 6 diikuti peringkat 8. Pada tahun yang sama, urutan K5 sama dengan prevalensi karena target konstan. Perubahan cakupan wilayah mengosongkan pencarian dan mengembalikan tabel ke lima besar agar wilayah pilihan dari peta tidak tersembunyi oleh pencarian sebelumnya.
 - **Ekspor CSV cakupan** mengunduh seluruh baris tahun/wilayah yang dipilih, beserta indikator terhitung dengan presisi asli. Pencarian dan batas lima besar pada tabel tidak membatasi ekspor; tombolnya menjelaskan bahwa ekspor berdasarkan cakupan.
@@ -229,7 +229,7 @@ Menurut laporan, data 2019 belum dicocokkan dengan publikasi survei nasional. Pe
 
 Vitest memeriksa data 105 baris, join 35 kode, batas kategori, semua KPI acuan, K5/K6, perbedaan periode pembanding, pembulatan, filter, dan penolakan data tidak valid. Playwright memeriksa perubahan filter, sinkronisasi keyboard/peta/detail/tren, tooltip, pencarian, sorting, zoom, ekspor, empat mode tren, batas lima seri, loading/error state, console browser, dan overflow pada 360–1672 px. Screenshot desktop/mobile tersimpan di `.impeccable/review/` setelah tes browser berjalan.
 
-Hasil pemeriksaan implementasi tercatat dalam [VALIDATION.md](VALIDATION.md): **52 tes unit** dan **27 tes browser** lulus pada verifikasi terakhir, 18 November 2026. Audit membandingkan 114 kombinasi tahun/cakupan, tooltip dan detail 105 pengamatan, seluruh titik tren wilayah, rata-rata sesuai cakupan, kelompok, multiwilayah, dan ekspor dengan data sumber. Lima tes tambahan memeriksa encoding dalam keadaan judul disamarkan. Angka ini terpisah dari **35 pemeriksaan data** dan **12 pemeriksaan batas wilayah** yang dilaporkan kelompok pada tahap pembersihan; pemeriksaan tahap pembersihan tersebut tidak diklaim sebagai tes yang dijalankan oleh website.
+Hasil pemeriksaan implementasi tercatat dalam [VALIDATION.md](VALIDATION.md): **66 tes unit** dan **37 tes browser** lulus pada verifikasi terakhir, 20 November 2026. Audit membandingkan 9 kombinasi tahun/cakupan, tooltip dan detail 105 pengamatan, seluruh titik tren wilayah, rata-rata sesuai cakupan, kelompok, multiwilayah, dan ekspor dengan data sumber. Lima tes tambahan memeriksa encoding dalam keadaan judul disamarkan. Angka ini terpisah dari **35 pemeriksaan data** dan **12 pemeriksaan batas wilayah** yang dilaporkan kelompok pada tahap pembersihan; pemeriksaan tahap pembersihan tersebut tidak diklaim sebagai tes yang dijalankan oleh website.
 
 ## Referensi
 

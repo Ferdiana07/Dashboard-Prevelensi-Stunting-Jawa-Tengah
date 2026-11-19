@@ -1,7 +1,7 @@
 import { RotateCcw, ChevronDown } from 'lucide-react'
-import { YEARS, type RegionFilter, type StuntingRow, type Year } from '../types'
+import { YEARS, type StuntingRow, type Year } from '../types'
 
-interface Props { year: Year; region: RegionFilter; areas: StuntingRow[]; onYear: (year: Year) => void; onRegion: (region: RegionFilter) => void; onReset: () => void }
+interface Props { year: Year; region: string; areas: StuntingRow[]; onYear: (year: Year) => void; onRegion: (region: string) => void; onReset: () => void }
 export function Filters({ year, region, areas, onYear, onRegion, onReset }: Props) {
   return <div className="filters">
     <div className="select-wrap"><label htmlFor="year">Tahun:</label><select id="year" value={year} onChange={e => onYear(Number(e.target.value) as Year)}>{YEARS.map(value => <option key={value}>{value}</option>)}</select><ChevronDown size={16} aria-hidden="true" /></div>

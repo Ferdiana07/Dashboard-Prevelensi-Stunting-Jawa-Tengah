@@ -25,13 +25,12 @@ const selected = (year: number, scope: string) => source.filter(row => Number(ro
 const color = (row: RawRow) => Number(row.prevalensi) <= 14 ? '#08a33e' : Number(row.prevalensi) < 20 ? '#ffd000' : '#ed2429'
 
 for (const year of [2019, 2021, 2022]) {
-  test(`audit all displayed data for ${year}, across all 38 region scopes`, async ({ page }) => {
+  test(`audit all displayed data for ${year}, across the 3 scopes and every selectable region`, async ({ page }) => {
     test.setTimeout(120_000)
     await page.goto('/')
     await page.locator('.scorecard').first().waitFor()
     await page.locator('#year').selectOption(String(year))
-    const scopes = ['all', 'Kabupaten', 'Kota', ...selected(year, 'all').map(row => row.kode_wilayah)]
-    for (const scope of scopes) {
+    for (const scope of ['all', 'Kabupaten', 'Kota']) {
       await page.locator('#region').selectOption(scope)
       const rows = selected(year, scope)
       const cities = average(rows.filter(row => row.tipe_wilayah === 'Kota'))
@@ -62,21 +61,35 @@ for (const year of [2019, 2021, 2022]) {
       const expected = sorted.map(row => [
         String(scope === 'all' ? Number(row.peringkat) : 1 + rows.filter(other => Number(other.prevalensi) > Number(row.prevalensi)).length),
         row.wilayah, pct(Number(row.prevalensi)), delta(Number(row.k5_jarak_target)),
-        year === 2019 ? '—' : delta(difference(row.prevalensi, source.find(item => item.kode_wilayah === row.kode_wilayah && item.tahun === '2019')!.prevalensi)),
+        delta(Number(row.k6_perubahan_2019_2022)),
       ])
       expect(actual.table, `${year}/${scope}: names, source ranks, prevalence, target and changes`).toEqual(expected)
-      if (rows.length === 1) {
-        const row = rows[0]
-        const baseline = source.find(item => item.kode_wilayah === row.kode_wilayah && item.tahun === '2019')!
-        const previous = year === 2019 ? null : source.find(item => item.kode_wilayah === row.kode_wilayah && Number(item.tahun) === (year === 2021 ? 2019 : 2021))!
-        const change = year === 2019 ? null : difference(row.prevalensi, baseline.prevalensi)
-        const previousChange = previous ? difference(row.prevalensi, previous.prevalensi) : null
-        await expect(page.locator('.detail-values strong')).toHaveText([pct(Number(row.prevalensi)), delta(Number(row.k5_jarak_target)), delta(change), delta(previousChange)])
-        await expect(page.locator('.detail-history > span > strong')).toHaveText([2019, 2021, 2022].map(t => pct(Number(source.find(item => item.kode_wilayah === row.kode_wilayah && Number(item.tahun) === t)!.prevalensi))))
-        await page.locator(`[data-region="${row.kode_wilayah}"]`).focus()
-        await expect(page.getByRole('tooltip')).toContainText(row.wilayah)
-        await expect(page.getByRole('tooltip').locator('dd')).toHaveText([Number(row.prevalensi) <= 14 ? 'Tercapai' : 'Belum tercapai', delta(Number(row.k5_jarak_target)), delta(previousChange), delta(change)])
-      }
+    }
+  })
+  test(`audit region details and tooltip for every region in ${year}, scope stays all`, async ({ page }) => {
+    test.setTimeout(120_000)
+    // The dropdown scrolls to the detail panel; use instant scrolling so it settles before the next check.
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto('/')
+    await page.locator('.scorecard').first().waitFor()
+    await page.locator('#year').selectOption(String(year))
+    const scores = await page.locator('.score-value').allTextContents()
+    for (const row of selected(year, 'all')) {
+      await page.locator('#region').selectOption(row.kode_wilayah)
+      await expect(page.locator('.score-value'), `${year}/${row.wilayah}: scorecards keep the scope`).toHaveText(scores)
+      await expect(page.locator('.detail-panel h2')).toHaveText(row.wilayah)
+      const previous = year === 2019 ? null : source.find(item => item.kode_wilayah === row.kode_wilayah && Number(item.tahun) === (year === 2021 ? 2019 : 2021))!
+      const change = Number(row.k6_perubahan_2019_2022)
+      const previousChange = previous ? difference(row.prevalensi, previous.prevalensi) : null
+      await expect(page.locator('.detail-values strong')).toHaveText([pct(Number(row.prevalensi)), delta(Number(row.k5_jarak_target)), delta(change), delta(previousChange)])
+      await expect(page.locator('.detail-history > span > strong')).toHaveText([2019, 2021, 2022].map(t => pct(Number(source.find(item => item.kode_wilayah === row.kode_wilayah && Number(item.tahun) === t)!.prevalensi))))
+      await expect(page.locator('.selected-row')).toContainText(row.wilayah)
+      await expect(page.locator('.detail-panel')).toBeInViewport()
+      // Focusing an off-screen map path scrolls the page and dismisses the tooltip, so return to the map first.
+      await page.evaluate(() => { window.scrollTo(0, 0); return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))) })
+      await page.locator(`[data-region="${row.kode_wilayah}"]`).focus()
+      await expect(page.getByRole('tooltip')).toContainText(row.wilayah)
+      await expect(page.getByRole('tooltip').locator('dd')).toHaveText([Number(row.prevalensi) <= 14 ? 'Tercapai' : 'Belum tercapai', delta(Number(row.k5_jarak_target)), delta(previousChange), delta(change)])
     }
   })
 }
@@ -89,8 +102,7 @@ test('selecting a map area after searching reveals that selected area in the tab
   await expect(page.locator('.selected-row')).toContainText('Kab. Brebes')
   await expect(page.getByLabel('Cari wilayah')).toHaveValue('')
   await page.locator('#region').selectOption('3326')
-  await expect(page.locator('.trend-notes')).toContainText('Tidak ada perubahan')
-  await expect(page.locator('.trend-notes')).toContainText('0,0 pp')
+  await expect(page.locator('.detail-values strong').nth(2)).toHaveText('0,0 pp')
 })
 
 test('audit exported values for all 105 source observations', async ({ page }) => {
@@ -110,10 +122,8 @@ test('audit exported values for all 105 source observations', async ({ page }) =
       const actual = exported.find(item => item.kode_wilayah === row.kode_wilayah)!
       expect(actual.wilayah).toBe(row.wilayah)
       expect(Number(actual.prevalensi)).toBe(Number(row.prevalensi))
-      expect(Number(actual.k5_jarak_target_pp)).toBeCloseTo(Number(row.k5_jarak_target), 10)
-      const field = year === 2022 ? 'k6_perubahan_2019_2022_pp' : 'perubahan_dari_2019_pp'
-      if (year === 2019) expect(actual[field]).toBe('')
-      else expect(Number(actual[field])).toBeCloseTo(Number(row.prevalensi) - Number(source.find(item => item.kode_wilayah === row.kode_wilayah && item.tahun === '2019')!.prevalensi), 10)
+      expect(Number(actual.k6_perubahan_2019_2022_pp)).toBe(Number(row.k6_perubahan_2019_2022))
+      expect(Number(actual.k5_jarak_target_pp)).toBe(Number(row.k5_jarak_target))
     }
   }
 })
