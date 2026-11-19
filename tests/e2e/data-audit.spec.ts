@@ -68,6 +68,8 @@ for (const year of [2019, 2021, 2022]) {
   })
   test(`audit region details and tooltip for every region in ${year}, scope stays all`, async ({ page }) => {
     test.setTimeout(120_000)
+    // The dropdown scrolls to the detail panel; use instant scrolling so it settles before the next check.
+    await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.goto('/')
     await page.locator('.scorecard').first().waitFor()
     await page.locator('#year').selectOption(String(year))
@@ -82,6 +84,9 @@ for (const year of [2019, 2021, 2022]) {
       await expect(page.locator('.detail-values strong')).toHaveText([pct(Number(row.prevalensi)), delta(Number(row.k5_jarak_target)), delta(change), delta(previousChange)])
       await expect(page.locator('.detail-history > span > strong')).toHaveText([2019, 2021, 2022].map(t => pct(Number(source.find(item => item.kode_wilayah === row.kode_wilayah && Number(item.tahun) === t)!.prevalensi))))
       await expect(page.locator('.selected-row')).toContainText(row.wilayah)
+      await expect(page.locator('.detail-panel')).toBeInViewport()
+      // Focusing an off-screen map path scrolls the page and dismisses the tooltip, so return to the map first.
+      await page.evaluate(() => { window.scrollTo(0, 0); return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))) })
       await page.locator(`[data-region="${row.kode_wilayah}"]`).focus()
       await expect(page.getByRole('tooltip')).toContainText(row.wilayah)
       await expect(page.getByRole('tooltip').locator('dd')).toHaveText([Number(row.prevalensi) <= 14 ? 'Tercapai' : 'Belum tercapai', delta(Number(row.k5_jarak_target)), delta(previousChange), delta(change)])
