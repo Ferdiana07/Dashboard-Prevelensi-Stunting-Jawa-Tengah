@@ -55,6 +55,10 @@ h1 { font-size: clamp(22px, 1.75vw, 31px); line-height: 1.21; letter-spacing: -.
 .map-region.selected { stroke: #14243a; stroke-width: 2.8px; }
 .city-marker { stroke: #28333e; stroke-width: 1.1px; vector-effect: non-scaling-stroke; cursor: pointer; }
 .city-marker:hover, .city-marker:focus-visible, .city-marker.selected { stroke-width: 2.5px; stroke: #0d263c; outline: none; }
+.map-label text { font-weight: 650; fill: #14243a; stroke: #fff; stroke-width: 3.6px; stroke-linejoin: round; paint-order: stroke; }
+.map-label .leader-halo { stroke: #fff; stroke-width: 3px; stroke-linecap: round; }
+.map-label .leader { stroke: #14243a; stroke-width: 1px; }
+.map-label .leader-dot { fill: #14243a; stroke: #fff; stroke-width: 1px; }
 .inset text { font-size: 11px; fill: #5b6470; font-weight: 550; }
 .map-controls { position: absolute; right: 6px; top: 10px; display: flex; flex-direction: column; gap: 5px; }
 .map-controls button { width: 32px; height: 32px; }

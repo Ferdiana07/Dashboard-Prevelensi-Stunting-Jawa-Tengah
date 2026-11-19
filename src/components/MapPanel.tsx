@@ -1,15 +1,18 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { geoIdentity, geoPath } from 'd3-geo'
 import { select } from 'd3-selection'
-import { zoom, zoomIdentity, type ZoomBehavior } from 'd3-zoom'
+import { zoom, zoomIdentity, type ZoomBehavior, type ZoomTransform } from 'd3-zoom'
 import { Minus, Plus, RotateCcw } from 'lucide-react'
 import type { FeatureCollection, MultiPolygon, Polygon } from 'geojson'
 import { CATEGORIES, category, K6_LABEL, k6Change, TARGET } from '../lib/calculations'
 import { percent, signed } from '../lib/format'
+import { labelText, layoutLabels, lowCategoryRows, type Box, type LabelInput } from '../lib/mapLabels'
 import type { Boundaries, StuntingRow, Year } from '../types'
 import { CategoryLegend, CategoryPatterns } from './visuals/Encoding'
 import { CursorTooltip } from './map/CursorTooltip'
 
+const VIEW: Box = { x: 4, y: 4, width: 752, height: 432 }
+const INSET: Box = { x: 15, y: 12, width: 145, height: 110 }
 interface Props { boundaries: Boundaries; rows: StuntingRow[]; all: StuntingRow[]; year: Year; selected: string | null; onSelect: (code: string) => void; resetKey: number }
 function partition(boundaries: Boundaries) {
   const main: Boundaries = { type: 'FeatureCollection', features: [] }
@@ -29,6 +32,10 @@ export function MapPanel({ boundaries, rows, all, year, selected, onSelect, rese
   const svg = useRef<SVGSVGElement>(null)
   const layer = useRef<SVGGElement>(null)
   const behavior = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null)
+  const controls = useRef<HTMLDivElement>(null)
+  const [view, setView] = useState<ZoomTransform>(zoomIdentity)
+  // Zoom controls and text scale are measured in viewBox units so labels can steer clear of the HTML buttons.
+  const [measured, setMeasured] = useState<{ controls: Box | null; scale: number }>({ controls: null, scale: 1 })
   const [hover, setHover] = useState<{ code: string; x: number; y: number } | null>(null)
   const { main, islands } = useMemo(() => partition(boundaries), [boundaries])
   // Planar equirectangular view of supplied longitude/latitude. No ring rewinding or simplification.
@@ -36,6 +43,23 @@ export function MapPanel({ boundaries, rows, all, year, selected, onSelect, rese
   const islandPath = useMemo(() => geoPath(geoIdentity().reflectY(true).fitExtent([[27, 36], [145, 106]], islands)), [islands])
   const byCode = new Map(rows.map(row => [row.code, row]))
   const yearRows = all.filter(row => row.year === year)
+  // Label font keeps a roughly constant on-screen size (about 10px) whatever the panel width; zoom never changes it.
+  const fontSize = Math.min(20, Math.max(11, 10 / measured.scale))
+  const geometry = useMemo(() => new Map(main.features.map(feature => {
+    const [[x0, y0], [x1, y1]] = path.bounds(feature)
+    return [String(feature.properties.kode_wilayah), { centroid: path.centroid(feature), bounds: { x: x0, y: y0, width: x1 - x0, height: y1 - y0 } }] as const
+  })), [main, path])
+  const labels = useMemo(() => {
+    const inputs: LabelInput[] = lowCategoryRows(rows).flatMap(row => {
+      const shape = geometry.get(row.code)
+      if (!shape) return []
+      const toView = ([x, y]: [number, number]): [number, number] => [x * view.k + view.x, y * view.k + view.y]
+      const [x, y] = toView(shape.centroid as [number, number])
+      return [{ code: row.code, text: labelText(row), anchor: [x, y] as [number, number], marker: row.type === 'Kota',
+        bounds: { x: shape.bounds.x * view.k + view.x, y: shape.bounds.y * view.k + view.y, width: shape.bounds.width * view.k, height: shape.bounds.height * view.k } }]
+    })
+    return layoutLabels(inputs, [INSET, ...(measured.controls ? [measured.controls] : [])], VIEW, fontSize)
+  }, [rows, geometry, view, measured.controls, fontSize])
   const hovered = yearRows.find(row => row.code === hover?.code)
   useEffect(() => {
     if (!svg.current || !layer.current) return
@@ -43,10 +67,27 @@ export function MapPanel({ boundaries, rows, all, year, selected, onSelect, rese
     const pan = zoom<SVGSVGElement, unknown>().scaleExtent([1, 6]).extent([[0, 0], [760, 440]])
       .translateExtent([[-100, -70], [860, 510]])
       .filter(event => !event.ctrlKey && !event.button && event.type !== 'wheel')
-      .on('zoom', event => { select(layer.current).attr('transform', event.transform.toString()); setHover(null) })
+      .on('zoom', event => { select(layer.current).attr('transform', event.transform.toString()); setView(event.transform); setHover(null) })
     root.call(pan).on('dblclick.zoom', null)
     behavior.current = pan
     return () => { root.on('.zoom', null) }
+  }, [])
+  useLayoutEffect(() => {
+    const measure = () => {
+      const canvas = svg.current, buttons = controls.current, matrix = canvas?.getScreenCTM()
+      if (!canvas || !buttons || !matrix) return
+      const inverse = matrix.inverse()
+      const rect = buttons.getBoundingClientRect()
+      const from = new DOMPoint(rect.left, rect.top).matrixTransform(inverse)
+      const to = new DOMPoint(rect.right, rect.bottom).matrixTransform(inverse)
+      const box = { x: Math.round(from.x), y: Math.round(from.y), width: Math.round(to.x - from.x), height: Math.round(to.y - from.y) }
+      const scale = Math.round(matrix.a * 100) / 100
+      setMeasured(prev => prev.scale === scale && prev.controls && prev.controls.x === box.x && prev.controls.y === box.y && prev.controls.width === box.width && prev.controls.height === box.height ? prev : { controls: box, scale })
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    if (svg.current) observer.observe(svg.current)
+    return () => observer.disconnect()
   }, [])
   useEffect(() => {
     if (svg.current && behavior.current) select(svg.current).call(behavior.current.transform, zoomIdentity)
@@ -108,9 +149,15 @@ export function MapPanel({ boundaries, rows, all, year, selected, onSelect, rese
             </g>
           })}
         </g>
+        <g className="map-labels" aria-hidden="true" pointerEvents="none" style={{ fontSize }}>
+          {labels.map(label => <g key={label.code} className="map-label" data-label={label.code}>
+            {label.leader && <><line className="leader-halo" x1={label.anchor[0]} y1={label.anchor[1]} x2={label.leader[0]} y2={label.leader[1]} /><line className="leader" x1={label.anchor[0]} y1={label.anchor[1]} x2={label.leader[0]} y2={label.leader[1]} /><circle className="leader-dot" cx={label.anchor[0]} cy={label.anchor[1]} r={2.2} /></>}
+            <text x={label.x} y={label.y} textAnchor="middle" dominantBaseline="central">{label.text}</text>
+          </g>)}
+        </g>
         <g className="inset"><rect x={15} y={12} width={145} height={110} rx={9} fill="white" stroke="#dce0e5" /><text x={25} y={29}>Kep. Karimunjawa</text>{features(islands, islandPath, true)}</g>
       </svg>
-      <div className="map-controls" aria-label="Kontrol peta"><button className="icon-button" onClick={() => zoomBy(1.4)} aria-label="Perbesar peta"><Plus size={17} /></button><button className="icon-button" onClick={() => zoomBy(1 / 1.4)} aria-label="Perkecil peta"><Minus size={17} /></button><button className="icon-button" aria-label="Reset zoom" onClick={() => { if (svg.current && behavior.current) select(svg.current).call(behavior.current.transform, zoomIdentity) }}><RotateCcw size={15} /></button></div>
+      <div ref={controls} className="map-controls" aria-label="Kontrol peta"><button className="icon-button" onClick={() => zoomBy(1.4)} aria-label="Perbesar peta"><Plus size={17} /></button><button className="icon-button" onClick={() => zoomBy(1 / 1.4)} aria-label="Perkecil peta"><Minus size={17} /></button><button className="icon-button" aria-label="Reset zoom" onClick={() => { if (svg.current && behavior.current) select(svg.current).call(behavior.current.transform, zoomIdentity) }}><RotateCcw size={15} /></button></div>
       {hover && hovered && <CursorTooltip anchor={hover} id={`${prefix}-tooltip`}>
         <strong>{hovered.name}</strong><span className="tooltip-year">Tahun {year} · {byCode.has(hovered.code) ? 'Dalam cakupan' : 'Di luar cakupan'}</span>
         <div className="tooltip-value" style={{ color: CATEGORIES[category(hovered.prevalence)].text }}>{percent(hovered.prevalence)} <small>{CATEGORIES[category(hovered.prevalence)].label}</small></div>
