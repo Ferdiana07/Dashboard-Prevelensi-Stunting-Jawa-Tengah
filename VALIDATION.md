@@ -16,7 +16,7 @@ Verifikasi awal dilaksanakan pada 16 November 2026, dilanjutkan audit data selur
 | Smoke test build produksi | HTTP 200, KPI default benar, 35 geometri, filter kota 15,8% |
 | Console browser | Tidak ada error atau warning pada tes tangkapan layar dan smoke test produksi |
 | Overflow halaman | Tidak ditemukan pada lebar 360, 390, 768, 1024, 1366, 1672 px |
-| Tinggi ringkasan desktop | Header sampai ekspor, termasuk kotak ringkasan K6, berada dalam viewport 1280×600, 1366×650, 1366×768, 1536×730, dan 1672×941; tabel menggulir di dalam panel dan tetap > 80 px |
+| Tinggi ringkasan desktop | Mode satu layar hanya pada tinggi ≥720 px (lebar ≥1190 px) atau ≥790 px (lebar 1100–1189 px); di dalamnya header, kartu, peta, grafik, dan tabel termasuk ringkasan perubahan berada dalam viewport 1280×720, 1366×768, 1536×730, 1672×941, dan 1100×790 dengan tabel ≥ 80 px. Di bawah batas itu halaman bergulir biasa (Tahap 6) |
 | Review visual | Desktop 1672 px dan mobile 390 px dibandingkan dengan referensi; tidak ada perbaikan material yang diminta reviewer |
 
 Tes browser mencakup filter tahun/tipe, tooltip, pemilihan peta dengan keyboard, sinkronisasi detail dan tren, pencarian/empty state, pengurutan K6, tampilkan semua, zoom/pan/reset, empat mode tren, batas lima seri, ekspor CSV, loading state, serta penolakan berkas gagal/tidak valid.
@@ -144,3 +144,28 @@ Tinggi tabel di dalam panel peringkat (sebelum → sesudah A1): 1280×600 84 →
 ### Pemeriksaan
 
 TypeScript, ESLint, 94 tes unit, dan 64 tes browser lulus. `uji-stimulus.spec.ts` tidak dijalankan pada cek rutin karena menulis ulang gambar `docs/pengujian/stimulus`. `git status` untuk `docs/pengujian/` bersih, dan `/uji/` beserta isi formulirnya tidak diubah (`uji.spec.ts` dan `uji.test.ts` tetap lulus). Build produksi sesuai lockfile lulus tanpa peringatan; chunk `visualization` tetap 460,02 kB (gzip 131,63 kB) karena panel K6 berupa SVG tanpa Recharts.
+
+## Tahap 6: polish UI, 21 November 2026
+
+Branch `perbaikan/tahap-6-polish-ui` dari `main` (`c4402e4`, tag `sebelum-polish-ui`). Murni perubahan tampilan: tidak ada angka, data, atau fungsi ekspor yang berubah (`export.ts` tidak disentuh), dan `public/data/`, `src/uji`, `uji/`, `docs/pengujian` tidak berubah.
+
+- Design token (jarak 16 px, padding, enam peran huruf) dan lantai 12 px untuk teks desktop, termasuk label peta (12 px di layar, bukan satuan SVG) dan keterangan inset Karimunjawa.
+- Header dua baris: judul satu baris; subjudul dan kontrol (Tahun, Wilayah, Reset, Unduh CSV; semua 40 px) sejajar vertikal. Angka 35 pada subjudul dihitung dari semua wilayah, tidak berubah saat cakupan diganti. Footer ringkasan dihapus; tautan Tren pindah ke baris legenda Kota vs Kabupaten, tautan Detail ke judul legenda peta.
+- Kode "K6" tidak muncul lagi di teks, aria-label, tooltip, maupun live region (header kolom "Perubahan 2019→2022" dua baris; panel "Perubahan Prevalensi 2019→2022"). Nama kolom ekspor `k6_perubahan_2019_2022` dan istilah KPI K6 tetap.
+- Mode satu layar hanya bila tabel tetap ≥ 80 px. Ambang diukur per 10 px: 720 px untuk lebar ≥1190 px (tabel 97–100 px di 1280/1366), 790 px untuk lebar 1100–1189 px (88 px di 1100). Di bawahnya halaman bergulir, tabel tampil lima baris penuh (262 px), dan legenda Kota vs Kabupaten tampil. Aturan pemadatan layar pendek dan teks ringkasan versi pendek dihapus.
+
+| Ukuran | Mode | Tabel | h1 / h2 | Gap | Selisih pusat subjudul–kontrol | scrollWidth | "K6" terlihat |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1672×941 | satu layar | 292 px | 32 / 22 px | 16 | 0 | 1672 | 0 |
+| 1366×768 | satu layar | 143 px | 30,1 / 18,0 px | 16 | 0 | 1366 | 0 |
+| 1280×720 | satu layar | 100 px | 28,2 / 18 px | 16 | 0 | 1280 | 0 |
+| 1280×719 dan 1280×600 | gulir | 262 px | 28,2 / 18 px | 16 | 0 | 1280 | 0 |
+| 1100×790 | satu layar | 88 px | 24,2 / 18 px | 16 | kontrol turun ke bawah subjudul | 1100 | 0 |
+| 1100×789 | gulir | 262 px | 24,2 / 18 px | 16 | kontrol turun ke bawah subjudul | 1100 | 0 |
+| 390×844 | gulir | 270 px | 25 / 20–22 px | n/a (satu kolom) | kontrol turun ke bawah subjudul | 390 | 0 |
+
+Teks terkecil di desktop 12 px (di ponsel tetap 9 sampai 10 px, di luar cakupan). Di 1366×768 tabel tetap menampilkan sekitar 2,5 baris; tidak diubah di tahap ini.
+
+Pembaruan tes: `dashboard.spec.ts` (teks header/ringkasan/catatan, subjudul selalu 35, tombol Unduh CSV, tes fit-to-screen ditulis ulang untuk ambang baru, tes mode gulir baru, tes kontrol header dan tautan lewat keyboard), `k6.spec.ts` (judul panel dan live region), `markers.spec.ts` (tautan tren), `data-audit.spec.ts` (tombol ekspor), `k6.test.ts` (ringkasan tanpa versi pendek) dan `data.test.ts` (`K6_LABEL`). 94 tes unit dan 66 tes browser (tanpa `uji-stimulus.spec.ts`) lulus, bersama TypeScript, ESLint, dan build produksi tanpa peringatan.
+
+Catatan untuk tim: `src/uji/content.ts:80` masih menyebut "kolom K6 pada tabel" dan perlu diganti menjadi "kolom Perubahan 2019→2022" sebelum pengujian ke responden (berkas itu sengaja tidak diubah di tahap ini).

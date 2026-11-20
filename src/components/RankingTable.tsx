@@ -65,6 +65,6 @@ export function RankingTable({ rows, all, year, scope, selected, onSelect }: Pro
       </table>{!filtered.length && <div className="empty-state">Tidak ada wilayah yang cocok dengan “{query}”. <button className="text-button" onClick={() => setQuery('')}>Hapus pencarian</button></div>}
     </div>
     <p className="k6-summary">{k6SummaryText(k6, scope)} <a href="#k6-title">Lihat grafik perubahan ↓</a></p>
-    <p className="table-note">Target: selisih dari 14% · {K6_NOTE}<br />pp = poin persentase · Peringkat berdasarkan cakupan filter</p>
+    <p className="table-note">Target: selisih dari 14% · pp = poin persentase · Peringkat berdasarkan cakupan filter<br />{K6_NOTE}</p>
   </section>
 }

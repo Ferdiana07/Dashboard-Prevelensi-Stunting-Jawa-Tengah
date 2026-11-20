@@ -109,6 +109,32 @@ test('detail link appears only with a selection and moves focus to the detail he
   await page.getByRole('button', { name: 'Tutup detail wilayah' }).click()
   await expect(page.locator('.detail-link')).toHaveCount(0)
 })
+test('header controls: order and size, reset restores defaults; Detail and Tren links work with the keyboard', async ({ page }) => {
+  await ready(page)
+  const controls = await page.locator('.filters > *').evaluateAll(nodes => nodes.map(node => ({ text: node.textContent?.trim() || node.getAttribute('aria-label'), h: node.getBoundingClientRect().height, w: node.getBoundingClientRect().width })))
+  expect(controls.map(c => c.h)).toEqual([40, 40, 40, 40])
+  expect(controls[2].w).toBe(40)
+  expect(controls.map(c => c.text)).toEqual([expect.stringContaining('Tahun:'), expect.stringContaining('Wilayah:'), 'Reset Filter', 'Unduh CSV'])
+  await expect(page.getByRole('button', { name: 'Reset Filter', exact: true })).toHaveAttribute('title', 'Reset Filter')
+  // Keyboard: select a region on the map, then use the link beside the legend heading.
+  await page.locator('[data-region="3329"]').focus(); await page.keyboard.press('Enter')
+  await page.getByRole('link', { name: 'Detail Kab. Brebes ↓' }).focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#details-title')).toBeFocused()
+  await page.evaluate(() => window.scrollTo(0, 0))
+  await page.getByRole('link', { name: 'Lihat tren 2019–2022' }).focus()
+  await page.keyboard.press('Enter')
+  await expect(page).toHaveURL(/#trend-title$/)
+  await expect(page.locator('#trend-title')).toBeInViewport()
+  await page.getByLabel('Wilayah:', { exact: true }).selectOption('3374')
+  await expect(page.locator('.sr-only[role="status"]')).toHaveText('Detail Kota Semarang ditampilkan di bawah')
+  await page.getByLabel('Tahun:', { exact: true }).selectOption('2019')
+  await page.getByLabel('Wilayah:', { exact: true }).selectOption('Kota')
+  await page.getByRole('button', { name: 'Reset Filter', exact: true }).click()
+  await expect(page.getByLabel('Tahun:', { exact: true })).toHaveValue('2022')
+  await expect(page.getByLabel('Wilayah:', { exact: true })).toHaveValue('all')
+  await expect(page.locator('.detail-panel')).toHaveCount(0)
+})
 for (const reduced of [false, true]) {
   test(`dropdown choice announces and scrolls to details, keeps focus on the dropdown (reduced motion: ${reduced})`, async ({ page }) => {
     await page.emulateMedia({ reducedMotion: reduced ? 'reduce' : 'no-preference' })
@@ -222,7 +248,7 @@ test('no horizontal document overflow at mobile, tablet, laptop, desktop sizes',
 })
 test('desktop overview fits the viewport when the window is tall enough to keep the table at 80px', async ({ page }) => {
   await ready(page)
-  for (const [width, height] of [[1280, 720], [1366, 768], [1536, 730], [1672, 941], [1100, 770]]) {
+  for (const [width, height] of [[1280, 720], [1366, 768], [1536, 730], [1672, 941], [1100, 790]]) {
     await page.setViewportSize({ width, height })
     await page.evaluate(() => document.fonts.ready)
     await page.waitForTimeout(150)
@@ -256,7 +282,7 @@ test('desktop overview fits the viewport when the window is tall enough to keep 
 })
 test('below the fit threshold the page scrolls: natural table of five rows and the Kota vs Kab. legend stay visible', async ({ page }) => {
   await ready(page)
-  for (const [width, height] of [[1280, 719], [1280, 600], [1190, 719], [1100, 769]]) {
+  for (const [width, height] of [[1280, 719], [1280, 600], [1190, 719], [1100, 789]]) {
     await page.setViewportSize({ width, height })
     await page.waitForTimeout(150)
     const layout = await page.evaluate(() => {

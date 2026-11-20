@@ -46,7 +46,9 @@ export function MapPanel({ boundaries, rows, all, year, selected, onSelect, rese
   const byCode = new Map(rows.map(row => [row.code, row]))
   const yearRows = all.filter(row => row.year === year)
   // Label font keeps a roughly constant on-screen size (about 12px) whatever the panel width; zoom never changes it.
-  const fontSize = Math.min(20, Math.max(12, 12 / measured.scale))
+  const fontSize = Math.min(20, Math.max(12, 12.2 / measured.scale))
+  // The Karimunjawa inset grows when the map is drawn below 1:1 so its caption stays at least 12px on screen.
+  const insetScale = Math.max(1, 1.02 / measured.scale)
   const geometry = useMemo(() => new Map(main.features.map(feature => {
     const [[x0, y0], [x1, y1]] = path.bounds(feature)
     return [String(feature.properties.kode_wilayah), { centroid: path.centroid(feature), bounds: { x: x0, y: y0, width: x1 - x0, height: y1 - y0 } }] as const
@@ -60,8 +62,8 @@ export function MapPanel({ boundaries, rows, all, year, selected, onSelect, rese
       return [{ code: row.code, text: labelText(row), anchor: [x, y] as [number, number], marker: row.type === 'Kota',
         bounds: { x: shape.bounds.x * view.k + view.x, y: shape.bounds.y * view.k + view.y, width: shape.bounds.width * view.k, height: shape.bounds.height * view.k } }]
     })
-    return layoutLabels(inputs, [INSET, ...(measured.controls ? [measured.controls] : [])], VIEW, fontSize)
-  }, [rows, geometry, view, measured.controls, fontSize])
+    return layoutLabels(inputs, [{ ...INSET, width: INSET.width * insetScale, height: INSET.height * insetScale }, ...(measured.controls ? [measured.controls] : [])], VIEW, fontSize)
+  }, [rows, geometry, view, measured.controls, fontSize, insetScale])
   const hovered = yearRows.find(row => row.code === hover?.code)
   useEffect(() => {
     if (!svg.current || !layer.current) return
@@ -164,7 +166,7 @@ export function MapPanel({ boundaries, rows, all, year, selected, onSelect, rese
             <text x={label.x} y={label.y} textAnchor="middle" dominantBaseline="central">{label.text}</text>
           </g>)}
         </g>
-        <g className="inset"><rect x={15} y={12} width={145} height={110} rx={9} fill="white" stroke="#dce0e5" /><text x={25} y={29}>Kep. Karimunjawa</text>{features(islands, islandPath, true)}</g>
+        <g className="inset" transform={`translate(${INSET.x} ${INSET.y}) scale(${insetScale}) translate(${-INSET.x} ${-INSET.y})`}><rect x={15} y={12} width={145} height={110} rx={9} fill="white" stroke="#dce0e5" /><text x={25} y={29}>Kep. Karimunjawa</text>{features(islands, islandPath, true)}</g>
       </svg>
       <div ref={controls} className="map-controls" aria-label="Kontrol peta"><button className="icon-button" onClick={() => zoomBy(1.4)} aria-label="Perbesar peta"><Plus size={17} /></button><button className="icon-button" onClick={() => zoomBy(1 / 1.4)} aria-label="Perkecil peta"><Minus size={17} /></button><button className="icon-button" aria-label="Reset zoom" onClick={() => { if (svg.current && behavior.current) select(svg.current).call(behavior.current.transform, zoomIdentity) }}><RotateCcw size={15} /></button></div>
       {hover && hovered && <CursorTooltip anchor={hover} id={`${prefix}-tooltip`}>
