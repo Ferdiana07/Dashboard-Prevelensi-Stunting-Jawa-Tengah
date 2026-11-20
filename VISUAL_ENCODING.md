@@ -22,6 +22,7 @@ Pola adalah **redundansi data**, bukan dekorasi. Lapisan pola tidak menerima poi
 | --- | --- | --- | --- | --- |
 | Choropleth | Poligon | Nilai dikelompokkan; luas wilayah tidak mengodekan besarnya prevalensi | Spatial region, hue dan texture kategori | CBQ 1/3: lokasi prioritas dan kategori capaian |
 | Batang horizontal | Batang dan garis acuan | Length/position dari nol pada skala bersama | Label/posisi kota–kabupaten; hue/texture kategori | CBQ 4: rata-rata kelompok dan selisih K3; pembanding target |
+| Diverging bar K6 (ditambahkan 20 November 2026) | Batang horizontal berpangkal di garis nol yang tegas; titik abu-abu untuk perubahan nol | Length/position dari nol pada skala bersama; domain mengikuti data plus 0,5 pp (tidak simetris), tick setiap 5 pp | Hue untuk arah (naik `#a12b30` penuh, turun `#216a49` opacity 0,55, tetap abu-abu); posisi vertikal untuk urutan K6; nama tebal dan garis putus-putus untuk kelompok naik | CBQ 2: wilayah yang naik atau turunnya paling lambat |
 | Tren temporal | Garis dan titik pengamatan | Position pada sumbu tahun numerik dan persentase | Shape/pola garis untuk seri; hue titik untuk kategori | CBQ 2: perubahan waktu; mode kelompok juga mendukung CBQ 4 |
 
 **Eyes Beat Memory:** skala tetap selama filter berubah, kedua kelompok berbagi titik nol, dan seri tren dapat dibandingkan bersamaan. Peta menampilkan kelas, bukan angka jarak target yang presisi; angka tersebut tetap tersedia di tabel, tooltip, dan detail. Grafik kelompok tidak menunjukkan peringkat setiap wilayah; gunakan mode wilayah dan tabel untuk pertanyaan itu.
@@ -31,6 +32,8 @@ Pola adalah **redundansi data**, bukan dekorasi. Lapisan pola tidak menerima poi
 | Rendah | ≤14% | Hijau `#08a33e` | Polos |
 | Sedang | >14% dan <20% | Kuning `#ffd000` | Titik |
 | Tinggi | ≥20% | Merah `#ed2429` | Arsir diagonal |
+
+Pada panel K6, hue mengodekan **arah**, bukan kategori prevalensi, sehingga tidak memakai pola polos/titik/arsir. Arah juga terbaca tanpa warna dari posisi batang terhadap garis nol, tanda +/- pada label nilai, label arah di atas plot, dan garis putus-putus setelah kelompok naik. Hijau dibuat transparan agar perhatian jatuh ke wilayah yang memburuk. Panel ini tidak termasuk stimulus tersamar yang sudah ada; gambar di `docs/visual-encoding` dan `docs/pengujian/stimulus` tidak berubah.
 
 Identitas seri tren ditentukan bentuk/pola garis, bukan warna titik. Satu seri dapat memiliki titik berbeda warna karena nilainya berubah. Glyph legenda seri memakai warna netral agar tidak menyiratkan bahwa suatu wilayah selalu berada pada kategori tertentu.
 

@@ -27,6 +27,7 @@ test('year and type filters update all scoped views correctly', async ({ page })
   await page.getByLabel('Cari wilayah').fill('')
   await page.getByLabel('Wilayah:', { exact: true }).selectOption('Kota')
   await expect(page.locator('.score-value').nth(2)).toHaveText('Tidak berlaku')
+  await expect(page.locator('.k6-summary')).toContainText('K6 2019→2022: semua 6 kota turun. Penurunan paling lambat Kota Surakarta -2,6 pp.')
   await expect(page.locator('.score-note').first()).toHaveText('rata-rata 6 wilayah')
   await expect(page.locator('.comparison-panel .scope-note')).toContainText('perbandingan dua kelompok tidak tersedia')
   await page.getByRole('button', { name: 'Reset Filter', exact: true }).click()
@@ -85,6 +86,11 @@ test('choosing a scope clears the selection; a region outside the scope still op
   await page.getByLabel('Wilayah:', { exact: true }).selectOption('Kabupaten')
   await expect(page.locator('.detail-panel')).toHaveCount(0)
   await expect(page.locator('.score-note').first()).toHaveText('rata-rata 29 wilayah')
+  await expect(page.locator('.k6-summary')).toContainText('K6 2019→2022: 6 kabupaten naik · 1 tetap · 22 turun. Kenaikan terbesar Kab. Pati +3,6 pp.')
+  // K6 is fixed to 2019→2022: changing the year leaves the summary as it is.
+  await page.getByLabel('Tahun:', { exact: true }).selectOption('2019')
+  await expect(page.locator('.k6-summary')).toContainText('6 kabupaten naik · 1 tetap · 22 turun')
+  await expect(page.locator('.overview-footer').getByRole('link', { name: 'Lihat perubahan K6' })).toHaveAttribute('href', '#k6-title')
 })
 test('detail link appears only with a selection and moves focus to the detail heading', async ({ page }) => {
   await ready(page)
@@ -228,6 +234,18 @@ test('desktop overview fits the actual viewport height, including short laptop s
     expect(layout.footerBottom).toBeLessThanOrEqual(height)
     expect(layout.rankingBottom).toBeLessThanOrEqual(layout.gridBottom + 1)
     expect(layout.tableHeight).toBeGreaterThan(80)
+    // The K6 summary sits between the table and the note, fully inside the viewport; short screens use the short wording.
+    const summary = (await page.locator('.k6-summary').boundingBox())!
+    expect(summary.y + summary.height).toBeLessThanOrEqual(layout.rankingBottom)
+    expect(summary.y + summary.height).toBeLessThanOrEqual(height)
+    await expect(page.locator(height <= 640 ? '.k6-summary-short' : '.k6-summary-full')).toBeVisible()
+    await expect(page.locator('.k6-summary')).toContainText('6 naik · 1 tetap · 28 turun')
+    await expect(page.locator('.k6-summary')).toContainText('Kab. Pati +3,6 pp')
+    await expect(page.locator('.k6-summary a')).toBeVisible()
+    // Kota/Kabupaten bars stay apart even when that panel gives room to the summary.
+    const bars = await page.locator('.bar-chart [data-bar-category] > :first-child').evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().toJSON() as DOMRect))
+    expect(bars).toHaveLength(2)
+    expect(bars[0].bottom).toBeLessThanOrEqual(bars[1].top)
     // The top rows scroll inside the panel; they never push the overview past the viewport.
     await expect(page.locator('tbody tr')).toHaveCount(5)
     expect(await page.locator('.table-scroll').evaluate(node => node.scrollHeight >= node.clientHeight)).toBe(true)
