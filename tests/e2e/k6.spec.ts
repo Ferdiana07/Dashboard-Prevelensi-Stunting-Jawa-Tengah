@@ -62,12 +62,12 @@ test('K6 axis: zero line, 5 pp ticks, data-driven domain and direction labels', 
   await expect(page.locator('.k6-direction.down')).toHaveText('← Turun (membaik)')
   await expect(page.locator('.k6-direction.up')).toHaveText('Naik (memburuk) →')
   const zero = (await page.locator('.k6-zero').boundingBox())!
-  for (const node of await page.locator('[data-direction="down"] rect').all()) expect((await node.boundingBox())!.x + (await node.boundingBox())!.width).toBeCloseTo(zero.x + zero.width / 2, 0)
-  for (const node of await page.locator('[data-direction="up"] rect').all()) expect((await node.boundingBox())!.x).toBeCloseTo(zero.x + zero.width / 2, 0)
+  for (const node of await page.locator('[data-direction="down"] .k6-mark').all()) expect((await node.boundingBox())!.x + (await node.boundingBox())!.width).toBeCloseTo(zero.x + zero.width / 2, 0)
+  for (const node of await page.locator('[data-direction="up"] .k6-mark').all()) expect((await node.boundingBox())!.x).toBeCloseTo(zero.x + zero.width / 2, 0)
   // Colours: increase full red, decrease green at reduced opacity.
-  expect(await page.locator('[data-direction="up"] rect').first().getAttribute('fill')).toBe('#a12b30')
-  expect(await page.locator('[data-direction="down"] rect').first().getAttribute('fill')).toBe('#216a49')
-  expect(Number(await page.locator('[data-direction="down"] rect').first().getAttribute('fill-opacity'))).toBeCloseTo(.55, 2)
+  expect(await page.locator('[data-direction="up"] .k6-mark').first().getAttribute('fill')).toBe('#a12b30')
+  expect(await page.locator('[data-direction="down"] .k6-mark').first().getAttribute('fill')).toBe('#216a49')
+  expect(Number(await page.locator('[data-direction="down"] .k6-mark').first().getAttribute('fill-opacity'))).toBeCloseTo(.55, 2)
   // Kota has no increase: the axis is not made symmetric, it only keeps room for the "Naik" label.
   await scopeSelect(page).selectOption('Kota')
   const ticks = await page.locator('.k6-tick').allTextContents()
@@ -109,3 +109,83 @@ for (const width of [1672, 390]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width)
   })
 }
+
+// Focus moves use the page's smooth scrolling; measure only once scrollY has stopped changing.
+async function settle(page: Page) {
+  await expect.poll(async () => { const a = await page.evaluate(() => scrollY); await page.waitForTimeout(120); return a === await page.evaluate(() => scrollY) }).toBe(true)
+}
+const word = (h: number) => h > 0 ? 'naik' : h < 0 ? 'turun' : 'tetap'
+const size = (h: number) => (Math.abs(tenths(h)) / 10).toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+
+test('K6 bars carry an accessible name with region and value', async ({ page }) => {
+  await ready(page)
+  const reference = expected('all')
+  const names = await page.locator('[data-k6-bar]').evaluateAll(nodes => nodes.map(node => [node.getAttribute('role'), node.getAttribute('aria-label')]))
+  expect(names).toEqual(reference.map(row => ['button', `${row.name}, ${word(row.change)} ${size(row.change)} pp`]))
+  await expect(page.getByRole('button', { name: 'Kab. Brebes, turun 5,6 pp' })).toBeAttached()
+  await expect(page.getByRole('button', { name: 'Kab. Pekalongan, tetap 0,0 pp' })).toBeAttached()
+  // Roving tabindex: one Tab stop for the whole chart.
+  await expect(page.locator('[data-k6-bar][tabindex="0"]')).toHaveCount(1)
+})
+
+test('clicking a K6 bar selects the region like the map, keeps the bar in place and links to the details', async ({ page }) => {
+  await ready(page)
+  const bar = page.locator('[data-k6-bar="3329"]') // Kab. Brebes
+  await bar.scrollIntoViewIfNeeded()
+  await settle(page)
+  const before = (await bar.boundingBox())!
+  await bar.click()
+  await expect(page.locator('#details-title')).toHaveText('Kab. Brebes')
+  // The detail panel opens above the chart; the clicked bar stays where it was on screen.
+  const after = (await bar.boundingBox())!
+  expect(Math.abs(after.y - before.y)).toBeLessThanOrEqual(1)
+  expect((await page.locator('.detail-panel').boundingBox())!.y).toBeLessThan(after.y)
+  // Same selection as a map click: highlight everywhere, scope unchanged.
+  await expect(bar).toHaveAttribute('aria-pressed', 'true')
+  await expect(bar).toHaveClass(/selected/)
+  await expect(page.locator('[data-region="3329"]')).toHaveClass(/selected/)
+  await expect(page.locator('tbody .selected-row')).toContainText('Kab. Brebes')
+  await expect(page.locator('[data-k6-bar]')).toHaveCount(35)
+  await expect(page.locator('.score-note').first()).toHaveText('rata-rata 35 wilayah')
+  // Announcement through the existing live region, and a link up to the details.
+  await expect(page.locator('.sr-only[role="status"]')).toHaveText('Detail Kab. Brebes ditampilkan di atas grafik K6')
+  const link = page.locator('.k6-panel').getByRole('link', { name: 'Detail Kab. Brebes ↑' })
+  await expect(link).toBeVisible()
+  await link.click()
+  await expect(page.locator('#details-title')).toBeFocused()
+  // Closing the details removes the link.
+  await page.getByRole('button', { name: 'Tutup detail wilayah' }).click()
+  await expect(page.locator('.k6-detail-link')).toHaveCount(0)
+  await expect(page.locator('.k6-row.selected')).toHaveCount(0)
+})
+
+test('selecting on the map highlights the K6 bar; selections outside the scope highlight nothing', async ({ page }) => {
+  await ready(page)
+  await page.locator('[data-region="3323"]').click() // Kab. Temanggung
+  await expect(page.locator('[data-k6-bar="3323"]')).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.locator('.k6-row.selected')).toHaveCount(1)
+  await page.getByLabel('Wilayah:', { exact: true }).selectOption('Kota')
+  await page.getByLabel('Wilayah:', { exact: true }).selectOption('3323')
+  await expect(page.locator('[data-k6-bar]')).toHaveCount(6)
+  await expect(page.locator('.k6-row.selected')).toHaveCount(0)
+})
+
+test('K6 chart is keyboard operable with arrow keys, Home/End and Enter', async ({ page }) => {
+  await ready(page)
+  const first = page.locator('[data-k6-bar][tabindex="0"]')
+  await expect(first).toHaveAttribute('data-k6-bar', '3318') // Kab. Pati, largest increase
+  await first.focus()
+  await page.keyboard.press('ArrowDown')
+  await expect(page.locator('[data-k6-bar="3323"]')).toBeFocused()
+  await expect(page.locator('[data-k6-bar][tabindex="0"]')).toHaveAttribute('data-k6-bar', '3323')
+  await page.keyboard.press('End')
+  await expect(page.locator('[data-k6-bar="3321"]')).toBeFocused() // Kab. Demak
+  await page.keyboard.press('Home')
+  await expect(page.locator('[data-k6-bar="3318"]')).toBeFocused()
+  await settle(page)
+  const before = (await page.locator('[data-k6-bar="3318"]').boundingBox())!
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#details-title')).toHaveText('Kab. Pati')
+  expect(Math.abs((await page.locator('[data-k6-bar="3318"]').boundingBox())!.y - before.y)).toBeLessThanOrEqual(1)
+  await expect(page.locator('[data-k6-bar="3318"]')).toBeFocused()
+})

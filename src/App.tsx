@@ -45,6 +45,12 @@ export default function App() {
       setScrollRequest(count => count + 1)
     }
   }
+  // A K6 bar selects exactly like the map (highlight + details, no scroll) and reuses the Tahap 1 live region,
+  // because the detail panel opens above the chart, outside the user's view.
+  function selectFromK6(code: string) {
+    setSelected(code)
+    setAnnouncement(`Detail ${areas.find(row => row.code === code)?.name ?? code} ditampilkan di atas grafik K6`)
+  }
   function showDetails(event: React.MouseEvent) {
     event.preventDefault()
     const heading = detailHeading()
@@ -62,7 +68,7 @@ export default function App() {
     <div className="overview-footer"><p><span className="status-dot" />{rows.length} wilayah · {year} · {scopeLabel}</p><div>{selectedRow && <a className="detail-link" href="#details-title" onClick={showDetails}>Detail {selectedRow.name} ↓</a>}<a href="#k6-title">Lihat perubahan K6</a><a href="#trend-title">Lihat analisis tren</a><button className="export-button" onClick={() => exportCsv(rows, data.rows)}><Download size={15} />Ekspor CSV cakupan</button></div></div>
     </section>
     {selectedRow && <RegionDetails row={selectedRow} all={data.rows} scopeLabel={outOfScope ? scopeLabel : null} onClear={() => { setSelected(null); setAnnouncement('') }} />}
-    <K6Chart all={data.rows} scope={scope} scopeLabel={scopeLabel} />
+    <K6Chart all={data.rows} scope={scope} scopeLabel={scopeLabel} selected={selected} onSelect={selectFromK6} detailName={selectedRow?.name ?? null} onShowDetails={showDetails} />
     <TrendPanel key={resetKey} all={data.rows} areas={areas} scope={scope} year={year} selected={selected} />
     <footer className="page-footer"><Info size={17} aria-hidden="true" /><div><p>Rata-rata sederhana antarwilayah, bukan rata-rata tertimbang jumlah balita. Target 14% merupakan acuan historis untuk periode analisis.</p><p>Dashboard mendukung prioritisasi berdasarkan prevalensi dan tidak menggantikan penentuan lokus intervensi resmi yang dapat menggunakan indikator tambahan.</p><p className="source-note">Sumber data: Dinas Kesehatan Provinsi Jawa Tengah melalui <a href="https://data.jatengprov.go.id/dataset/42f-sdjt-prevalensi-stunting" target="_blank" rel="noreferrer">Portal Satu Data Jawa Tengah</a> (CC-BY). Batas wilayah: <a href="https://github.com/cahyadsn/wilayah_boundaries" target="_blank" rel="noreferrer">cahyadsn/wilayah_boundaries</a> (MIT). Data bersih: <a href="https://doi.org/10.5281/zenodo.24267455" target="_blank" rel="noreferrer">Zenodo, DOI 10.5281/zenodo.24267455</a>.</p><p className="source-note">35 wilayah · 2019, 2021, 2022 · <a href="data/stunting.csv" download>Unduh data asli</a></p></div></footer>
   </main>

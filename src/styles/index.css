@@ -162,6 +162,15 @@ tbody .appended-row td, tbody .appended-row th { border-top: 2px dashed #9fb3c8;
 .k6-direction { font-size: 11px; font-weight: 700; }
 .k6-direction.up { fill: #a12b30; }
 .k6-direction.down { fill: #216a49; }
+.k6-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.k6-detail-link { flex-shrink: 0; font-size: 12px; font-weight: 650; margin-top: 4px; }
+.k6-row { cursor: pointer; outline: none; }
+.k6-row:focus, .k6-row:focus-visible { outline: none; }
+.k6-hit { fill: transparent; }
+.k6-row:hover .k6-hit { fill: #f4f5f7; }
+.k6-row.selected .k6-hit { fill: #eaf3fc; }
+.k6-row.selected .k6-mark { stroke: #14243a; stroke-width: 2px; }
+.k6-row:focus-visible .k6-hit { stroke: #2469a9; stroke-width: 2.5px; }
 .trend-panel { padding: 24px; scroll-margin-top: 24px; }
 .trend-heading { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
 .trend-heading p { margin-top: 6px; font-size: 13px; color: #606b79; }
@@ -301,6 +310,7 @@ tbody .appended-row td, tbody .appended-row th { border-top: 2px dashed #9fb3c8;
 @media (max-width: 960px) { .k6-body { grid-template-columns: minmax(0, 1fr) 210px; gap: 18px; } }
 @media (max-width: 560px) {
   .k6-panel { padding: 19px 14px; }
+  .k6-heading { flex-direction: column; gap: 8px; }
   .k6-heading p { font-size: 12px; }
   .k6-body { grid-template-columns: minmax(0, 1fr); }
   .k6-side { order: 0; }

@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { K6_DOWN, k6Entries, k6Groups, type K6Entry, K6_NOTE, K6_UP, k6Value } from '../lib/calculations'
-import { signed } from '../lib/format'
+import { number, signed } from '../lib/format'
 import type { Scope, StuntingRow } from '../types'
 
 const FLAT = '#7c8794'
@@ -33,7 +33,17 @@ function geometry(entries: K6Entry[], { width, compact }: Layout) {
   return { font, compact, center: (left + right) / 2, rowHeight, nameWidth, header, x, ticks, plotBottom, height: plotBottom + 40, barHeight: Math.round(rowHeight * .62) }
 }
 
-export function K6Chart({ all, scope, scopeLabel }: { all: StuntingRow[]; scope: Scope; scopeLabel: string }) {
+const DIRECTION_WORD = { up: 'naik', flat: 'tetap', down: 'turun' } as const
+// Screen-reader name of a bar: region, direction and the rounded size of the change.
+const k6AriaLabel = (entry: K6Entry) => `${entry.name}, ${DIRECTION_WORD[entry.direction]} ${number(Math.abs(entry.change))} pp`
+
+interface Props {
+  all: StuntingRow[]; scope: Scope; scopeLabel: string
+  selected: string | null; onSelect: (code: string) => void
+  // Name of the region whose detail panel is open above, with the handler that moves focus there.
+  detailName: string | null; onShowDetails: (event: React.MouseEvent) => void
+}
+export function K6Chart({ all, scope, scopeLabel, selected, onSelect, detailName, onShowDetails }: Props) {
   const entries = useMemo(() => k6Entries(all, scope), [all, scope])
   const groups = k6Groups(entries)
   const box = useRef<HTMLDivElement>(null)
@@ -45,12 +55,42 @@ export function K6Chart({ all, scope, scopeLabel }: { all: StuntingRow[]; scope:
     observer.observe(node)
     return () => observer.disconnect()
   }, [])
+  // Roving tabindex: the chart is one Tab stop; ↑/↓/Home/End move between bars, Enter/Space selects.
+  const [focusCode, setFocusCode] = useState<string | null>(null)
+  const tabbable = [focusCode, selected].find(code => code && entries.some(e => e.code === code)) ?? entries[0]?.code
+  const rows = useRef(new Map<string, SVGGElement>())
+  // Selecting opens the detail panel above this chart. Keep the chosen bar at the same spot on screen
+  // (no automatic scroll in either direction): remember where it was, then offset the page before paint.
+  const anchor = useRef<{ code: string; top: number } | null>(null)
+  function choose(code: string) {
+    const node = rows.current.get(code)
+    anchor.current = node ? { code, top: node.getBoundingClientRect().top } : null
+    setFocusCode(code)
+    onSelect(code)
+  }
+  useLayoutEffect(() => {
+    const pending = anchor.current
+    anchor.current = null
+    const node = pending && rows.current.get(pending.code)
+    if (!pending || !node) return
+    const shift = node.getBoundingClientRect().top - pending.top
+    if (Math.abs(shift) >= 1) window.scrollBy({ top: shift, behavior: 'instant' })
+  }, [selected, detailName])
+  function moveFocus(event: React.KeyboardEvent, index: number) {
+    const keys: Record<string, number> = { ArrowDown: index + 1, ArrowUp: index - 1, Home: 0, End: entries.length - 1 }
+    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); choose(entries[index].code); return }
+    if (!(event.key in keys)) return
+    event.preventDefault()
+    const next = entries[Math.max(0, Math.min(entries.length - 1, keys[event.key]))]
+    setFocusCode(next.code)
+    rows.current.get(next.code)?.focus()
+  }
   const compact = width > 0 && width < 480
   const g = width ? geometry(entries, { width, compact }) : null
   const zero = g?.x(0) ?? 0
   const top = (index: number) => g!.header + index * g!.rowHeight
   return <section className="panel k6-panel" aria-labelledby="k6-title">
-    <div className="k6-heading"><h2 id="k6-title" tabIndex={-1}>Perubahan Prevalensi 2019→2022 (K6)</h2><p>Menjawab CBQ 2: wilayah yang naik atau turunnya paling lambat. Diurutkan dari kenaikan terbesar.</p></div>
+    <div className="k6-heading"><div><h2 id="k6-title" tabIndex={-1}>Perubahan Prevalensi 2019→2022 (K6)</h2><p>Menjawab CBQ 2: wilayah yang naik atau turunnya paling lambat. Diurutkan dari kenaikan terbesar.</p></div>{detailName && <a className="k6-detail-link" href="#details-title" onClick={onShowDetails}>Detail {detailName} ↑</a>}</div>
     <div className="k6-body">
       <aside className="k6-side" aria-label="Ringkasan arah perubahan K6">
         <div className="k6-cards">
@@ -58,10 +98,10 @@ export function K6Chart({ all, scope, scopeLabel }: { all: StuntingRow[]; scope:
           <K6Card kind="flat" title="Tetap" count={groups.flat.length} detail={groups.flat.length ? groups.flat.map(e => `${e.name} ${signed(0)}`).join(', ') : 'Tidak ada wilayah yang tetap'} />
           <K6Card kind="down" title="Turun" count={groups.down.length} detail={groups.down.length ? `Terbesar: ${groups.down.at(-1)!.name} ${signed(groups.down.at(-1)!.change)}` : 'Tidak ada wilayah yang turun'} />
         </div>
-        <p className="k6-note">{K6_NOTE}. Grafik mengikuti filter cakupan ({scopeLabel.toLocaleLowerCase('id-ID')}, {entries.length} wilayah).</p>
+        <p className="k6-note">{K6_NOTE}. Grafik mengikuti filter cakupan ({scopeLabel.toLocaleLowerCase('id-ID')}, {entries.length} wilayah). Klik batang untuk memilih wilayah, sama seperti klik di peta; dengan keyboard, Tab ke grafik lalu ↑/↓ dan Enter.</p>
       </aside>
       <div ref={box} className="k6-chart">
-        {g && <svg width={width} height={g.height} role="group" aria-label={`Diagram batang perubahan prevalensi 2019 ke 2022, ${entries.length} wilayah`} style={{ fontSize: g.font }}>
+        {g && <svg width={width} height={g.height} role="group" aria-label={`Diagram batang perubahan prevalensi 2019 ke 2022, ${entries.length} wilayah, diurutkan dari kenaikan terbesar`} style={{ fontSize: g.font }}>
           {g.ticks.map(t => <g key={t} aria-hidden="true">
             <line x1={g.x(t)} x2={g.x(t)} y1={g.header - 4} y2={g.plotBottom} stroke={t === 0 ? 'none' : '#e2e6eb'} />
             <text className="k6-tick" x={g.x(t)} y={g.plotBottom + 15} textAnchor="middle">{t > 0 ? `+${t}` : t < 0 ? `-${-t}` : '0'}</text>
@@ -73,7 +113,12 @@ export function K6Chart({ all, scope, scopeLabel }: { all: StuntingRow[]; scope:
             const y = top(index)
             const mid = y + g.rowHeight / 2
             const end = g.x(entry.change)
-            return <g key={entry.code} className={`k6-row ${entry.direction}`} data-k6-bar={entry.code} data-direction={entry.direction}>
+            const active = selected === entry.code
+            return <g key={entry.code} className={`k6-row ${entry.direction}${active ? ' selected' : ''}`} data-k6-bar={entry.code} data-direction={entry.direction}
+              ref={node => { if (node) rows.current.set(entry.code, node); else rows.current.delete(entry.code) }}
+              role="button" tabIndex={entry.code === tabbable ? 0 : -1} aria-label={k6AriaLabel(entry)} aria-pressed={active}
+              onClick={() => choose(entry.code)} onKeyDown={event => moveFocus(event, index)}>
+              <rect className="k6-hit" x={0} y={y + 1} width={width} height={g.rowHeight - 2} rx={4} />
               <text className="k6-name" x={g.nameWidth - 6} y={mid} dy=".35em" textAnchor="end" fontWeight={entry.direction === 'up' ? 700 : 450}>{entry.name}</text>
               {entry.direction === 'flat'
                 ? <circle className="k6-mark" cx={zero} cy={mid} r={4.5} fill={FLAT} />
