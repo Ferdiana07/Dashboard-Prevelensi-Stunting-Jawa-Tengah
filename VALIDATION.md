@@ -152,20 +152,22 @@ Branch `perbaikan/tahap-6-polish-ui` dari `main` (`c4402e4`, tag `sebelum-polish
 - Design token (jarak 16 px, padding, enam peran huruf) dan lantai 12 px untuk teks desktop, termasuk label peta (12 px di layar, bukan satuan SVG) dan keterangan inset Karimunjawa.
 - Header dua baris: judul satu baris; subjudul dan kontrol (Tahun, Wilayah, Reset, Unduh CSV; semua 40 px) sejajar vertikal. Angka 35 pada subjudul dihitung dari semua wilayah, tidak berubah saat cakupan diganti. Footer ringkasan dihapus; tautan Tren pindah ke baris legenda Kota vs Kabupaten, tautan Detail ke judul legenda peta.
 - Kode "K6" tidak muncul lagi di teks, aria-label, tooltip, maupun live region (header kolom "Perubahan 2019→2022" dua baris; panel "Perubahan Prevalensi 2019→2022"). Nama kolom ekspor `k6_perubahan_2019_2022` dan istilah KPI K6 tetap.
-- Mode satu layar hanya bila tabel tetap ≥ 80 px. Ambang diukur per 10 px: 720 px untuk lebar ≥1190 px (tabel 97–100 px di 1280/1366), 790 px untuk lebar 1100–1189 px (88 px di 1100). Di bawahnya halaman bergulir, tabel tampil lima baris penuh (262 px), dan legenda Kota vs Kabupaten tampil. Aturan pemadatan layar pendek dan teks ringkasan versi pendek dihapus.
+- Mode satu layar hanya bila tabel tetap ≥ 80 px. Ambang diukur per 10 px: 720 px untuk lebar ≥1190 px (tabel 95–98 px di 1280/1366), 790 px untuk lebar 1100–1189 px (86 px di 1100). Di bawahnya halaman bergulir, tabel tampil lima baris penuh (262 px), dan legenda Kota vs Kabupaten tampil. Aturan pemadatan layar pendek dan teks ringkasan versi pendek dihapus.
 
 | Ukuran | Mode | Tabel | h1 / h2 | Gap | Selisih pusat subjudul–kontrol | scrollWidth | "K6" terlihat |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1672×941 | satu layar | 292 px | 32 / 22 px | 16 | 0 | 1672 | 0 |
-| 1366×768 | satu layar | 143 px | 30,1 / 18,0 px | 16 | 0 | 1366 | 0 |
-| 1280×720 | satu layar | 100 px | 28,2 / 18 px | 16 | 0 | 1280 | 0 |
+| 1672×941 | satu layar | 290 px | 32 / 22 px | 16 | 0 | 1672 | 0 |
+| 1366×768 | satu layar | 141 px | 30,1 / 18,0 px | 16 | 0 | 1366 | 0 |
+| 1280×720 | satu layar | 98 px | 28,2 / 18 px | 16 | 0 | 1280 | 0 |
 | 1280×719 dan 1280×600 | gulir | 262 px | 28,2 / 18 px | 16 | 0 | 1280 | 0 |
-| 1100×790 | satu layar | 88 px | 24,2 / 18 px | 16 | kontrol turun ke bawah subjudul | 1100 | 0 |
+| 1100×790 | satu layar | 86 px | 24,2 / 18 px | 16 | kontrol turun ke bawah subjudul | 1100 | 0 |
 | 1100×789 | gulir | 262 px | 24,2 / 18 px | 16 | kontrol turun ke bawah subjudul | 1100 | 0 |
 | 390×844 | gulir | 270 px | 25 / 20–22 px | n/a (satu kolom) | kontrol turun ke bawah subjudul | 390 | 0 |
 
 Teks terkecil di desktop 12 px (di ponsel tetap 9 sampai 10 px, di luar cakupan). Di 1366×768 tabel tetap menampilkan sekitar 2,5 baris; tidak diubah di tahap ini.
 
-Pembaruan tes: `dashboard.spec.ts` (teks header/ringkasan/catatan, subjudul selalu 35, tombol Unduh CSV, tes fit-to-screen ditulis ulang untuk ambang baru, tes mode gulir baru, tes kontrol header dan tautan lewat keyboard), `k6.spec.ts` (judul panel dan live region), `markers.spec.ts` (tautan tren), `data-audit.spec.ts` (tombol ekspor), `k6.test.ts` (ringkasan tanpa versi pendek) dan `data.test.ts` (`K6_LABEL`). 94 tes unit dan 66 tes browser (tanpa `uji-stimulus.spec.ts`) lulus, bersama TypeScript, ESLint, dan build produksi tanpa peringatan.
+Pembaruan tes: `dashboard.spec.ts` (teks header/ringkasan/catatan, subjudul selalu 35, tombol Unduh CSV, tes fit-to-screen ditulis ulang untuk ambang baru, tes mode gulir baru, tes kontrol header dan tautan lewat keyboard), `k6.spec.ts` (judul panel dan live region), `markers.spec.ts` (tautan tren), `data-audit.spec.ts` (tombol ekspor), `k6.test.ts` (ringkasan tanpa versi pendek) dan `data.test.ts` (`K6_LABEL`). 94 tes unit dan 72 tes browser (tanpa `uji-stimulus.spec.ts`) lulus, bersama TypeScript, ESLint, dan build produksi tanpa peringatan.
+
+Perbaikan setelah audit: (1) kotak inset Karimunjawa kembali ke ukuran semula (145×110 satuan SVG) dan hanya teks keterangannya yang membesar agar ≥ 12 px di layar ("Karimunjawa" bila nama lengkap tidak muat), sehingga tidak lagi menutupi barat Jawa Tengah dan marker Kota Tegal; (2) header "Perubahan 2019→2022" benar-benar dua baris (kedua baris dibungkus satu `inline-block` di dalam tombol) dan tabel tidak lagi bergulir ke samping di 1672, 1366, dan 1280×720. Tesnya ada di `layout-fixes.spec.ts`.
 
 Catatan untuk tim: `src/uji/content.ts:80` masih menyebut "kolom K6 pada tabel" dan perlu diganti menjadi "kolom Perubahan 2019→2022" sebelum pengujian ke responden (berkas itu sengaja tidak diubah di tahap ini).

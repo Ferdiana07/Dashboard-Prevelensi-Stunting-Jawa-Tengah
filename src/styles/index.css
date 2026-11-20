@@ -139,6 +139,7 @@ tbody .appended-row td, tbody .appended-row th { border-top: 2px dashed #9fb3c8;
 .change-up { color: #a12b30; }
 .change-down { color: #216a49; }
 .muted { color: #68717d; }
+.th-label { display: inline-block; text-align: left; }
 .th-line { display: block; line-height: 1.25; }
 .table-note { font-size: 9px; line-height: 1.65; color: #626b77; margin-top: 9px; }
 .k6-summary { margin-top: 9px; padding: 6px 10px; border: 1px solid #dce0e5; border-left: 3px solid #a12b30; border-radius: 7px; background: #f7f8fa; font-size: 11px; line-height: 1.45; color: #2b3440; }
