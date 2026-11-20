@@ -1,11 +1,14 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { resolve } from 'node:path'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
     rolldownOptions: {
+      // Dua halaman: dashboard (/) dan formulir uji pengguna (/uji/).
+      input: { main: resolve(import.meta.dirname, 'index.html'), uji: resolve(import.meta.dirname, 'uji/index.html') },
       output: {
         codeSplitting: {
           groups: [

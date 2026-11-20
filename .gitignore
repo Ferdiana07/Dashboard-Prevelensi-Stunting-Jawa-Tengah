@@ -7,3 +7,5 @@ playwright-report/
 .playwright-mcp/
 .impeccable/baseline-preview/
 .impeccable/baseline-preview/
+.env.local
+.env.*.local

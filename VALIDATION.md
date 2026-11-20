@@ -89,11 +89,11 @@ Enam tes unit tambahan memeriksa posisi di 100 titik viewport dan kasus tepi; ti
 
 Label "nama nilai" (contoh Kota Semarang 10,4%) tampil untuk wilayah berkategori Rendah pada tahun terpilih dan dalam cakupan filter: 2019 tanpa label; 2021 Kab. Grobogan 9,6%, Kab. Wonogiri 14,0%, Kota Magelang 13,3%; 2022 Kota Semarang 10,4%, Kota Magelang 13,9%. Wilayah kecil memakai leader line. Label digambar di luar layer zoom sehingga ikut zoom/pan dengan ukuran huruf tetap, berhalo putih, dan `aria-hidden`. Tata letak menghindari label lain, kotak inset Karimunjawa, dan tombol zoom; tes bounding box memeriksa semuanya pada 1672, 1366, dan 390 px untuk 2021 dan 2022. Bila tidak ada tempat bebas, label dihilangkan daripada menimpa elemen lain.
 
-### P11. Tabel 10 baris menyimpang dari mockup Tugas 3
+### P11. Tabel 5 baris mengikuti mockup Tugas 3
 
-Mockup Tugas 3 menampilkan lima baris. Dashboard sekarang menampilkan **10 baris** secara default. Alasannya: pada layar desktop panel peringkat punya ruang vertikal yang cukup untuk lebih dari lima baris, dan dengan 10 baris pembaca langsung melihat sepertiga wilayah teratas tanpa menekan tombol. Tombol berubah menjadi "Lihat semua (N)" / "Tampilkan 10 besar" dan hanya muncul bila jumlah wilayah dalam cakupan lebih dari 10. Cakupan Kota (6 wilayah) langsung tampil seluruhnya.
+Mockup Tugas 3 menampilkan lima baris, dan dashboard kini kembali menampilkan **5 baris** secara default. Alasannya: wilayah yang dipilih dari peta, titik kota, atau dropdown harus langsung terlihat tanpa menggulir tabel. Bila wilayah itu di luar lima besar, ia ditampilkan sebagai baris keenam (garis putus-putus di atasnya) dengan nomor peringkat aslinya; isi lima besar tidak berubah. Saat "Lihat semua (N)" aktif, tabel bergulir di dalam panel ke baris terpilih tanpa menggulir halaman. Tombol "Lihat semua (N)" / "Tampilkan 5 besar" muncul bila cakupan berisi lebih dari 5 wilayah, termasuk cakupan Kota (6 wilayah).
 
-Syarat tinggi tetap berlaku: header sampai baris ekspor muat dalam viewport 1280×600, 1366×650, 1366×768, 1536×730, dan 1672×941. Tabel menggulir di dalam panel dan tidak memanjangkan halaman ringkasan; tes Playwright memeriksa kelima ukuran itu dengan 10 baris tampil.
+Syarat tinggi tetap berlaku: header sampai baris ekspor muat dalam viewport 1280×600, 1366×650, 1366×768, 1536×730, dan 1672×941. Tabel menggulir di dalam panel dan tidak memanjangkan halaman ringkasan; tes Playwright memeriksa kelima ukuran itu dengan 5 baris tampil.
 
 ### P12. Penanda wilayah dan skip link
 
