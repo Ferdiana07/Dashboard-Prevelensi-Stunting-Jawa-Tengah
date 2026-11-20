@@ -87,7 +87,7 @@ describe('enam KPI dengan presisi asli', () => {
     expect(result.name).toBe('Kab. Pati'); expect(k6Change(rows, result.code)).toBeCloseTo(3.62)
   })
   it('K6 selalu 2019 ke 2022, sama dengan kolom k6_perubahan_2019_2022 untuk semua tahun', () => {
-    expect(K6_LABEL).toBe('K6: 2019→2022')
+    expect(K6_LABEL).toBe('Perubahan 2019→2022')
     for (const item of source) expect(k6Change(rows, item.kode_wilayah)).toBeCloseTo(Number(item.k6_perubahan_2019_2022), 10)
   })
   it('K6: 6 wilayah naik, Kab. Pekalongan 0,0, penurunan terbesar Kab. Demak', () => {

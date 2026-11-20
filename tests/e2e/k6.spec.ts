@@ -24,7 +24,7 @@ const scopeSelect = (page: Page) => page.getByLabel('Wilayah:', { exact: true })
 
 test('K6 panel: bars per scope, order and labels match the CSV', async ({ page }) => {
   await ready(page)
-  await expect(page.locator('#k6-title')).toHaveText('Perubahan Prevalensi 2019→2022 (K6)')
+  await expect(page.locator('#k6-title')).toHaveText('Perubahan Prevalensi 2019→2022')
   await expect(page.locator('.k6-heading p')).toHaveText('Menjawab CBQ 2: wilayah yang naik atau turunnya paling lambat. Diurutkan dari kenaikan terbesar.')
   for (const [scope, count, up, flat, down] of [['all', 35, 6, 1, 28], ['Kabupaten', 29, 6, 1, 22], ['Kota', 6, 0, 0, 6]] as const) {
     await scopeSelect(page).selectOption(scope)
@@ -148,7 +148,7 @@ test('clicking a K6 bar selects the region like the map, keeps the bar in place 
   await expect(page.locator('[data-k6-bar]')).toHaveCount(35)
   await expect(page.locator('.score-note').first()).toHaveText('rata-rata 35 wilayah')
   // Announcement through the existing live region, and a link up to the details.
-  await expect(page.locator('.sr-only[role="status"]')).toHaveText('Detail Kab. Brebes ditampilkan di atas grafik K6')
+  await expect(page.locator('.sr-only[role="status"]')).toHaveText('Detail Kab. Brebes ditampilkan di atas grafik perubahan')
   const link = page.locator('.k6-panel').getByRole('link', { name: 'Detail Kab. Brebes ↑' })
   await expect(link).toBeVisible()
   await link.click()

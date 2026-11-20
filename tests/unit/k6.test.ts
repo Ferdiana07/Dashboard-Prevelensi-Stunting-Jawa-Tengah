@@ -34,19 +34,17 @@ describe('K6 naik / tetap / turun per cakupan', () => {
 
 describe('teks ringkasan K6', () => {
   it('Semua', () => {
-    expect(k6SummaryText(k6Entries(rows, 'all'), 'all')).toBe('K6 2019→2022: 6 wilayah naik · 1 tetap · 28 turun. Kenaikan terbesar Kab. Pati +3,6 pp.')
-    expect(k6SummaryText(k6Entries(rows, 'all'), 'all', true)).toBe('K6: 6 naik · 1 tetap · 28 turun. Terbesar Kab. Pati +3,6 pp.')
+    expect(k6SummaryText(k6Entries(rows, 'all'), 'all')).toBe('2019→2022: 6 wilayah naik · 1 tetap · 28 turun. Kenaikan terbesar Kab. Pati +3,6 pp.')
   })
   it('Kabupaten', () => {
-    expect(k6SummaryText(k6Entries(rows, 'Kabupaten'), 'Kabupaten')).toBe('K6 2019→2022: 6 kabupaten naik · 1 tetap · 22 turun. Kenaikan terbesar Kab. Pati +3,6 pp.')
+    expect(k6SummaryText(k6Entries(rows, 'Kabupaten'), 'Kabupaten')).toBe('2019→2022: 6 kabupaten naik · 1 tetap · 22 turun. Kenaikan terbesar Kab. Pati +3,6 pp.')
   })
   it('Kota: tidak ada yang naik, menyebut penurunan paling lambat', () => {
-    expect(k6SummaryText(k6Entries(rows, 'Kota'), 'Kota')).toBe('K6 2019→2022: semua 6 kota turun. Penurunan paling lambat Kota Surakarta -2,6 pp.')
-    expect(k6SummaryText(k6Entries(rows, 'Kota'), 'Kota', true)).toBe('K6: semua 6 kota turun. Paling lambat Kota Surakarta -2,6 pp.')
+    expect(k6SummaryText(k6Entries(rows, 'Kota'), 'Kota')).toBe('2019→2022: semua 6 kota turun. Penurunan paling lambat Kota Surakarta -2,6 pp.')
   })
   it('menghilangkan “· Y tetap” bila Y = 0 dan tidak memakai tanda pisah panjang', () => {
     const noFlat = k6Entries(rows, 'all').filter(e => e.direction !== 'flat')
-    expect(k6SummaryText(noFlat, 'all')).toBe('K6 2019→2022: 6 wilayah naik · 28 turun. Kenaikan terbesar Kab. Pati +3,6 pp.')
+    expect(k6SummaryText(noFlat, 'all')).toBe('2019→2022: 6 wilayah naik · 28 turun. Kenaikan terbesar Kab. Pati +3,6 pp.')
     for (const scope of ['all', 'Kabupaten', 'Kota'] as const) expect(k6SummaryText(k6Entries(rows, scope), scope)).not.toContain('—')
   })
 })

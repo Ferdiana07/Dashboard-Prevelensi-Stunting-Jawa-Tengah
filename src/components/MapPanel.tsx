@@ -45,8 +45,8 @@ export function MapPanel({ boundaries, rows, all, year, selected, onSelect, rese
   const islandPath = useMemo(() => geoPath(geoIdentity().reflectY(true).fitExtent([[27, 36], [145, 106]], islands)), [islands])
   const byCode = new Map(rows.map(row => [row.code, row]))
   const yearRows = all.filter(row => row.year === year)
-  // Label font keeps a roughly constant on-screen size (about 10px) whatever the panel width; zoom never changes it.
-  const fontSize = Math.min(20, Math.max(11, 10 / measured.scale))
+  // Label font keeps a roughly constant on-screen size (about 12px) whatever the panel width; zoom never changes it.
+  const fontSize = Math.min(20, Math.max(12, 12 / measured.scale))
   const geometry = useMemo(() => new Map(main.features.map(feature => {
     const [[x0, y0], [x1, y1]] = path.bounds(feature)
     return [String(feature.properties.kode_wilayah), { centroid: path.centroid(feature), bounds: { x: x0, y: y0, width: x1 - x0, height: y1 - y0 } }] as const
@@ -174,6 +174,6 @@ export function MapPanel({ boundaries, rows, all, year, selected, onSelect, rese
         <span className="tooltip-hint">Klik untuk melihat detail wilayah</span>
       </CursorTooltip>}
     </div>
-    <div className="map-footer"><div className="legend-heading"><h3>Prevalensi Stunting</h3>{detailName && <a className="panel-link" href="#details-title" onClick={onShowDetails}>Detail {detailName} ↓</a>}</div><CategoryLegend className="map-legend" counts={{ achieved: rows.filter(row => category(row.prevalence) === 'achieved').length, moderate: rows.filter(row => category(row.prevalence) === 'moderate').length, high: rows.filter(row => category(row.prevalence) === 'high').length }} /><p className="map-help">Klik wilayah untuk detail · Geser peta untuk menjelajah · Titik menandai kota</p></div>
+    <div className="map-footer"><div className="legend-heading"><h3>Prevalensi Stunting</h3>{detailName && <a className="panel-link detail-link" href="#details-title" onClick={onShowDetails}>Detail {detailName} ↓</a>}</div><CategoryLegend className="map-legend" counts={{ achieved: rows.filter(row => category(row.prevalence) === 'achieved').length, moderate: rows.filter(row => category(row.prevalence) === 'moderate').length, high: rows.filter(row => category(row.prevalence) === 'high').length }} /><p className="map-help">Klik wilayah untuk detail · Geser peta untuk menjelajah · Titik menandai kota</p></div>
   </section>
 }
