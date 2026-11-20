@@ -1,4 +1,4 @@
-import { roundHalfAway, signed } from './format'
+import { number, roundHalfAway, signed } from './format'
 import { type AreaType, type Scope, type StuntingRow, type Year } from '../types'
 
 export const TARGET = 14
@@ -42,6 +42,11 @@ export function k6Change(rows: StuntingRow[], code: string) {
   const end = valueAt(rows, code, 2022)
   return start === null || end === null ? null : end - start
 }
+// K6 panel: hue encodes direction (increase = worse, decrease = better at reduced opacity).
+export const K6_UP = '#a12b30'
+export const K6_DOWN = '#216a49'
+// Bar-end label: one decimal through the shared rounding helper, explicit sign, no unit (the axis says pp).
+export const k6Value = (change: number) => `${change > 0 ? '+' : ''}${number(change)}`
 // K6 per region for a scope, sorted from the largest increase to the largest decrease.
 export type K6Direction = 'up' | 'flat' | 'down'
 export const k6Direction = (change: number): K6Direction => Math.abs(change) < 0.005 ? 'flat' : change > 0 ? 'up' : 'down'

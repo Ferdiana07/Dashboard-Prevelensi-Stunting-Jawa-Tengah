@@ -139,6 +139,29 @@ tbody .appended-row td, tbody .appended-row th { border-top: 2px dashed #9fb3c8;
 .detail-history > span { display: flex; gap: 13px; align-items: center; font-size: 13px; }
 .detail-history > span > span, .detail-history small { color: #626d7a; }
 .detail-history small { font-size: 11px; }
+.k6-panel { padding: 24px; margin-bottom: 22px; scroll-margin-top: 24px; }
+.k6-heading p { margin-top: 6px; font-size: 13px; color: #606b79; }
+.k6-body { display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 20px 28px; margin-top: 16px; align-items: start; }
+.k6-side { order: 2; display: flex; flex-direction: column; gap: 12px; }
+.k6-chart { min-width: 0; }
+.k6-chart svg { display: block; overflow: visible; }
+.k6-cards { display: grid; gap: 10px; }
+.k6-card { border: 1px solid #dce0e5; border-left: 4px solid #7c8794; border-radius: 10px; padding: 10px 12px; background: #fbfbfc; }
+.k6-card.up { border-left-color: #a12b30; }
+.k6-card.down { border-left-color: rgba(33, 106, 73, .55); }
+.k6-card h3 { font-size: 12px; font-weight: 700; color: #34465b; }
+.k6-card.up h3 { color: #a12b30; }
+.k6-card.down h3 { color: #216a49; }
+.k6-card strong { font-size: 26px; font-weight: 760; letter-spacing: -.03em; margin-right: 5px; }
+.k6-card span { font-size: 12px; color: #586272; }
+.k6-card p { font-size: 12px; line-height: 1.4; color: #2b3440; margin-top: 2px; }
+.k6-note { font-size: 11px; line-height: 1.5; color: #586272; }
+.k6-name { fill: #171a20; }
+.k6-value { fill: #2b3440; font-weight: 650; }
+.k6-tick, .k6-axis-title { fill: #455363; font-size: 10px; }
+.k6-direction { font-size: 11px; font-weight: 700; }
+.k6-direction.up { fill: #a12b30; }
+.k6-direction.down { fill: #216a49; }
 .trend-panel { padding: 24px; scroll-margin-top: 24px; }
 .trend-heading { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
 .trend-heading p { margin-top: 6px; font-size: 13px; color: #606b79; }
@@ -273,4 +296,18 @@ tbody .appended-row td, tbody .appended-row th { border-top: 2px dashed #9fb3c8;
   .k6-summary-full { display: none; }
   .k6-summary-short { display: inline; }
   .comparison-legend { display: none; }
+}
+/* K6 panel on phones: cards first (three across), chart full width below. */
+@media (max-width: 960px) { .k6-body { grid-template-columns: minmax(0, 1fr) 210px; gap: 18px; } }
+@media (max-width: 560px) {
+  .k6-panel { padding: 19px 14px; }
+  .k6-heading p { font-size: 12px; }
+  .k6-body { grid-template-columns: minmax(0, 1fr); }
+  .k6-side { order: 0; }
+  .k6-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+  .k6-card { padding: 8px 8px; }
+  .k6-card strong { font-size: 22px; display: block; }
+  .k6-card span { display: none; }
+  .k6-card p { font-size: 10px; }
+  .k6-note { font-size: 10px; }
 }
