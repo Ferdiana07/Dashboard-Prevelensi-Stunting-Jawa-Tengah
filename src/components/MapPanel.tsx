@@ -13,7 +13,7 @@ import { CursorTooltip } from './map/CursorTooltip'
 
 const VIEW: Box = { x: 4, y: 4, width: 752, height: 432 }
 const INSET: Box = { x: 15, y: 12, width: 145, height: 110 }
-interface Props { boundaries: Boundaries; rows: StuntingRow[]; all: StuntingRow[]; year: Year; selected: string | null; onSelect: (code: string) => void; resetKey: number }
+interface Props { boundaries: Boundaries; rows: StuntingRow[]; all: StuntingRow[]; year: Year; selected: string | null; onSelect: (code: string) => void; resetKey: number; detailName: string | null; onShowDetails: (event: React.MouseEvent) => void }
 function partition(boundaries: Boundaries) {
   const main: Boundaries = { type: 'FeatureCollection', features: [] }
   const islands: Boundaries = { type: 'FeatureCollection', features: [] }
@@ -27,7 +27,7 @@ function partition(boundaries: Boundaries) {
   return { main, islands }
 }
 
-export function MapPanel({ boundaries, rows, all, year, selected, onSelect, resetKey }: Props) {
+export function MapPanel({ boundaries, rows, all, year, selected, onSelect, resetKey, detailName, onShowDetails }: Props) {
   const prefix = `map-${useId().replace(/:/g, '')}`
   const svg = useRef<SVGSVGElement>(null)
   const layer = useRef<SVGGElement>(null)
@@ -174,6 +174,6 @@ export function MapPanel({ boundaries, rows, all, year, selected, onSelect, rese
         <span className="tooltip-hint">Klik untuk melihat detail wilayah</span>
       </CursorTooltip>}
     </div>
-    <div className="map-footer"><h3>Prevalensi Stunting</h3><CategoryLegend className="map-legend" counts={{ achieved: rows.filter(row => category(row.prevalence) === 'achieved').length, moderate: rows.filter(row => category(row.prevalence) === 'moderate').length, high: rows.filter(row => category(row.prevalence) === 'high').length }} /><p className="map-help">Klik wilayah untuk detail · Geser peta untuk menjelajah · Titik menandai kota</p></div>
+    <div className="map-footer"><div className="legend-heading"><h3>Prevalensi Stunting</h3>{detailName && <a className="panel-link" href="#details-title" onClick={onShowDetails}>Detail {detailName} ↓</a>}</div><CategoryLegend className="map-legend" counts={{ achieved: rows.filter(row => category(row.prevalence) === 'achieved').length, moderate: rows.filter(row => category(row.prevalence) === 'moderate').length, high: rows.filter(row => category(row.prevalence) === 'high').length }} /><p className="map-help">Klik wilayah untuk detail · Geser peta untuk menjelajah · Titik menandai kota</p></div>
   </section>
 }

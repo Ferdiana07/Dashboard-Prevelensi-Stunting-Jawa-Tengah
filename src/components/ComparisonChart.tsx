@@ -48,7 +48,7 @@ export function ComparisonChart({ rows, all, year }: { rows: StuntingRow[]; all:
         </BarChart>
       </ResponsiveContainer>
     </div>
-    <CategoryLegend className="compact-legend comparison-legend" />
+    <div className="legend-row"><CategoryLegend className="compact-legend comparison-legend" /><a className="panel-link" href="#trend-title">Lihat tren 2019–2022 ↓</a></div>
     {data.length < 2 && <p className="scope-note">Cakupan hanya berisi {data[0]?.name.toLowerCase() ?? 'nol wilayah'}; perbandingan dua kelompok tidak tersedia.</p>}
   </section>
 }
