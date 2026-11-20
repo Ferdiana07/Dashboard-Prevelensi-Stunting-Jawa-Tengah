@@ -1,4 +1,4 @@
-import { useId, useSyncExternalStore } from 'react'
+import { useId } from 'react'
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, Rectangle, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { category, CATEGORIES, metrics, TARGET } from '../lib/calculations'
 import type { StuntingRow, Year } from '../types'
@@ -6,18 +6,7 @@ import { percent } from '../lib/format'
 import { prevalenceScale } from '../lib/visualEncoding'
 import { CategoryLegend, CategoryPatterns } from './visuals/Encoding'
 
-// Same query as the short-screen CSS rule: the panel gives its height to the K6 summary under the table.
-const SHORT_SCREEN = '(min-width: 1100px) and (min-height: 600px) and (max-height: 640px)'
-function useShortScreen() {
-  return useSyncExternalStore(notify => {
-    const query = window.matchMedia(SHORT_SCREEN)
-    query.addEventListener('change', notify)
-    return () => query.removeEventListener('change', notify)
-  }, () => window.matchMedia(SHORT_SCREEN).matches)
-}
-
 export function ComparisonChart({ rows, all, year }: { rows: StuntingRow[]; all: StuntingRow[]; year: Year }) {
-  const short = useShortScreen()
   const prefix = `bars-${useId().replace(/:/g, '')}`
   const values = metrics(rows)
   const data = [{ name: 'Kota', value: values.city }, { name: 'Kabupaten', value: values.district }].filter((item): item is { name: string; value: number } => item.value !== null)
@@ -34,7 +23,7 @@ export function ComparisonChart({ rows, all, year }: { rows: StuntingRow[]; all:
     <h2 id="comparison-title">Rata-rata Prevalensi: Kota vs Kabupaten <span>({year})</span></h2>
     <div className="bar-chart" role="img" aria-label={data.map(item => `${item.name} ${percent(item.value)}`).join(', ') + '. Target 14%.'}>
       <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-        <BarChart data={data} layout="vertical" margin={{ top: 17, right: 55, bottom: 3, left: 0 }} {...(short ? { maxBarSize: 14, barCategoryGap: 3 } : { barSize: 20 })}>
+        <BarChart data={data} layout="vertical" margin={{ top: 17, right: 55, bottom: 3, left: 0 }} barSize={20}>
           <CategoryPatterns prefix={prefix} />
           <CartesianGrid horizontal={false} stroke="#e2e6eb" />
           <XAxis type="number" domain={[0, maximum]} ticks={ticks} tickFormatter={value => `${value}%`} height={34} tickLine={false} axisLine={{ stroke: '#7c8794' }} tick={{ fill: '#455363', fontSize: 12 }} label={{ value: 'Prevalensi (%)', position: 'insideBottom', offset: -1, fill: '#455363', fontSize: 12 }} />

@@ -47,6 +47,6 @@ describe('teks ringkasan K6', () => {
   it('menghilangkan “· Y tetap” bila Y = 0 dan tidak memakai tanda pisah panjang', () => {
     const noFlat = k6Entries(rows, 'all').filter(e => e.direction !== 'flat')
     expect(k6SummaryText(noFlat, 'all')).toBe('K6 2019→2022: 6 wilayah naik · 28 turun. Kenaikan terbesar Kab. Pati +3,6 pp.')
-    for (const scope of ['all', 'Kabupaten', 'Kota'] as const) for (const short of [false, true]) expect(k6SummaryText(k6Entries(rows, scope), scope, short)).not.toContain('—')
+    for (const scope of ['all', 'Kabupaten', 'Kota'] as const) expect(k6SummaryText(k6Entries(rows, scope), scope)).not.toContain('—')
   })
 })

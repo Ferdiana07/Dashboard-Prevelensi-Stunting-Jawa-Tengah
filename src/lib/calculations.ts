@@ -62,16 +62,14 @@ export function k6Groups(entries: K6Entry[]) {
   return { up: entries.filter(e => e.direction === 'up'), flat: entries.filter(e => e.direction === 'flat'), down: entries.filter(e => e.direction === 'down') }
 }
 const scopeNoun = (scope: Scope) => scope === 'Kota' ? 'kota' : scope === 'Kabupaten' ? 'kabupaten' : 'wilayah'
-// One-line K6 summary under the ranking table. `short` is the compact form for low desktop screens.
-export function k6SummaryText(entries: K6Entry[], scope: Scope, short = false) {
+// One-line K6 summary under the ranking table.
+export function k6SummaryText(entries: K6Entry[], scope: Scope) {
   const { up, flat, down } = k6Groups(entries)
   const noun = scopeNoun(scope)
-  const counts = `${up.length}${short ? '' : ` ${noun}`} naik${flat.length ? ` · ${flat.length} tetap` : ''} · ${down.length} turun`
-  if (up.length) return short ? `K6: ${counts}. Terbesar ${up[0].name} ${signed(up[0].change)}.` : `K6 2019→2022: ${counts}. Kenaikan terbesar ${up[0].name} ${signed(up[0].change)}.`
-  if (down.length && down.length === entries.length) return short
-    ? `K6: semua ${entries.length} ${noun} turun. Paling lambat ${down[0].name} ${signed(down[0].change)}.`
-    : `K6 2019→2022: semua ${entries.length} ${noun} turun. Penurunan paling lambat ${down[0].name} ${signed(down[0].change)}.`
-  return `${short ? 'K6' : 'K6 2019→2022'}: tidak ada ${noun} yang naik${flat.length ? ` · ${flat.length} tetap` : ''} · ${down.length} turun.`
+  const counts = `${up.length} ${noun} naik${flat.length ? ` · ${flat.length} tetap` : ''} · ${down.length} turun`
+  if (up.length) return `K6 2019→2022: ${counts}. Kenaikan terbesar ${up[0].name} ${signed(up[0].change)}.`
+  if (down.length && down.length === entries.length) return `K6 2019→2022: semua ${entries.length} ${noun} turun. Penurunan paling lambat ${down[0].name} ${signed(down[0].change)}.`
+  return `K6 2019→2022: tidak ada ${noun} yang naik${flat.length ? ` · ${flat.length} tetap` : ''} · ${down.length} turun.`
 }
 // The heading follows the active sort so the title never contradicts the row order.
 export function rankingTitle(sort: 'prevalence' | 'target' | 'change', descending: boolean, year: Year) {
