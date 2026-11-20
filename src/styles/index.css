@@ -2,6 +2,20 @@
 
 @theme { --font-sans: 'Inter Variable', Inter, sans-serif; }
 :root { font-family: var(--font-sans); color: #15181e; background: #f8f9fb; font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+/* Design tokens for the desktop layout (min-width 1100px): spacing and the six type roles. */
+:root {
+  --space: 16px;
+  --page-pad-y: 24px; --page-pad-x: 32px;
+  --pad-card: 12px 20px; --pad-map: 16px 20px 12px; --pad-compare: 12px 20px 8px; --pad-rank: 12px 20px;
+  --fs-h1: clamp(24px, 2.2vw, 32px);
+  --fs-h2: clamp(18px, 1.32vw, 22px);
+  --fs-title: 16px;
+  --fs-value: clamp(32px, 5vh, 44px);
+  --fs-body: 14px;
+  --fs-small: 12px;
+  --color-muted: #4b5563;
+  --color-link: #315f8d;
+}
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: 24px; }
 body { margin: 0; min-width: 320px; }
@@ -222,53 +236,57 @@ tbody .appended-row td, tbody .appended-row th { border-top: 2px dashed #9fb3c8;
 /* Keep the desktop overview inside the browser's available height. Supplementary
    detail/trend panels retain normal document scrolling below the overview. */
 @media (min-width: 1100px) and (min-height: 600px) {
-  .dashboard { padding: 18px 22px 24px; }
+  .dashboard { padding: var(--page-pad-y) var(--page-pad-x); }
   .dashboard-overview {
-    height: calc(100svh - 36px);
+    height: calc(100svh - 2 * var(--page-pad-y));
     display: grid;
     grid-template-rows: auto auto minmax(0, 1fr) auto;
-    gap: clamp(10px, 1.6vh, 16px);
-    margin-bottom: 18px;
+    gap: var(--space);
+    margin-bottom: var(--space);
   }
-  .page-header { margin: 0; align-items: center; gap: 18px; flex-wrap: nowrap; }
-  .page-header h1 { font-size: clamp(21px, 1.65vw, 29px); line-height: 1.18; }
+  .page-header { margin: 0; align-items: center; gap: var(--space); flex-wrap: nowrap; }
+  h1, .page-header h1 { font-size: var(--fs-h1); line-height: 1.2; letter-spacing: -.025em; font-weight: 700; }
   .filters { margin-left: 0; }
-  .scorecards { margin: 0; gap: 14px; }
-  .scorecard { min-height: 0; padding: clamp(10px, 1.5vh, 16px) 18px; }
-  .scorecard h2 { font-size: clamp(14px, 1.17vw, 20px); }
-  .score-value { font-size: clamp(30px, 5.1vh, 47px); margin: 3px 0; white-space: nowrap; }
+  .scorecards { margin: 0; gap: var(--space); }
+  .scorecard { min-height: 0; padding: var(--pad-card); }
+  .scorecard h2 { font-size: var(--fs-title); font-weight: 600; line-height: 1.3; letter-spacing: 0; }
+  .score-value { font-size: var(--fs-value); font-weight: 700; line-height: 1.17; margin: 2px 0; white-space: nowrap; }
   .score-value.unavailable { font-size: clamp(22px, 3.7vh, 31px); line-height: 1.42; }
-  .score-note { font-size: clamp(11px, .95vw, 15px); }
-  .dashboard-grid { min-height: 0; height: 100%; gap: 16px; }
-  .map-panel { min-height: 0; padding: clamp(12px, 1.8vh, 20px) 18px 12px; }
-  .panel h2 { font-size: clamp(18px, 1.5vw, 26px); }
-  .map-heading p { font-size: clamp(13px, 1.14vw, 18px); margin-top: 3px; }
-  .map-canvas { min-height: 0; height: 0; margin-top: 5px; }
+  .score-note { font-size: var(--fs-body); font-weight: 400; line-height: 1.35; }
+  .dashboard-grid { grid-template-columns: 1fr 1fr; min-height: 0; height: 100%; gap: var(--space); }
+  .panel h2 { font-size: var(--fs-h2); font-weight: 700; line-height: 1.25; letter-spacing: -.02em; }
+  .panel h2 span { font-weight: 400; display: inline; font-size: inherit; }
+  .map-panel { min-height: 0; padding: var(--pad-map); }
+  .map-heading p { font-size: var(--fs-title); font-weight: 400; margin-top: 2px; line-height: 1.35; }
+  .map-canvas { min-height: 0; height: 0; margin-top: 4px; }
   .map-canvas > svg { height: 100%; max-height: none; }
   .map-footer { flex-shrink: 0; margin-top: 4px; }
-  .map-footer h3 { font-size: 16px; margin-bottom: 6px; }
+  .map-footer h3 { font-size: var(--fs-title); font-weight: 600; margin-bottom: 6px; }
   .map-legend { flex-direction: row; flex-wrap: wrap; gap: 6px 16px; }
-  .map-legend > div { font-size: 12px; gap: 7px; }
+  .map-legend > div { font-size: var(--fs-small); gap: 7px; }
   .legend-swatch { width: 22px; height: 18px; border-radius: 4px; }
-  .map-help { margin-top: 7px; font-size: 10px; }
-  .analysis-column { min-height: 0; display: grid; grid-template-rows: minmax(156px, 2fr) minmax(0, 5fr); gap: 10px; }
-  .comparison-panel { min-height: 0; display: flex; flex-direction: column; padding: 12px 15px 8px; }
-  .comparison-panel h2 { font-size: clamp(17px, 1.32vw, 23px); flex-shrink: 0; }
+  .map-help { margin-top: 6px; font-size: var(--fs-small); line-height: 1.4; }
+  .analysis-column { min-height: 0; display: grid; grid-template-rows: minmax(156px, 2fr) minmax(0, 5fr); gap: var(--space); }
+  .comparison-panel { min-height: 0; display: flex; flex-direction: column; padding: var(--pad-compare); }
+  .comparison-panel h2 { flex-shrink: 0; }
   .bar-chart { min-height: 0; height: 0; flex: 1; }
-  .scope-note { font-size: 11px; }
-  .ranking-panel { min-height: 0; display: flex; flex-direction: column; padding: 10px 14px 10px; }
-  .ranking-panel h2 { flex-shrink: 0; font-size: clamp(17px, 1.38vw, 24px); }
-  .table-toolbar { flex-shrink: 0; margin: 5px 0; }
+  .scope-note { font-size: var(--fs-small); }
+  .ranking-panel { min-height: 0; display: flex; flex-direction: column; padding: var(--pad-rank); }
+  .ranking-panel h2 { flex-shrink: 0; }
+  .table-toolbar { flex-shrink: 0; margin: 6px 0; }
   .table-scroll, .table-scroll.expanded { min-height: 0; max-height: none; overflow: auto; flex: 1; }
-  table { font-size: 12px; }
-  thead th { padding: 5px 7px; font-size: 10px; }
+  table { font-size: var(--fs-body); }
+  thead th { padding: 5px 7px; font-size: var(--fs-small); font-weight: 600; }
   tbody th, tbody td { height: clamp(30px, 4.8vh, 43px); padding: 3px 7px; }
+  .search-wrap input { font-size: var(--fs-body); }
+  .text-button { font-size: var(--fs-body); font-weight: 600; color: var(--color-link); }
   .area-name { padding: 3px 0; }
-  .rank-badge { width: 23px; height: 23px; font-size: 13px; }
-  .prevalence-badge { font-size: 15px; min-width: 65px; padding: 3px 8px; }
-  .table-note { flex-shrink: 0; font-size: 9px; line-height: 1.4; margin-top: 5px; }
-  .k6-summary { flex-shrink: 0; margin-top: 5px; padding: 3px 8px; font-size: 10.5px; line-height: 1.4; }
-  .overview-footer { padding: 0 2px; min-height: 24px; }
+  .rank-badge { width: 24px; height: 24px; font-size: var(--fs-small); }
+  .prevalence-badge { font-size: var(--fs-body); font-weight: 700; min-width: 62px; padding: 3px 8px; }
+  .table-note { flex-shrink: 0; font-size: var(--fs-small); line-height: 1.4; margin-top: 4px; }
+  .k6-summary { flex-shrink: 0; margin-top: 4px; padding: 3px 8px; font-size: var(--fs-small); line-height: 1.4; }
+  .overview-footer { padding: 0 2px; min-height: 24px; font-size: var(--fs-small); }
+  .export-button { font-size: var(--fs-small); }
 }
 .category-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
 .category-legend > div { display: flex; align-items: center; gap: 7px; }
@@ -320,4 +338,12 @@ tbody .appended-row td, tbody .appended-row th { border-top: 2px dashed #9fb3c8;
   .k6-card span { display: none; }
   .k6-card p { font-size: 10px; }
   .k6-note { font-size: 10px; }
+}
+/* No desktop text below 12px, including the panels under the overview and chart tooltips. */
+@media (min-width: 1100px) {
+  .map-tooltip dl, .tooltip-year, .tooltip-value small, .tooltip-hint { font-size: var(--fs-small); }
+  .detail-values small, .detail-history small, .detail-values span { font-size: var(--fs-small); }
+  .k6-note, .k6-direction, .k6-tick, .k6-axis-title { font-size: var(--fs-small); }
+  .k6-card h3, .k6-card span, .k6-card p { font-size: var(--fs-small); }
+  .trend-notes, .trend-selection > span, .multi-select label, .series-legend, .compact-legend, .comparison-legend, .page-footer, .inset text { font-size: var(--fs-small); }
 }
