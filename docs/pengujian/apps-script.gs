@@ -34,6 +34,16 @@ function siapkan() {
   buatAnalisis()
 }
 
+// Menghapus SEMUA baris data (baris 2 ke bawah) di lembar Responden, L3, L4, SUS, dan Persetujuan.
+// Pakai hanya untuk membersihkan data pilot sebelum pengambilan data sungguhan. Judul kolom dan lembar Analisis tetap.
+function hapusDataUji() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet()
+  Object.keys(SHEETS).forEach(name => {
+    const sh = ss.getSheetByName(name)
+    if (sh && sh.getLastRow() > 1) sh.deleteRows(2, sh.getLastRow() - 1)
+  })
+}
+
 function doGet() {
   const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Responden')
   return ContentService.createTextOutput(JSON.stringify({ ok: true, responden: sh ? Math.max(sh.getLastRow() - 1, 0) : 0 })).setMimeType(ContentService.MimeType.JSON)
@@ -76,10 +86,11 @@ function buatAnalisis() {
   const head = (r, values, color) => sh.getRange(r, 1, 1, values.length).setValues([values]).setFontWeight('bold').setBackground(color || '#ededee').setWrap(true).setVerticalAlignment('middle')
   const title = (r, text) => sh.getRange(r, 1).setValue(text).setFontWeight('bold').setFontSize(13)
   const N = 5000 // batas baris untuk rumus array
-  const GROUPS = [['Total (N)', '*'], ['Operator Internal', 'A'], ['Warga Publik', 'B']]
+  // Kriteria "?" = tepat satu karakter (A atau B), sehingga judul kolom "Persona" tidak ikut terhitung seperti pada "*".
+  const GROUPS = [['Total (N)', '?'], ['Operator Internal', 'A'], ['Warga Publik', 'B']]
 
   sh.getRange(1, 1).setValue('Analisis Uji Dashboard Stunting Jawa Tengah — Munzner Level 3 & 4').setFontWeight('bold').setFontSize(15)
-  sh.getRange(2, 1).setValue('Semua sel di bawah berupa rumus dari lembar L3, L4, SUS, dan Responden. Kriteria "*" = semua persona.').setFontStyle('italic')
+  sh.getRange(2, 1).setValue('Semua sel di bawah berupa rumus dari lembar L3, L4, SUS, dan Responden. Kriteria "?" = semua persona (A atau B).').setFontStyle('italic')
 
   // ---------- A. Level 3 per diagram ----------
   title(4, 'A. Level 3 — Visual Reverse-Mapping per diagram (target: Acc_E2E ≥ 85%, latency ≤ 10 s, mayoritas ≥ 85% & sesuai kunci)')
@@ -91,7 +102,7 @@ function buatAnalisis() {
     l3rows[crit] = []
     ;['D1', 'D2', 'D3'].forEach(d => {
       const cond = `L3!$D:$D,$C${r},L3!$C:$C,$B${r}`
-      const arr = `(L3!$D$2:$D$${N}=$C${r})*((L3!$C$2:$C$${N}=$B${r})+($B${r}="*"))`
+      const arr = `(L3!$D$2:$D$${N}=$C${r})*((L3!$C$2:$C$${N}=$B${r})+($B${r}="?"))`
       sh.getRange(r, 1, 1, 5).setValues([[label, crit, d, IDIOM[d], KEY[d]]])
       sh.getRange(r, 6, 1, 18).setFormulas([[
         `=COUNTIFS(${cond})`,
@@ -135,12 +146,12 @@ function buatAnalisis() {
     sh.getRange(r, 1).setValue(label)
     sh.getRange(r, 2, 1, 9).setFormulas([[
       `=F${a}`,
-      `=IFERROR(AVERAGE(T${a}:T${c}),"")`,
+      `=IF(B${r}<2,"",IFERROR(AVERAGE(T${a}:T${c}),""))`,
       `=IFERROR(SUM(N${a}:N${c})/${total},"")`,
       `=IFERROR(SUM(O${a}:O${c})/${total},"")`,
       `=IFERROR(SUM(P${a}:P${c})/${total},"")`,
       `=IFERROR(SUMSQ(D${r}:F${r}),"")`,
-      `=IFERROR((C${r}-G${r})/(1-G${r}),"")`,
+      `=IF(OR(B${r}<2,C${r}=""),"",IFERROR((C${r}-G${r})/(1-G${r}),""))`,
       `=IF(H${r}="","",IF(H${r}<0,"Buruk",IF(H${r}<=0.2,"Sangat lemah",IF(H${r}<=0.4,"Lemah",IF(H${r}<=0.6,"Sedang",IF(H${r}<=0.8,"Kuat","Hampir sempurna"))))))`,
       `=IF(H${r}="","",IF(H${r}>=0.75,"Lulus","Belum"))`,
     ]])
@@ -156,11 +167,11 @@ function buatAnalisis() {
   head(r, ['Baris', 'Kolom filter', 'Nilai filter', 'n', 'Task Completion Rate', 'Time-on-task mean (s)', 'Time SD (s)', 'Time mean, hanya sukses (s)', 'Jawaban salah (mean)', 'Klik tanpa respons (mean)', 'Error per task (mean)', '% task dengan ≥ 1 error', 'Cross-filter dipakai', 'Completion ≥ 90%', 'Time ≤ 30 s'], '#e4f7db')
   r++
   const l4First = r
-  const L4ROWS = [['Task A1 · Anomali spasial-temporal', 'D', 'A1'], ['Task A2 · Perbandingan lintas kelompok', 'D', 'A2'], ['Task B1 · Kondisi wilayah (Temanggung)', 'D', 'B1'], ['Task B2 · Transparansi prioritas', 'D', 'B2'], ['Semua task Operator Internal', 'C', 'A'], ['Semua task Warga Publik', 'C', 'B'], ['Semua task (Total)', 'C', '*']]
+  const L4ROWS = [['Task A1 · Anomali spasial-temporal', 'D', 'A1'], ['Task A2 · Perbandingan lintas kelompok', 'D', 'A2'], ['Task B1 · Kondisi wilayah (Temanggung)', 'D', 'B1'], ['Task B2 · Transparansi prioritas', 'D', 'B2'], ['Semua task Operator Internal', 'C', 'A'], ['Semua task Warga Publik', 'C', 'B'], ['Semua task (Total)', 'C', '?']]
   const l4Cell = {}
   L4ROWS.forEach(([label, col, val]) => {
     const cond = `L4!$${col}:$${col},$C${r}`
-    const arr = `((L4!$${col}$2:$${col}$${N}=$C${r})+($C${r}="*"))*(L4!$D$2:$D$${N}<>"")`
+    const arr = `((L4!$${col}$2:$${col}$${N}=$C${r})+($C${r}="?"))*(L4!$D$2:$D$${N}<>"")`
     sh.getRange(r, 1, 1, 3).setValues([[label, col === 'D' ? 'Task' : 'Persona', val]])
     sh.getRange(r, 4, 1, 12).setFormulas([[
       `=COUNTIFS(${cond})`,
@@ -193,7 +204,7 @@ function buatAnalisis() {
   const susCell = {}
   GROUPS.forEach(([label, crit]) => {
     const cond = `SUS!$C:$C,$B${r}`
-    const arr = `((SUS!$C$2:$C$${N}=$B${r})+($B${r}="*"))*(SUS!$N$2:$N$${N}<>"")`
+    const arr = `((SUS!$C$2:$C$${N}=$B${r})+($B${r}="?"))*(SUS!$N$2:$N$${N}<>"")`
     sh.getRange(r, 1, 1, 2).setValues([[label, crit]])
     const items = ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'].map(c => `=IF($C${r}=0,"",AVERAGEIFS(SUS!$${c}:$${c},${cond}))`)
     sh.getRange(r, 3, 1, 17).setFormulas([[
@@ -220,18 +231,18 @@ function buatAnalisis() {
   head(r, ['Metrik', 'Operator Internal (A)', 'Warga Publik (B)', 'Total', 'Selisih A − B', 'Target', 'Status A', 'Status B', 'Status Total'], '#dcf4e2')
   r++
   const compFirst = r
-  const ap = (range, crit) => `IFERROR(AVERAGEIFS(${range},${crit === 'total' ? `L3!$C:$C,"*"` : `L3!$C:$C,"${crit}"`}),"")`
+  const ap = (range, crit) => `IFERROR(AVERAGEIFS(${range},${crit === 'total' ? `L3!$C:$C,"?"` : `L3!$C:$C,"${crit}"`}),"")`
   const metrics = [
     ['Acc_E2E (3 diagram)', c => `=${ap('L3!$K:$K', c)}`, '>=', 0.85, '0.0%'],
     ['Decode latency mean (s)', c => `=${ap('L3!$L:$L', c)}`, '<=', 10, '0.00'],
-    ["Fleiss' kappa (κ)", c => `=${kappaCell[c === 'total' ? '*' : c]}`, '>=', 0.75, '0.000'],
+    ["Fleiss' kappa (κ)", c => `=${kappaCell[c === 'total' ? '?' : c]}`, '>=', 0.75, '0.000'],
     ['Confidence mean (1–5)', c => `=${ap('L3!$M:$M', c)}`, '', '', '0.00'],
-    ['Lucky guess (jumlah anomali)', c => `=SUMIFS(L3!$N:$N,L3!$C:$C,"${c === 'total' ? '*' : c}")`, '', '', '0'],
-    ['Task Completion Rate', c => `=E${l4Cell[c === 'total' ? '*' : c]}`, '>=', 0.9, '0.0%'],
-    ['Time-on-task mean (s)', c => `=F${l4Cell[c === 'total' ? '*' : c]}`, '<=', 30, '0.0'],
-    ['Error per task (mean)', c => `=K${l4Cell[c === 'total' ? '*' : c]}`, '', '', '0.00'],
-    ['SUS mean', c => `=D${susCell[c === 'total' ? '*' : c]}`, '>=', 75, '0.0'],
-    ['Literasi grafik (self-report 1–5)', c => `=IFERROR(AVERAGEIFS(Responden!$F:$F,Responden!$D:$D,"${c === 'total' ? '*' : c}"),"")`, '', '', '0.00'],
+    ['Lucky guess (jumlah anomali)', c => `=SUMIFS(L3!$N:$N,L3!$C:$C,"${c === 'total' ? '?' : c}")`, '', '', '0'],
+    ['Task Completion Rate', c => `=E${l4Cell[c === 'total' ? '?' : c]}`, '>=', 0.9, '0.0%'],
+    ['Time-on-task mean (s)', c => `=F${l4Cell[c === 'total' ? '?' : c]}`, '<=', 30, '0.0'],
+    ['Error per task (mean)', c => `=K${l4Cell[c === 'total' ? '?' : c]}`, '', '', '0.00'],
+    ['SUS mean', c => `=D${susCell[c === 'total' ? '?' : c]}`, '>=', 75, '0.0'],
+    ['Literasi grafik (self-report 1–5)', c => `=IFERROR(AVERAGEIFS(Responden!$F:$F,Responden!$D:$D,"${c === 'total' ? '?' : c}"),"")`, '', '', '0.00'],
   ]
   metrics.forEach(([label, fn, op, target, fmt]) => {
     const status = col => op ? `=IF(${col}${r}="","",IF(${col}${r}${op}${target},"Lulus","Belum"))` : '=""'
@@ -247,7 +258,7 @@ function buatAnalisis() {
   r += 1
   title(r, 'F. Diagnosis — kandidat prioritas perbaikan (kelompok Total)')
   r++
-  const [t1, , t3] = l3rows['*']
+  const [t1, , t3] = l3rows['?']
   const diag = [
     ['Diagram dengan % mayoritas terendah', `=IFERROR(INDEX(C${t1}:C${t3},MATCH(MIN(S${t1}:S${t3}),S${t1}:S${t3},0))&" ("&TEXT(MIN(S${t1}:S${t3}),"0%")&")","")`],
     ['Diagram yang modusnya meleset dari kunci', `=IFERROR(TEXTJOIN(", ",TRUE,FILTER(C${t1}:C${t3},R${t1}:R${t3}<>E${t1}:E${t3})),"(tidak ada)")`],
