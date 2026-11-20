@@ -8,6 +8,8 @@ async function ready(page: Page, width: number, height: number) {
   await page.waitForTimeout(300)
 }
 const SIZES: [number, number][] = [[1672, 941], [1366, 768], [1280, 720]]
+// Narrow desktops: 1190x800 and 1100x790 fit the screen, 1100x789 is the page-scroll mode just below the threshold.
+const NARROW: [number, number][] = [[1190, 800], [1100, 790], [1100, 789]]
 
 for (const [width, height] of SIZES) {
   test(`Karimunjawa inset keeps its size, leaves the mainland alone and hides no city marker at ${width}x${height}`, async ({ page }) => {
@@ -43,13 +45,19 @@ for (const [width, height] of SIZES) {
     expect(result.captionInside).toBe(true)
     expect(result.captionPx).toBeGreaterThanOrEqual(12)
   })
+}
 
+for (const [width, height] of [...SIZES, ...NARROW]) {
   test(`the 'Perubahan 2019→2022' header breaks into two lines and the table does not scroll sideways at ${width}x${height}`, async ({ page }) => {
     await ready(page, width, height)
     await expect(page.locator('tbody tr')).toHaveCount(5)
-    const lines = await page.locator('.th-line').evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().top))
+    const lines = await page.locator('thead button .th-line').evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().top))
     expect(lines).toHaveLength(2)
     expect(lines[1]).toBeGreaterThan(lines[0] + 8)
+    // 'Peringkat prevalensi' breaks into two lines the same way.
+    const rank = await page.locator('.rank-col .th-line').evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().top))
+    expect(rank).toHaveLength(2)
+    expect(rank[1]).toBeGreaterThan(rank[0] + 8)
     const box = await page.locator('.table-scroll').evaluate(node => ({ scrollWidth: node.scrollWidth, clientWidth: node.clientWidth, height: node.clientHeight }))
     expect(box.scrollWidth).toBeLessThanOrEqual(box.clientWidth)
     expect(box.height).toBeGreaterThanOrEqual(80)
