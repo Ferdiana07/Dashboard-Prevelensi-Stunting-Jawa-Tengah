@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowDown, ArrowUp, ArrowUpDown, Search } from 'lucide-react'
-import { category, CATEGORIES, k6Entries, K6_LABEL, k6Change, K6_NOTE, k6SummaryText, prevalenceRank, rankingTitle, TARGET } from '../lib/calculations'
+import { category, CATEGORIES, k6Entries, k6Change, K6_NOTE, k6SummaryText, prevalenceRank, rankingTitle, TARGET } from '../lib/calculations'
 import { percent, signed } from '../lib/format'
 import type { Scope, StuntingRow, Year } from '../types'
 
@@ -54,7 +54,7 @@ export function RankingTable({ rows, all, year, scope, selected, onSelect }: Pro
     <h2 id="ranking-title">Peringkat Wilayah <span>({rankingTitle(sort, descending, year)})</span></h2>
     <div className="table-toolbar"><div className="search-wrap"><Search size={15} aria-hidden="true" /><input aria-label="Cari wilayah" placeholder="Cari kabupaten / kota…" value={query} onChange={e => setQuery(e.target.value)} /></div>{rows.length > DEFAULT_ROWS && <button className="text-button" onClick={() => setShowAll(!showAll)}>{showAll ? `Tampilkan ${DEFAULT_ROWS} besar` : `Lihat semua (${rows.length})`}</button>}</div>
     <div ref={scroller} className={`table-scroll ${showAll ? 'expanded' : ''}`} tabIndex={0} aria-label="Tabel peringkat wilayah, dapat digulir">
-      <table><thead><tr><th scope="col" className="rank-col">Peringkat prevalensi</th><th scope="col">Kabupaten/Kota</th><th scope="col" aria-sort={sort === 'prevalence' ? descending ? 'descending' : 'ascending' : 'none'}><button onClick={() => sortBy('prevalence')}>Prevalensi {sortIcon('prevalence')}</button></th><th scope="col" aria-sort={sort === 'target' ? descending ? 'descending' : 'ascending' : 'none'}><button onClick={() => sortBy('target')} title="Selisih prevalensi terhadap target 14%">Target {sortIcon('target')}</button></th><th scope="col" aria-sort={sort === 'change' ? descending ? 'descending' : 'ascending' : 'none'}><button onClick={() => sortBy('change')} title="Prevalensi 2022 dikurangi prevalensi 2019, tidak bergantung pada tahun yang dipilih">{K6_LABEL} {sortIcon('change')}</button></th></tr></thead>
+      <table><thead><tr><th scope="col" className="rank-col"><span className="th-label"><span className="th-line">Peringkat</span> <span className="th-line">prevalensi</span></span></th><th scope="col">Kabupaten/Kota</th><th scope="col" aria-sort={sort === 'prevalence' ? descending ? 'descending' : 'ascending' : 'none'}><button onClick={() => sortBy('prevalence')}>Prevalensi {sortIcon('prevalence')}</button></th><th scope="col" aria-sort={sort === 'target' ? descending ? 'descending' : 'ascending' : 'none'}><button onClick={() => sortBy('target')} title="Selisih prevalensi terhadap target 14%">Target {sortIcon('target')}</button></th><th scope="col" aria-sort={sort === 'change' ? descending ? 'descending' : 'ascending' : 'none'}><button onClick={() => sortBy('change')} title="Prevalensi 2022 dikurangi prevalensi 2019, tidak bergantung pada tahun yang dipilih"><span className="th-label"><span className="th-line">Perubahan</span> <span className="th-line">2019→2022</span></span> {sortIcon('change')}</button></th></tr></thead>
         <tbody>{visible.map(row => {
           const delta = k6Change(all, row.code)
           const info = CATEGORIES[category(row.prevalence)]
@@ -64,7 +64,7 @@ export function RankingTable({ rows, all, year, scope, selected, onSelect }: Pro
         })}</tbody>
       </table>{!filtered.length && <div className="empty-state">Tidak ada wilayah yang cocok dengan “{query}”. <button className="text-button" onClick={() => setQuery('')}>Hapus pencarian</button></div>}
     </div>
-    <p className="k6-summary"><span className="k6-summary-full">{k6SummaryText(k6, scope)}</span><span className="k6-summary-short">{k6SummaryText(k6, scope, true)}</span> <a href="#k6-title">Lihat grafik K6 ↓</a></p>
-    <p className="table-note">Target: selisih dari 14% · {K6_NOTE}<br />pp = poin persentase · Peringkat berdasarkan cakupan filter</p>
+    <p className="k6-summary">{k6SummaryText(k6, scope)} <a href="#k6-title">Lihat grafik perubahan ↓</a></p>
+    <p className="table-note">Target: selisih dari 14% · pp = poin persentase · Peringkat berdasarkan cakupan filter<br />{K6_NOTE}</p>
   </section>
 }

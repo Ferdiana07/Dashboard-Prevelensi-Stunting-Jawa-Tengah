@@ -13,7 +13,7 @@ import { CursorTooltip } from './map/CursorTooltip'
 
 const VIEW: Box = { x: 4, y: 4, width: 752, height: 432 }
 const INSET: Box = { x: 15, y: 12, width: 145, height: 110 }
-interface Props { boundaries: Boundaries; rows: StuntingRow[]; all: StuntingRow[]; year: Year; selected: string | null; onSelect: (code: string) => void; resetKey: number }
+interface Props { boundaries: Boundaries; rows: StuntingRow[]; all: StuntingRow[]; year: Year; selected: string | null; onSelect: (code: string) => void; resetKey: number; detailName: string | null; onShowDetails: (event: React.MouseEvent) => void }
 function partition(boundaries: Boundaries) {
   const main: Boundaries = { type: 'FeatureCollection', features: [] }
   const islands: Boundaries = { type: 'FeatureCollection', features: [] }
@@ -27,7 +27,7 @@ function partition(boundaries: Boundaries) {
   return { main, islands }
 }
 
-export function MapPanel({ boundaries, rows, all, year, selected, onSelect, resetKey }: Props) {
+export function MapPanel({ boundaries, rows, all, year, selected, onSelect, resetKey, detailName, onShowDetails }: Props) {
   const prefix = `map-${useId().replace(/:/g, '')}`
   const svg = useRef<SVGSVGElement>(null)
   const layer = useRef<SVGGElement>(null)
@@ -45,8 +45,12 @@ export function MapPanel({ boundaries, rows, all, year, selected, onSelect, rese
   const islandPath = useMemo(() => geoPath(geoIdentity().reflectY(true).fitExtent([[27, 36], [145, 106]], islands)), [islands])
   const byCode = new Map(rows.map(row => [row.code, row]))
   const yearRows = all.filter(row => row.year === year)
-  // Label font keeps a roughly constant on-screen size (about 10px) whatever the panel width; zoom never changes it.
-  const fontSize = Math.min(20, Math.max(11, 10 / measured.scale))
+  // Label font keeps a roughly constant on-screen size (about 12px) whatever the panel width; zoom never changes it.
+  const fontSize = Math.min(20, Math.max(12, 12.2 / measured.scale))
+  // The inset keeps its size; only its caption grows (in SVG units) so it stays at least 12px on screen,
+  // switching to the short name when the full one no longer fits the box.
+  const captionSize = Math.max(12, 12.2 / measured.scale)
+  const caption = 'Kep. Karimunjawa'.length * captionSize * 0.6 <= INSET.width - 24 ? 'Kep. Karimunjawa' : 'Karimunjawa'
   const geometry = useMemo(() => new Map(main.features.map(feature => {
     const [[x0, y0], [x1, y1]] = path.bounds(feature)
     return [String(feature.properties.kode_wilayah), { centroid: path.centroid(feature), bounds: { x: x0, y: y0, width: x1 - x0, height: y1 - y0 } }] as const
@@ -164,7 +168,7 @@ export function MapPanel({ boundaries, rows, all, year, selected, onSelect, rese
             <text x={label.x} y={label.y} textAnchor="middle" dominantBaseline="central">{label.text}</text>
           </g>)}
         </g>
-        <g className="inset"><rect x={15} y={12} width={145} height={110} rx={9} fill="white" stroke="#dce0e5" /><text x={25} y={29}>Kep. Karimunjawa</text>{features(islands, islandPath, true)}</g>
+        <g className="inset"><rect x={15} y={12} width={145} height={110} rx={9} fill="white" stroke="#dce0e5" /><text x={25} y={12 + captionSize + 4} style={{ fontSize: captionSize }}>{caption}</text>{features(islands, islandPath, true)}</g>
       </svg>
       <div ref={controls} className="map-controls" aria-label="Kontrol peta"><button className="icon-button" onClick={() => zoomBy(1.4)} aria-label="Perbesar peta"><Plus size={17} /></button><button className="icon-button" onClick={() => zoomBy(1 / 1.4)} aria-label="Perkecil peta"><Minus size={17} /></button><button className="icon-button" aria-label="Reset zoom" onClick={() => { if (svg.current && behavior.current) select(svg.current).call(behavior.current.transform, zoomIdentity) }}><RotateCcw size={15} /></button></div>
       {hover && hovered && <CursorTooltip anchor={hover} id={`${prefix}-tooltip`}>
@@ -174,6 +178,6 @@ export function MapPanel({ boundaries, rows, all, year, selected, onSelect, rese
         <span className="tooltip-hint">Klik untuk melihat detail wilayah</span>
       </CursorTooltip>}
     </div>
-    <div className="map-footer"><h3>Prevalensi Stunting</h3><CategoryLegend className="map-legend" counts={{ achieved: rows.filter(row => category(row.prevalence) === 'achieved').length, moderate: rows.filter(row => category(row.prevalence) === 'moderate').length, high: rows.filter(row => category(row.prevalence) === 'high').length }} /><p className="map-help">Klik wilayah untuk detail · Geser peta untuk menjelajah · Titik menandai kota</p></div>
+    <div className="map-footer"><div className="legend-heading"><h3>Prevalensi Stunting</h3>{detailName && <a className="panel-link detail-link" href="#details-title" onClick={onShowDetails}>Detail {detailName} ↓</a>}</div><CategoryLegend className="map-legend" counts={{ achieved: rows.filter(row => category(row.prevalence) === 'achieved').length, moderate: rows.filter(row => category(row.prevalence) === 'moderate').length, high: rows.filter(row => category(row.prevalence) === 'high').length }} /><p className="map-help">Klik wilayah untuk detail · Geser peta untuk menjelajah · Titik menandai kota</p></div>
   </section>
 }

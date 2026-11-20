@@ -108,7 +108,7 @@ test('audit exported values for all 105 source observations', async ({ page }) =
   for (const year of [2019, 2021, 2022]) {
     await page.locator('#year').selectOption(String(year))
     const pending = page.waitForEvent('download')
-    await page.getByRole('button', { name: 'Ekspor CSV cakupan' }).click()
+    await page.getByRole('button', { name: 'Unduh CSV' }).click()
     const download = await pending
     const stream = await download.createReadStream()
     const chunks: Buffer[] = []

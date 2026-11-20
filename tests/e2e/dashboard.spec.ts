@@ -13,21 +13,21 @@ test('default matches reference metrics, ranking, and all 35 geometries', async 
   await expect(page.locator('tbody tr').nth(1)).not.toContainText('+8,4 pp')
   await expect(page.locator('#year option')).toHaveText(['2019', '2021', '2022'])
   await expect(page.locator('thead')).not.toContainText('K5')
-  await expect(page.locator('thead')).toContainText('K6: 2019→2022')
+  await expect(page.locator('thead')).toContainText('Perubahan 2019→2022')
   await expect(page.getByRole('button', { name: 'Target', exact: true })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'K6: 2019→2022' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Perubahan 2019→2022' })).toBeVisible()
 })
 test('year and type filters update all scoped views correctly', async ({ page }) => {
   await ready(page)
   await page.getByLabel('Tahun:', { exact: true }).selectOption('2021')
   await expect(page.locator('.score-value')).toHaveText(['20,0%', '32 dari 35', '1,0 pp', '8,6%'])
-  await expect(page.locator('.table-note')).toContainText('K6 = prevalensi 2022 − prevalensi 2019')
+  await expect(page.locator('.table-note')).toContainText('Perubahan = prevalensi 2022 − prevalensi 2019')
   await page.getByLabel('Cari wilayah').fill('Temanggung')
   await expect(page.locator('tbody tr')).toContainText('+3,1 pp')
   await page.getByLabel('Cari wilayah').fill('')
   await page.getByLabel('Wilayah:', { exact: true }).selectOption('Kota')
   await expect(page.locator('.score-value').nth(2)).toHaveText('Tidak berlaku')
-  await expect(page.locator('.k6-summary')).toContainText('K6 2019→2022: semua 6 kota turun. Penurunan paling lambat Kota Surakarta -2,6 pp.')
+  await expect(page.locator('.k6-summary')).toContainText('2019→2022: semua 6 kota turun. Penurunan paling lambat Kota Surakarta -2,6 pp.')
   await expect(page.locator('.score-note').first()).toHaveText('rata-rata 6 wilayah')
   await expect(page.locator('.comparison-panel .scope-note')).toContainText('perbandingan dua kelompok tidak tersedia')
   await page.getByRole('button', { name: 'Reset Filter', exact: true }).click()
@@ -57,7 +57,7 @@ test('keyboard map selection highlights a region and opens details without narro
   await expect(page.getByLabel('Wilayah tren')).toHaveValue('3323')
   await expect(page.locator('.score-value')).toHaveText(scores)
   await expect(page.locator('.score-note').first()).toHaveText('rata-rata 35 wilayah')
-  await expect(page.locator('.overview-footer')).toContainText('35 wilayah · 2022 · Semua kabupaten/kota')
+  await expect(page.locator('.page-subtitle')).toHaveText('Prevalensi stunting balita · 35 kabupaten/kota · 2019, 2021, 2022')
   await expect(page.locator('.bar-chart')).toContainText('Kota')
   await expect(page.locator('.bar-chart')).toContainText('Kabupaten')
   await expect(page.locator('.comparison-panel .scope-note')).toHaveCount(0)
@@ -86,11 +86,15 @@ test('choosing a scope clears the selection; a region outside the scope still op
   await page.getByLabel('Wilayah:', { exact: true }).selectOption('Kabupaten')
   await expect(page.locator('.detail-panel')).toHaveCount(0)
   await expect(page.locator('.score-note').first()).toHaveText('rata-rata 29 wilayah')
-  await expect(page.locator('.k6-summary')).toContainText('K6 2019→2022: 6 kabupaten naik · 1 tetap · 22 turun. Kenaikan terbesar Kab. Pati +3,6 pp.')
+  await expect(page.locator('.k6-summary')).toContainText('2019→2022: 6 kabupaten naik · 1 tetap · 22 turun. Kenaikan terbesar Kab. Pati +3,6 pp.')
+  // The subtitle counts every region, never the filtered rows.
+  await expect(page.locator('.page-subtitle')).toContainText('35 kabupaten/kota')
   // K6 is fixed to 2019→2022: changing the year leaves the summary as it is.
   await page.getByLabel('Tahun:', { exact: true }).selectOption('2019')
   await expect(page.locator('.k6-summary')).toContainText('6 kabupaten naik · 1 tetap · 22 turun')
-  await expect(page.locator('.overview-footer').getByRole('link', { name: 'Lihat perubahan K6' })).toHaveAttribute('href', '#k6-title')
+  await expect(page.locator('.k6-summary').getByRole('link', { name: 'Lihat grafik perubahan' })).toHaveAttribute('href', '#k6-title')
+  await expect(page.getByRole('link', { name: 'Lihat tren 2019–2022' })).toHaveAttribute('href', '#trend-title')
+  await expect(page.locator('.overview-footer')).toHaveCount(0)
 })
 test('detail link appears only with a selection and moves focus to the detail heading', async ({ page }) => {
   await ready(page)
@@ -104,6 +108,32 @@ test('detail link appears only with a selection and moves focus to the detail he
   await expect(page.locator('.detail-panel')).toBeInViewport()
   await page.getByRole('button', { name: 'Tutup detail wilayah' }).click()
   await expect(page.locator('.detail-link')).toHaveCount(0)
+})
+test('header controls: order and size, reset restores defaults; Detail and Tren links work with the keyboard', async ({ page }) => {
+  await ready(page)
+  const controls = await page.locator('.filters > *').evaluateAll(nodes => nodes.map(node => ({ text: node.textContent?.trim() || node.getAttribute('aria-label'), h: node.getBoundingClientRect().height, w: node.getBoundingClientRect().width })))
+  expect(controls.map(c => c.h)).toEqual([40, 40, 40, 40])
+  expect(controls[2].w).toBe(40)
+  expect(controls.map(c => c.text)).toEqual([expect.stringContaining('Tahun:'), expect.stringContaining('Wilayah:'), 'Reset Filter', 'Unduh CSV'])
+  await expect(page.getByRole('button', { name: 'Reset Filter', exact: true })).toHaveAttribute('title', 'Reset Filter')
+  // Keyboard: select a region on the map, then use the link beside the legend heading.
+  await page.locator('[data-region="3329"]').focus(); await page.keyboard.press('Enter')
+  await page.getByRole('link', { name: 'Detail Kab. Brebes ↓' }).focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#details-title')).toBeFocused()
+  await page.evaluate(() => window.scrollTo(0, 0))
+  await page.getByRole('link', { name: 'Lihat tren 2019–2022' }).focus()
+  await page.keyboard.press('Enter')
+  await expect(page).toHaveURL(/#trend-title$/)
+  await expect(page.locator('#trend-title')).toBeInViewport()
+  await page.getByLabel('Wilayah:', { exact: true }).selectOption('3374')
+  await expect(page.locator('.sr-only[role="status"]')).toHaveText('Detail Kota Semarang ditampilkan di bawah')
+  await page.getByLabel('Tahun:', { exact: true }).selectOption('2019')
+  await page.getByLabel('Wilayah:', { exact: true }).selectOption('Kota')
+  await page.getByRole('button', { name: 'Reset Filter', exact: true }).click()
+  await expect(page.getByLabel('Tahun:', { exact: true })).toHaveValue('2022')
+  await expect(page.getByLabel('Wilayah:', { exact: true })).toHaveValue('all')
+  await expect(page.locator('.detail-panel')).toHaveCount(0)
 })
 for (const reduced of [false, true]) {
   test(`dropdown choice announces and scrolls to details, keeps focus on the dropdown (reduced motion: ${reduced})`, async ({ page }) => {
@@ -156,7 +186,7 @@ test('search, empty state, sorting by K6, and show all work', async ({ page }) =
   await ready(page)
   await page.getByRole('button', { name: 'Lihat semua (35)', exact: true }).click()
   await expect(page.locator('tbody tr')).toHaveCount(35)
-  await page.getByRole('button', { name: 'K6: 2019→2022' }).click()
+  await page.getByRole('button', { name: 'Perubahan 2019→2022' }).click()
   await expect(page.locator('tbody tr').first()).toContainText('Kab. Pati')
   await page.getByLabel('Cari wilayah').fill('Semarang')
   await expect(page.locator('tbody tr')).toHaveCount(2)
@@ -194,7 +224,7 @@ test('exports actual filtered rows as CSV', async ({ page }) => {
   await ready(page)
   await page.getByLabel('Wilayah:', { exact: true }).selectOption('Kota')
   const pending = page.waitForEvent('download')
-  await page.getByRole('button', { name: 'Ekspor CSV cakupan' }).click()
+  await page.getByRole('button', { name: 'Unduh CSV' }).click()
   const download = await pending
   expect(download.suggestedFilename()).toBe('stunting-jateng-2022.csv')
   const stream = await download.createReadStream()
@@ -216,46 +246,56 @@ test('no horizontal document overflow at mobile, tablet, laptop, desktop sizes',
     expect(boxes.every(box => box.overflow <= box.width)).toBe(true)
   }
 })
-test('desktop overview fits the actual viewport height, including short laptop screens', async ({ page }) => {
+test('desktop overview fits the viewport when the window is tall enough to keep the table at 80px', async ({ page }) => {
   await ready(page)
-  for (const [width, height] of [[1280, 600], [1366, 650], [1366, 768], [1536, 730], [1672, 941]]) {
+  for (const [width, height] of [[1280, 720], [1366, 768], [1536, 730], [1672, 941], [1100, 790]]) {
     await page.setViewportSize({ width, height })
     await page.evaluate(() => document.fonts.ready)
     await page.waitForTimeout(150)
     const layout = await page.evaluate(() => {
       const overview = document.querySelector('.dashboard-overview')!.getBoundingClientRect()
-      const footer = document.querySelector('.overview-footer')!.getBoundingClientRect()
       const table = document.querySelector('.table-scroll')!
       const ranking = document.querySelector('.ranking-panel')!.getBoundingClientRect()
       const grid = document.querySelector('.dashboard-grid')!.getBoundingClientRect()
-      return { overviewBottom: overview.bottom, footerBottom: footer.bottom, rankingBottom: ranking.bottom, gridBottom: grid.bottom, tableHeight: table.clientHeight }
+      return { overviewBottom: overview.bottom, rankingBottom: ranking.bottom, gridBottom: grid.bottom, tableHeight: table.clientHeight }
     })
-    expect(layout.overviewBottom).toBeLessThanOrEqual(height)
-    expect(layout.footerBottom).toBeLessThanOrEqual(height)
+    expect(layout.overviewBottom, `${width}x${height}`).toBeLessThanOrEqual(height)
     expect(layout.rankingBottom).toBeLessThanOrEqual(layout.gridBottom + 1)
-    expect(layout.tableHeight).toBeGreaterThan(80)
-    // The K6 summary sits between the table and the note, fully inside the viewport; short screens use the short wording.
+    expect(layout.tableHeight, `${width}x${height}: table height`).toBeGreaterThanOrEqual(80)
+    // The summary sits between the table and the note, fully inside the panel and the viewport.
     const summary = (await page.locator('.k6-summary').boundingBox())!
     expect(summary.y + summary.height).toBeLessThanOrEqual(layout.rankingBottom)
     expect(summary.y + summary.height).toBeLessThanOrEqual(height)
-    await expect(page.locator(height <= 640 ? '.k6-summary-short' : '.k6-summary-full')).toBeVisible()
-    await expect(page.locator('.k6-summary')).toContainText('6 naik · 1 tetap · 28 turun')
+    await expect(page.locator('.k6-summary')).toContainText('6 wilayah naik · 1 tetap · 28 turun')
     await expect(page.locator('.k6-summary')).toContainText('Kab. Pati +3,6 pp')
     await expect(page.locator('.k6-summary a')).toBeVisible()
-    // Kota/Kabupaten bars stay apart even when that panel gives room to the summary.
     const bars = await page.locator('.bar-chart [data-bar-category] > :first-child').evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().toJSON() as DOMRect))
     expect(bars).toHaveLength(2)
     expect(bars[0].bottom).toBeLessThanOrEqual(bars[1].top)
-    // The top rows scroll inside the panel; they never push the overview past the viewport.
     await expect(page.locator('tbody tr')).toHaveCount(5)
-    expect(await page.locator('.table-scroll').evaluate(node => node.scrollHeight >= node.clientHeight)).toBe(true)
     await expect(page.locator('.bar-chart')).toContainText('Kota')
-    await expect(page.locator('.bar-chart')).toContainText('Kabupaten')
     await page.getByRole('button', { name: 'Lihat semua (35)', exact: true }).click()
-    expect((await page.locator('.overview-footer').boundingBox())!.y).toBeLessThan(height)
+    expect((await page.locator('.ranking-panel').boundingBox())!.y + (await page.locator('.ranking-panel').boundingBox())!.height).toBeLessThanOrEqual(height)
     await page.getByRole('button', { name: 'Tampilkan 5 besar', exact: true }).click()
     await expect(page.locator('tbody tr')).toHaveCount(5)
-    if (width === 1366 || width === 1536 || width === 1280) await page.screenshot({ path: `.impeccable/review/fit-${width}x${height}.png` })
+  }
+})
+test('below the fit threshold the page scrolls: natural table of five rows and the Kota vs Kab. legend stay visible', async ({ page }) => {
+  await ready(page)
+  for (const [width, height] of [[1280, 719], [1280, 600], [1190, 719], [1100, 789]]) {
+    await page.setViewportSize({ width, height })
+    await page.waitForTimeout(150)
+    const layout = await page.evaluate(() => {
+      const table = document.querySelector('.table-scroll')!
+      return { overviewHeight: document.querySelector('.dashboard-overview')!.getBoundingClientRect().height, display: getComputedStyle(document.querySelector('.dashboard-overview')!).display, fits: table.scrollHeight <= table.clientHeight + 1, tableHeight: table.clientHeight }
+    })
+    expect(layout.display, `${width}x${height}`).not.toBe('grid')
+    expect(layout.overviewHeight).toBeGreaterThan(height)
+    expect(layout.fits, `${width}x${height}: all five rows are visible`).toBe(true)
+    expect(layout.tableHeight).toBeGreaterThan(200)
+    await expect(page.locator('.comparison-legend')).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Lihat tren 2019–2022' })).toBeVisible()
+    await expect(page.locator('tbody tr')).toHaveCount(5)
   }
 })
 test('P11: table shows the top five by default and toggles to all', async ({ page }) => {
@@ -339,10 +379,10 @@ test('table title follows the active sort and the number column is named', async
   await expect(title).toContainText('Jarak ke Target Terbesar, 2022')
   await page.getByRole('button', { name: 'Target', exact: true }).click()
   await expect(title).toContainText('Jarak ke Target Terkecil, 2022')
-  await page.getByRole('button', { name: 'K6: 2019→2022' }).click()
+  await page.getByRole('button', { name: 'Perubahan 2019→2022' }).click()
   await expect(title).toContainText('Kenaikan Terbesar / Penurunan Terkecil 2019→2022')
   await expect(page.locator('tbody .area-name').first()).toHaveText('Kab. Pati')
-  await page.getByRole('button', { name: 'K6: 2019→2022' }).click()
+  await page.getByRole('button', { name: 'Perubahan 2019→2022' }).click()
   await expect(title).toContainText('Penurunan Terbesar 2019→2022')
   await expect(page.locator('tbody .area-name').first()).toHaveText('Kab. Demak')
   // Ranks stay prevalence ranks whatever the sort.

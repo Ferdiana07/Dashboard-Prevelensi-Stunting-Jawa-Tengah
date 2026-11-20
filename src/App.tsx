@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Download, Info, LoaderCircle } from 'lucide-react'
+import { Info, LoaderCircle } from 'lucide-react'
 import { useDataset } from './hooks/useDataset'
 import { filterRows } from './lib/calculations'
 import { exportCsv } from './lib/export'
@@ -11,7 +11,7 @@ import { RankingTable } from './components/RankingTable'
 import { TrendPanel } from './components/TrendPanel'
 import { RegionDetails } from './components/RegionDetails'
 import { K6Chart } from './components/K6Chart'
-import type { Scope, Year } from './types'
+import { YEARS, type Scope, type Year } from './types'
 
 // Smooth scrolling unless the user asked for reduced motion.
 const scrollBehavior = (): ScrollBehavior => window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
@@ -49,7 +49,7 @@ export default function App() {
   // because the detail panel opens above the chart, outside the user's view.
   function selectFromK6(code: string) {
     setSelected(code)
-    setAnnouncement(`Detail ${areas.find(row => row.code === code)?.name ?? code} ditampilkan di atas grafik K6`)
+    setAnnouncement(`Detail ${areas.find(row => row.code === code)?.name ?? code} ditampilkan di atas grafik perubahan`)
   }
   function showDetails(event: React.MouseEvent) {
     event.preventDefault()
@@ -62,10 +62,9 @@ export default function App() {
     <a className="skip-link" href="#overview">Lewati ke dashboard</a>
     <div className="sr-only" role="status" aria-live="polite">{selectedRow ? announcement : ''}</div>
     <section className="dashboard-overview" aria-label="Ringkasan dashboard">
-    <header className="page-header"><h1>Dashboard Prioritas Intervensi Stunting Kabupaten/Kota di Jawa Tengah</h1><Filters year={year} region={selected ?? scope} areas={areas} onYear={setYear} onRegion={chooseRegion} onReset={reset} /></header>
+    <header className="page-header"><h1>Dashboard Prioritas Intervensi Stunting Kabupaten/Kota di Jawa Tengah</h1><div className="header-row"><p className="page-subtitle">Prevalensi stunting balita · {areas.length} kabupaten/kota · {YEARS.join(', ')}</p><Filters year={year} region={selected ?? scope} areas={areas} onYear={setYear} onRegion={chooseRegion} onReset={reset} onExport={() => exportCsv(rows, data.rows)} /></div></header>
     <div id="overview"><Scorecards rows={rows} /></div>
-    <div className="dashboard-grid"><MapPanel boundaries={data.boundaries} rows={rows} all={data.rows} year={year} selected={selected} onSelect={setSelected} resetKey={resetKey} /><div className="analysis-column"><ComparisonChart rows={rows} all={data.rows} year={year} /><RankingTable key={`${resetKey}:${scope}`} rows={rows} all={data.rows} year={year} scope={scope} selected={selected} onSelect={setSelected} /></div></div>
-    <div className="overview-footer"><p><span className="status-dot" />{rows.length} wilayah · {year} · {scopeLabel}</p><div>{selectedRow && <a className="detail-link" href="#details-title" onClick={showDetails}>Detail {selectedRow.name} ↓</a>}<a href="#k6-title">Lihat perubahan K6</a><a href="#trend-title">Lihat analisis tren</a><button className="export-button" onClick={() => exportCsv(rows, data.rows)}><Download size={15} />Ekspor CSV cakupan</button></div></div>
+    <div className="dashboard-grid"><MapPanel boundaries={data.boundaries} rows={rows} all={data.rows} year={year} selected={selected} onSelect={setSelected} resetKey={resetKey} detailName={selectedRow?.name ?? null} onShowDetails={showDetails} /><div className="analysis-column"><ComparisonChart rows={rows} all={data.rows} year={year} /><RankingTable key={`${resetKey}:${scope}`} rows={rows} all={data.rows} year={year} scope={scope} selected={selected} onSelect={setSelected} /></div></div>
     </section>
     {selectedRow && <RegionDetails row={selectedRow} all={data.rows} scopeLabel={outOfScope ? scopeLabel : null} onClear={() => { setSelected(null); setAnnouncement('') }} />}
     <K6Chart all={data.rows} scope={scope} scopeLabel={scopeLabel} selected={selected} onSelect={selectFromK6} detailName={selectedRow?.name ?? null} onShowDetails={showDetails} />
