@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowDown, ArrowUp, ArrowUpDown, Search } from 'lucide-react'
 import { category, CATEGORIES, K6_LABEL, k6Change, K6_NOTE, prevalenceRank, rankingTitle, TARGET } from '../lib/calculations'
 import { percent, signed } from '../lib/format'
@@ -6,7 +6,7 @@ import type { StuntingRow, Year } from '../types'
 
 interface Props { rows: StuntingRow[]; all: StuntingRow[]; year: Year; selected: string | null; onSelect: (code: string) => void }
 type Sort = 'prevalence' | 'target' | 'change'
-export const DEFAULT_ROWS = 10
+export const DEFAULT_ROWS = 5
 export function RankingTable({ rows, all, year, selected, onSelect }: Props) {
   const [query, setQuery] = useState('')
   const [showAll, setShowAll] = useState(false)
@@ -20,9 +20,22 @@ export function RankingTable({ rows, all, year, selected, onSelect }: Props) {
       return (descending ? bv - av : av - bv) || a.code.localeCompare(b.code)
     })
   const base = showAll ? filtered : filtered.slice(0, DEFAULT_ROWS)
-  // A selected region stays in the table even when it falls outside the default list (unless a search hides it on purpose).
+  // Interaksi di peta/dropdown tidak mengubah isi tabel: wilayah terpilih disorot. Bila di luar 5 besar, wilayah itu
+  // ditampilkan tepat di bawah baris ke-5 dengan nomor peringkat aslinya (kecuali pencarian sengaja menyembunyikannya).
   const selectedRow = selected && !query ? ranked.find(row => row.code === selected) : undefined
   const visible = selectedRow && !base.some(row => row.code === selectedRow.code) ? [...base, selectedRow] : base
+  const appended = selectedRow && visible.length > base.length ? selectedRow.code : null
+  const scroller = useRef<HTMLDivElement>(null)
+  // Saat semua wilayah tampil (atau tabel bergulir di dalam panel), gulir tabel saja ke baris terpilih; halaman tidak ikut bergulir.
+  useEffect(() => {
+    const box = scroller.current
+    const row = box?.querySelector<HTMLElement>('tr.selected-row')
+    if (!box || !row || box.scrollHeight <= box.clientHeight) return
+    const head = box.querySelector('thead')?.getBoundingClientRect().height ?? 0
+    const offset = row.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop
+    const top = Math.max(0, offset - head - (box.clientHeight - head - row.offsetHeight) / 2)
+    box.scrollTo({ top, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+  }, [selected, showAll, sort, descending])
   const [seenSelection, setSeenSelection] = useState(selected)
   if (selected !== seenSelection) {
     setSeenSelection(selected)
@@ -38,12 +51,12 @@ export function RankingTable({ rows, all, year, selected, onSelect }: Props) {
   return <section className="panel ranking-panel" aria-labelledby="ranking-title">
     <h2 id="ranking-title">Peringkat Wilayah <span>({rankingTitle(sort, descending, year)})</span></h2>
     <div className="table-toolbar"><div className="search-wrap"><Search size={15} aria-hidden="true" /><input aria-label="Cari wilayah" placeholder="Cari kabupaten / kota…" value={query} onChange={e => setQuery(e.target.value)} /></div>{rows.length > DEFAULT_ROWS && <button className="text-button" onClick={() => setShowAll(!showAll)}>{showAll ? `Tampilkan ${DEFAULT_ROWS} besar` : `Lihat semua (${rows.length})`}</button>}</div>
-    <div className={`table-scroll ${showAll ? 'expanded' : ''}`} tabIndex={0} aria-label="Tabel peringkat wilayah, dapat digulir">
+    <div ref={scroller} className={`table-scroll ${showAll ? 'expanded' : ''}`} tabIndex={0} aria-label="Tabel peringkat wilayah, dapat digulir">
       <table><thead><tr><th scope="col" className="rank-col">Peringkat prevalensi</th><th scope="col">Kabupaten/Kota</th><th scope="col" aria-sort={sort === 'prevalence' ? descending ? 'descending' : 'ascending' : 'none'}><button onClick={() => sortBy('prevalence')}>Prevalensi {sortIcon('prevalence')}</button></th><th scope="col" aria-sort={sort === 'target' ? descending ? 'descending' : 'ascending' : 'none'}><button onClick={() => sortBy('target')} title="Selisih prevalensi terhadap target 14%">Target {sortIcon('target')}</button></th><th scope="col" aria-sort={sort === 'change' ? descending ? 'descending' : 'ascending' : 'none'}><button onClick={() => sortBy('change')} title="Prevalensi 2022 dikurangi prevalensi 2019, tidak bergantung pada tahun yang dipilih">{K6_LABEL} {sortIcon('change')}</button></th></tr></thead>
         <tbody>{visible.map(row => {
           const delta = k6Change(all, row.code)
           const info = CATEGORIES[category(row.prevalence)]
-          return <tr key={row.code} className={selected === row.code ? 'selected-row' : ''}>
+          return <tr key={row.code} className={`${selected === row.code ? 'selected-row' : ''} ${appended === row.code ? 'appended-row' : ''}`.trim()}>
             <td><span className="rank-badge">{prevalenceRank(rows, row.prevalence)}</span></td><th scope="row"><button className="area-name" onClick={() => onSelect(row.code)} aria-pressed={selected === row.code}>{row.name}</button></th><td><span className="prevalence-badge" style={{ background: info.soft, color: info.text }}>{percent(row.prevalence)}</span></td><td>{signed(row.prevalence - TARGET)}</td><td className={delta === null || Math.abs(delta) < 0.005 ? 'muted' : delta > 0 ? 'change-up' : 'change-down'}>{signed(delta)}</td>
           </tr>
         })}</tbody>

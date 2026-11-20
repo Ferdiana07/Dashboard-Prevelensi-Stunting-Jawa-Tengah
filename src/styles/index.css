@@ -108,6 +108,8 @@ tbody th { background: #fff; z-index: 1; box-shadow: 1px 0 0 #dadddf; }
 thead th:nth-child(2) { z-index: 3; box-shadow: 1px 0 0 #cfd3d8; }
 tbody tr:hover th { background: #f4f7fa; }
 tbody .selected-row th { background: #eaf3fc; }
+tbody .selected-row td:first-child { box-shadow: inset 4px 0 0 #2469a9; }
+tbody .appended-row td, tbody .appended-row th { border-top: 2px dashed #9fb3c8; }
 .rank-badge { display: inline-flex; width: 25px; height: 25px; align-items: center; justify-content: center; background: #e6e6e7; border-radius: 6px; font-weight: 700; font-size: 14px; }
 .area-name { background: none; border: 0; text-align: left; font-weight: 550; padding: 5px 0; }
 .area-name:hover { color: #235d94; text-decoration: underline; text-underline-offset: 3px; }
