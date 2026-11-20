@@ -1,5 +1,5 @@
-import { roundHalfAway } from './format'
-import { type Scope, type StuntingRow, type Year } from '../types'
+import { roundHalfAway, signed } from './format'
+import { type AreaType, type Scope, type StuntingRow, type Year } from '../types'
 
 export const TARGET = 14
 export const CATEGORIES = {
@@ -41,6 +41,32 @@ export function k6Change(rows: StuntingRow[], code: string) {
   const start = valueAt(rows, code, 2019)
   const end = valueAt(rows, code, 2022)
   return start === null || end === null ? null : end - start
+}
+// K6 per region for a scope, sorted from the largest increase to the largest decrease.
+export type K6Direction = 'up' | 'flat' | 'down'
+export const k6Direction = (change: number): K6Direction => Math.abs(change) < 0.005 ? 'flat' : change > 0 ? 'up' : 'down'
+export interface K6Entry { code: string; name: string; type: AreaType; change: number; direction: K6Direction }
+export function k6Entries(all: StuntingRow[], scope: Scope): K6Entry[] {
+  return filterRows(all, 2019, scope).flatMap(row => {
+    const change = k6Change(all, row.code)
+    return change === null ? [] : [{ code: row.code, name: row.name, type: row.type, change, direction: k6Direction(change) }]
+  }).sort((a, b) => b.change - a.change || a.code.localeCompare(b.code))
+}
+// Groups keep the K6 order: up[0] is the largest increase, down[0] the slowest decrease, down.at(-1) the largest decrease.
+export function k6Groups(entries: K6Entry[]) {
+  return { up: entries.filter(e => e.direction === 'up'), flat: entries.filter(e => e.direction === 'flat'), down: entries.filter(e => e.direction === 'down') }
+}
+const scopeNoun = (scope: Scope) => scope === 'Kota' ? 'kota' : scope === 'Kabupaten' ? 'kabupaten' : 'wilayah'
+// One-line K6 summary under the ranking table. `short` is the compact form for low desktop screens.
+export function k6SummaryText(entries: K6Entry[], scope: Scope, short = false) {
+  const { up, flat, down } = k6Groups(entries)
+  const noun = scopeNoun(scope)
+  const counts = `${up.length}${short ? '' : ` ${noun}`} naik${flat.length ? ` · ${flat.length} tetap` : ''} · ${down.length} turun`
+  if (up.length) return short ? `K6: ${counts}. Terbesar ${up[0].name} ${signed(up[0].change)}.` : `K6 2019→2022: ${counts}. Kenaikan terbesar ${up[0].name} ${signed(up[0].change)}.`
+  if (down.length && down.length === entries.length) return short
+    ? `K6: semua ${entries.length} ${noun} turun. Paling lambat ${down[0].name} ${signed(down[0].change)}.`
+    : `K6 2019→2022: semua ${entries.length} ${noun} turun. Penurunan paling lambat ${down[0].name} ${signed(down[0].change)}.`
+  return `${short ? 'K6' : 'K6 2019→2022'}: tidak ada ${noun} yang naik${flat.length ? ` · ${flat.length} tetap` : ''} · ${down.length} turun.`
 }
 // The heading follows the active sort so the title never contradicts the row order.
 export function rankingTitle(sort: 'prevalence' | 'target' | 'change', descending: boolean, year: Year) {

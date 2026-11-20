@@ -1,17 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowDown, ArrowUp, ArrowUpDown, Search } from 'lucide-react'
-import { category, CATEGORIES, K6_LABEL, k6Change, K6_NOTE, prevalenceRank, rankingTitle, TARGET } from '../lib/calculations'
+import { category, CATEGORIES, k6Entries, K6_LABEL, k6Change, K6_NOTE, k6SummaryText, prevalenceRank, rankingTitle, TARGET } from '../lib/calculations'
 import { percent, signed } from '../lib/format'
-import type { StuntingRow, Year } from '../types'
+import type { Scope, StuntingRow, Year } from '../types'
 
-interface Props { rows: StuntingRow[]; all: StuntingRow[]; year: Year; selected: string | null; onSelect: (code: string) => void }
+interface Props { rows: StuntingRow[]; all: StuntingRow[]; year: Year; scope: Scope; selected: string | null; onSelect: (code: string) => void }
 type Sort = 'prevalence' | 'target' | 'change'
 export const DEFAULT_ROWS = 5
-export function RankingTable({ rows, all, year, selected, onSelect }: Props) {
+export function RankingTable({ rows, all, year, scope, selected, onSelect }: Props) {
   const [query, setQuery] = useState('')
   const [showAll, setShowAll] = useState(false)
   const [sort, setSort] = useState<Sort>('prevalence')
   const [descending, setDescending] = useState(true)
+  // K6 is fixed to 2019→2022, so the summary follows the scope only, never the selected year.
+  const k6 = useMemo(() => k6Entries(all, scope), [all, scope])
   const ranked = useMemo(() => [...rows].sort((a, b) => b.prevalence - a.prevalence || a.code.localeCompare(b.code)), [rows])
   const filtered = ranked.filter(row => row.name.toLocaleLowerCase('id-ID').includes(query.toLocaleLowerCase('id-ID')))
     .sort((a, b) => {
@@ -62,6 +64,7 @@ export function RankingTable({ rows, all, year, selected, onSelect }: Props) {
         })}</tbody>
       </table>{!filtered.length && <div className="empty-state">Tidak ada wilayah yang cocok dengan “{query}”. <button className="text-button" onClick={() => setQuery('')}>Hapus pencarian</button></div>}
     </div>
+    <p className="k6-summary"><span className="k6-summary-full">{k6SummaryText(k6, scope)}</span><span className="k6-summary-short">{k6SummaryText(k6, scope, true)}</span> <a href="#k6-title">Lihat grafik K6 ↓</a></p>
     <p className="table-note">Target: selisih dari 14% · {K6_NOTE}<br />pp = poin persentase · Peringkat berdasarkan cakupan filter</p>
   </section>
 }
