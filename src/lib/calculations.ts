@@ -35,8 +35,8 @@ export function valueAt(rows: StuntingRow[], code: string, year: number) {
   return rows.find(row => row.code === code && row.year === year)?.prevalence ?? null
 }
 // K6 is always the 2019 to 2022 change, whatever year is selected.
-export const K6_LABEL = 'K6: 2019→2022'
-export const K6_NOTE = 'K6 = prevalensi 2022 − prevalensi 2019, sama untuk semua tahun yang dipilih'
+export const K6_LABEL = 'Perubahan 2019→2022'
+export const K6_NOTE = 'Perubahan = prevalensi 2022 − prevalensi 2019, sama untuk semua tahun yang dipilih'
 export function k6Change(rows: StuntingRow[], code: string) {
   const start = valueAt(rows, code, 2019)
   const end = valueAt(rows, code, 2022)
@@ -67,9 +67,9 @@ export function k6SummaryText(entries: K6Entry[], scope: Scope) {
   const { up, flat, down } = k6Groups(entries)
   const noun = scopeNoun(scope)
   const counts = `${up.length} ${noun} naik${flat.length ? ` · ${flat.length} tetap` : ''} · ${down.length} turun`
-  if (up.length) return `K6 2019→2022: ${counts}. Kenaikan terbesar ${up[0].name} ${signed(up[0].change)}.`
-  if (down.length && down.length === entries.length) return `K6 2019→2022: semua ${entries.length} ${noun} turun. Penurunan paling lambat ${down[0].name} ${signed(down[0].change)}.`
-  return `K6 2019→2022: tidak ada ${noun} yang naik${flat.length ? ` · ${flat.length} tetap` : ''} · ${down.length} turun.`
+  if (up.length) return `2019→2022: ${counts}. Kenaikan terbesar ${up[0].name} ${signed(up[0].change)}.`
+  if (down.length && down.length === entries.length) return `2019→2022: semua ${entries.length} ${noun} turun. Penurunan paling lambat ${down[0].name} ${signed(down[0].change)}.`
+  return `2019→2022: tidak ada ${noun} yang naik${flat.length ? ` · ${flat.length} tetap` : ''} · ${down.length} turun.`
 }
 // The heading follows the active sort so the title never contradicts the row order.
 export function rankingTitle(sort: 'prevalence' | 'target' | 'change', descending: boolean, year: Year) {

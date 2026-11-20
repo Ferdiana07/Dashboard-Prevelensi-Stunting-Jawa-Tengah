@@ -118,7 +118,7 @@ input::placeholder { color: #65707f; opacity: 1; }
 table { width: 100%; border-collapse: collapse; text-align: left; white-space: nowrap; font-size: 12px; }
 thead { background: #ededee; }
 thead th { padding: 10px 7px; color: #353b44; font-size: 10px; font-weight: 650; position: sticky; top: 0; z-index: 1; background: #ededee; }
-thead button { display: inline-flex; gap: 4px; align-items: center; background: none; border: none; padding: 0; font-size: inherit; font-weight: inherit; min-height: 20px; }
+thead button { display: inline-flex; text-align: left; gap: 4px; align-items: center; background: none; border: none; padding: 0; font-size: inherit; font-weight: inherit; min-height: 20px; }
 thead th:first-child, tbody td:first-child { text-align: center; width: 45px; }
 tbody th, tbody td { padding: 7px; border-top: 1px solid #dadddf; height: 45px; }
 tbody th { font-weight: 550; }
@@ -139,6 +139,7 @@ tbody .appended-row td, tbody .appended-row th { border-top: 2px dashed #9fb3c8;
 .change-up { color: #a12b30; }
 .change-down { color: #216a49; }
 .muted { color: #68717d; }
+.th-line { display: block; line-height: 1.25; }
 .table-note { font-size: 9px; line-height: 1.65; color: #626b77; margin-top: 9px; }
 .k6-summary { margin-top: 9px; padding: 6px 10px; border: 1px solid #dce0e5; border-left: 3px solid #a12b30; border-radius: 7px; background: #f7f8fa; font-size: 11px; line-height: 1.45; color: #2b3440; }
 .k6-summary a { white-space: nowrap; font-weight: 650; }

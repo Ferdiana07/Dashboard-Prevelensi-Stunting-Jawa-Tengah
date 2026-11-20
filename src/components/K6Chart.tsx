@@ -90,9 +90,9 @@ export function K6Chart({ all, scope, scopeLabel, selected, onSelect, detailName
   const zero = g?.x(0) ?? 0
   const top = (index: number) => g!.header + index * g!.rowHeight
   return <section className="panel k6-panel" aria-labelledby="k6-title">
-    <div className="k6-heading"><div><h2 id="k6-title" tabIndex={-1}>Perubahan Prevalensi 2019→2022 (K6)</h2><p>Menjawab CBQ 2: wilayah yang naik atau turunnya paling lambat. Diurutkan dari kenaikan terbesar.</p></div>{detailName && <a className="k6-detail-link" href="#details-title" onClick={onShowDetails}>Detail {detailName} ↑</a>}</div>
+    <div className="k6-heading"><div><h2 id="k6-title" tabIndex={-1}>Perubahan Prevalensi 2019→2022</h2><p>Menjawab CBQ 2: wilayah yang naik atau turunnya paling lambat. Diurutkan dari kenaikan terbesar.</p></div>{detailName && <a className="k6-detail-link" href="#details-title" onClick={onShowDetails}>Detail {detailName} ↑</a>}</div>
     <div className="k6-body">
-      <aside className="k6-side" aria-label="Ringkasan arah perubahan K6">
+      <aside className="k6-side" aria-label="Ringkasan arah perubahan">
         <div className="k6-cards">
           <K6Card kind="up" title="Naik" count={groups.up.length} detail={groups.up[0] ? `Terbesar: ${groups.up[0].name} ${signed(groups.up[0].change)}` : 'Tidak ada wilayah yang naik'} />
           <K6Card kind="flat" title="Tetap" count={groups.flat.length} detail={groups.flat.length ? groups.flat.map(e => `${e.name} ${signed(0)}`).join(', ') : 'Tidak ada wilayah yang tetap'} />

@@ -49,7 +49,7 @@ export default function App() {
   // because the detail panel opens above the chart, outside the user's view.
   function selectFromK6(code: string) {
     setSelected(code)
-    setAnnouncement(`Detail ${areas.find(row => row.code === code)?.name ?? code} ditampilkan di atas grafik K6`)
+    setAnnouncement(`Detail ${areas.find(row => row.code === code)?.name ?? code} ditampilkan di atas grafik perubahan`)
   }
   function showDetails(event: React.MouseEvent) {
     event.preventDefault()
