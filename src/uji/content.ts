@@ -1,6 +1,6 @@
 // Isi instrumen uji (Munzner Level 3 dan 4). Satu-satunya sumber teks pertanyaan, opsi, kunci, dan skenario;
 // docs/pengujian/INSTRUMEN_UJI.md menyalin isi ini untuk dokumen yang diunggah ke Google Drive.
-// Stimulus diambil dari dashboard saat ini dengan judul disamarkan: tests/e2e/uji-stimulus.spec.ts.
+// Stimulus diambil dari dashboard saat ini dengan judul disamarkan: tests/e2e/uji-stimulus.spec.ts. width/height = ukuran PNG.
 import mapImg from '../../docs/pengujian/stimulus/peta.png'
 import barImg from '../../docs/pengujian/stimulus/batang.png'
 import trendImg from '../../docs/pengujian/stimulus/tren.png'
@@ -39,13 +39,13 @@ export const CBQ: Record<CbqId, { tag: string; text: string }> = {
 
 export interface Diagram { id: DiagramId; idiom: string; img: string; width: number; height: number; key: { kpi: KpiId; cbq: CbqId }; question: Record<Persona, string> }
 export const DIAGRAMS: Diagram[] = [
-  { id: 'D1', idiom: 'Choropleth Map (Peta Sebaran)', img: mapImg, width: 814, height: 652, key: { kpi: 'KPI-1', cbq: 'CBQ-1' }, question: {
+  { id: 'D1', idiom: 'Choropleth Map (Peta Sebaran)', img: mapImg, width: 796, height: 611, key: { kpi: 'KPI-1', cbq: 'CBQ-1' }, question: {
     A: 'Berdasarkan pola gradasi warna spasial pada peta ini, indikator pemantauan dan keputusan alokasi intervensi apa yang sedang ditunjukkan?',
     B: 'Melihat perbedaan warna antarwilayah pada peta ini, informasi kondisi apa yang paling tepat digambarkan?' } },
-  { id: 'D2', idiom: 'Line Trend (Grafik Tren)', img: trendImg, width: 1628, height: 514, key: { kpi: 'KPI-2', cbq: 'CBQ-2' }, question: {
+  { id: 'D2', idiom: 'Line Trend (Grafik Tren)', img: trendImg, width: 1608, height: 418, key: { kpi: 'KPI-2', cbq: 'CBQ-2' }, question: {
     A: 'Berdasarkan pergerakan garis deret waktu ini, evaluasi kinerja antarperiode apa yang harus Anda laporkan?',
     B: 'Melihat naik-turunnya garis dari tahun ke tahun pada grafik ini, perubahan kondisi apa yang sedang terjadi?' } },
-  { id: 'D3', idiom: 'Horizontal Bar (Diagram Batang)', img: barImg, width: 799, height: 184, key: { kpi: 'KPI-3', cbq: 'CBQ-3' }, question: {
+  { id: 'D3', idiom: 'Horizontal Bar (Diagram Batang)', img: barImg, width: 796, height: 111, key: { kpi: 'KPI-3', cbq: 'CBQ-3' }, question: {
     A: 'Berdasarkan perbandingan panjang batang horizontal ini, prioritas distribusi intervensi untuk kelompok wilayah mana yang sedang dianalisis?',
     B: 'Melihat panjang batang dari atas ke bawah ini, perbandingan apa yang sedang ditampilkan?' } },
 ]
