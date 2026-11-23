@@ -111,10 +111,19 @@ test('detail link appears only with a selection and moves focus to the detail he
 })
 test('header controls: order and size, reset restores defaults; Detail and Tren links work with the keyboard', async ({ page }) => {
   await ready(page)
-  const controls = await page.locator('.filters > *').evaluateAll(nodes => nodes.map(node => ({ text: node.textContent?.trim() || node.getAttribute('aria-label'), h: node.getBoundingClientRect().height, w: node.getBoundingClientRect().width })))
-  expect(controls.map(c => c.h)).toEqual([40, 40, 40, 40])
-  expect(controls[2].w).toBe(40)
+  const measure = () => page.locator('.filters > *').evaluateAll(nodes => nodes.map(node => ({ text: node.textContent?.trim() || node.getAttribute('aria-label'), h: node.getBoundingClientRect().height, w: node.getBoundingClientRect().width, font: parseFloat(getComputedStyle(node).fontSize), icon: node.querySelector('svg')?.getBoundingClientRect().width })))
+  // Desktop: 32px controls, 13px text, 16px icons. Phones keep the 40px touch target.
+  const controls = await measure()
+  expect(controls.map(c => c.h)).toEqual([32, 32, 32, 32])
+  expect(controls[2].w).toBe(32)
+  expect([0, 1, 3].map(i => controls[i].font)).toEqual([13, 13, 13])
+  expect(controls.map(c => c.icon)).toEqual([16, 16, 16, 16])
+  expect(await page.locator('#year').evaluate(el => getComputedStyle(el).fontWeight)).toBe('500')
+  expect(await page.locator('label[for="year"]').evaluate(el => getComputedStyle(el).fontWeight)).toBe('600')
   expect(controls.map(c => c.text)).toEqual([expect.stringContaining('Tahun:'), expect.stringContaining('Wilayah:'), 'Reset Filter', 'Unduh CSV'])
+  await page.setViewportSize({ width: 390, height: 844 })
+  expect((await measure()).map(c => c.h)).toEqual([40, 40, 40, 40])
+  await page.setViewportSize({ width: 1672, height: 941 })
   await expect(page.getByRole('button', { name: 'Reset Filter', exact: true })).toHaveAttribute('title', 'Reset Filter')
   // Keyboard: select a region on the map, then use the link beside the legend heading.
   await page.locator('[data-region="3329"]').focus(); await page.keyboard.press('Enter')
