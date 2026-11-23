@@ -132,7 +132,7 @@ describe('cakupan filter dan kategori batas', () => {
 
 describe('teks kartu K4', () => {
   it('memilih kalimat sesuai jumlah wilayah yang mencapai target', () => {
-    expect(achievementNote(0, 35)).toBe('belum ada wilayah yang mencapai target')
+    expect(achievementNote(0, 35)).toBe('belum ada yang mencapai target')
     expect(achievementNote(35, 35)).toBe('semua wilayah mencapai target')
     expect(achievementNote(6, 6)).toBe('semua wilayah mencapai target')
     expect(achievementNote(2, 35)).toBe('baru 2 dari 35 wilayah')
@@ -140,9 +140,9 @@ describe('teks kartu K4', () => {
   it('sesuai data asli untuk setiap tahun dan cakupan', () => {
     const rows = parseCsv(readFileSync('public/data/stunting.csv', 'utf8'))
     const expected: Record<string, string> = {
-      '2019:all': 'belum ada wilayah yang mencapai target', '2019:Kota': 'belum ada wilayah yang mencapai target', '2019:Kabupaten': 'belum ada wilayah yang mencapai target',
+      '2019:all': 'belum ada yang mencapai target', '2019:Kota': 'belum ada yang mencapai target', '2019:Kabupaten': 'belum ada yang mencapai target',
       '2021:all': 'baru 3 dari 35 wilayah', '2021:Kota': 'baru 1 dari 6 wilayah', '2021:Kabupaten': 'baru 2 dari 29 wilayah',
-      '2022:all': 'baru 2 dari 35 wilayah', '2022:Kota': 'baru 2 dari 6 wilayah', '2022:Kabupaten': 'belum ada wilayah yang mencapai target',
+      '2022:all': 'baru 2 dari 35 wilayah', '2022:Kota': 'baru 2 dari 6 wilayah', '2022:Kabupaten': 'belum ada yang mencapai target',
     }
     for (const year of YEARS) for (const scope of ['all', 'Kota', 'Kabupaten'] as const) {
       const { achieved, total } = metrics(filterRows(rows, year, scope))

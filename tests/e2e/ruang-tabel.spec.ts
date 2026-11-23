@@ -72,3 +72,14 @@ test('ⓘ button has a 32px touch area on phones', async ({ page }) => {
   const area = await infoButton(page).evaluate(el => { const s = getComputedStyle(el, '::before'); return [parseFloat(s.top), parseFloat(s.left), el.getBoundingClientRect().width] })
   expect(area).toEqual([-6, -6, 20])
 })
+
+test('K4 note at zero achievement fits one line at 1280x720, so the cards keep the same height in 2019 and 2022', async ({ page }) => {
+  await ready(page, 1280, 720)
+  const cards = () => page.locator('.scorecard').evaluateAll(nodes => nodes.map(node => Math.round(node.getBoundingClientRect().height)))
+  const notes = () => page.locator('.score-note').evaluateAll(nodes => nodes.map(node => Math.round(node.getBoundingClientRect().height / parseFloat(getComputedStyle(node).lineHeight))))
+  const heights2022 = await cards()
+  await page.getByLabel('Tahun:', { exact: true }).selectOption('2019')
+  await expect(page.locator('.scorecard.green .score-note')).toHaveText('belum ada yang mencapai target')
+  expect(await cards()).toEqual(heights2022)
+  expect(await notes()).toEqual([1, 1, 1, 1])
+})
