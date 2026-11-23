@@ -23,7 +23,8 @@ const params = new URLSearchParams(window.location.search)
 const presetPersona = params.get('persona')?.toUpperCase() === 'A' ? 'A' : params.get('persona')?.toUpperCase() === 'B' ? 'B' : null
 const seconds = (value: number) => `${value.toFixed(1).replace('.', ',')} s`
 
-interface Session { id: string; startedAt: string; t0: number; profile: Profile; consentAt: string; order: Diagram[]; l3: L3Answer[]; l4: TaskResult[]; sus: number[]; comment: string }
+// kpiOrder/cbqOrder diacak sekali per responden dan dipakai sama untuk pengantar serta ketiga diagram Level 3.
+interface Session { id: string; startedAt: string; t0: number; profile: Profile; consentAt: string; order: Diagram[]; kpiOrder: KpiId[]; cbqOrder: CbqId[]; l3: L3Answer[]; l4: TaskResult[]; sus: number[]; comment: string }
 
 export default function UjiApp() {
   const [screen, setScreen] = useState<Screen>('welcome')
@@ -76,12 +77,12 @@ export default function UjiApp() {
         {screen === 'welcome' && <Welcome onStart={() => setScreen('profile')} />}
         {screen === 'profile' && <ProfileForm initial={session?.profile} onNext={profile => {
           const id = session?.profile.persona === profile.persona ? session.id : respondentId(profile.persona)
-          setSession(current => current ? { ...current, id, profile } : { id, profile, startedAt: new Date().toISOString(), t0: performance.now(), consentAt: '', order: shuffle(DIAGRAMS), l3: [], l4: [], sus: [], comment: '' })
+          setSession(current => current ? { ...current, id, profile } : { id, profile, startedAt: new Date().toISOString(), t0: performance.now(), consentAt: '', order: shuffle(DIAGRAMS), kpiOrder: shuffle(Object.keys(KPI) as KpiId[]), cbqOrder: shuffle(Object.keys(CBQ) as CbqId[]), l3: [], l4: [], sus: [], comment: '' })
           setScreen('consent')
         }} />}
         {screen === 'consent' && session && <Consent profile={session.profile} onBack={() => setScreen('profile')} onNext={() => { update({ consentAt: new Date().toISOString() }); setScreen('l3intro') }} />}
-        {screen === 'l3intro' && session && <L3Intro persona={session.profile.persona} onNext={() => { setL3Index(0); setScreen('l3') }} />}
-        {screen === 'l3' && session && <L3Item key={l3Index} diagram={session.order[l3Index]} index={l3Index} persona={session.profile.persona} onDone={answer => {
+        {screen === 'l3intro' && session && <L3Intro persona={session.profile.persona} kpiOrder={session.kpiOrder} cbqOrder={session.cbqOrder} onNext={() => { setL3Index(0); setScreen('l3') }} />}
+        {screen === 'l3' && session && <L3Item key={l3Index} diagram={session.order[l3Index]} index={l3Index} persona={session.profile.persona} kpiOrder={session.kpiOrder} cbqOrder={session.cbqOrder} onDone={answer => {
           update({ l3: [...session.l3, answer] })
           if (l3Index < 2) setL3Index(l3Index + 1)
           else setScreen('l4intro')
@@ -206,7 +207,7 @@ function Consent({ profile, onBack, onNext }: { profile: Profile; onBack: () => 
   </section>
 }
 
-function L3Intro({ persona, onNext }: { persona: Persona; onNext: () => void }) {
+function L3Intro({ persona, kpiOrder, cbqOrder, onNext }: { persona: Persona; kpiOrder: KpiId[]; cbqOrder: CbqId[]; onNext: () => void }) {
   return <section className="panel">
     <Heading kicker="Bagian 1" title="Tebak makna diagram tanpa judul">Anda akan melihat 3 diagram dari dashboard, satu per satu dalam urutan acak. Judul, nama indikator, dan keterangan sengaja disembunyikan.</Heading>
     <RoleCard persona={persona} />
@@ -215,19 +216,24 @@ function L3Intro({ persona, onNext }: { persona: Persona; onNext: () => void }) 
       <div><span>2</span><b>Pilih pertanyaan</b><small>Pertanyaan apa yang bisa dijawabnya (CBQ)?</small></div>
       <div><span>3</span><b>Kunci & nilai yakin</b><small>Seberapa yakin Anda, 1–5?</small></div>
     </div>
+    <div className="option-preview">
+      <p>Pilihan jawaban berikut <b>sama untuk ketiga diagram</b>, dengan urutan yang sama. Baca dulu sekarang; diagram belum ditampilkan.</p>
+      <div className="choices">
+        <div className="choice"><span className="choice-head">Informasi (KPI) yang ditampilkan</span><ul>{kpiOrder.map((key, i) => <li key={key}><span className="letter">{LETTERS[i]}</span><span><b>{KPI[key].tag}</b>{KPI[key].text}</span></li>)}</ul></div>
+        <div className="choice"><span className="choice-head">Pertanyaan (CBQ) yang dijawab</span><ul>{cbqOrder.map((key, i) => <li key={key}><span className="letter">{i + 1}</span><span><b>{CBQ[key].tag}</b>{CBQ[key].text}</span></li>)}</ul></div>
+      </div>
+    </div>
     <p className="note"><Clock size={16} /><span>Waktu baca dihitung sejak gambar muncul sampai Anda menekan <b>Kunci jawaban</b>. Jawab spontan; menebak boleh.</span></p>
     <div className="actions"><button className="pri" onClick={onNext}>Saya siap <ArrowRight size={17} /></button></div>
   </section>
 }
 
-function L3Item({ diagram, index, persona, onDone }: { diagram: Diagram; index: number; persona: Persona; onDone: (answer: L3Answer) => void }) {
+function L3Item({ diagram, index, persona, kpiOrder, cbqOrder, onDone }: { diagram: Diagram; index: number; persona: Persona; kpiOrder: KpiId[]; cbqOrder: CbqId[]; onDone: (answer: L3Answer) => void }) {
   const [phase, setPhase] = useState<'ready' | 'count' | 'show' | 'conf'>('ready')
   const [count, setCount] = useState(3)
   const [kpi, setKpi] = useState<KpiId | null>(null)
   const [cbq, setCbq] = useState<CbqId | null>(null)
   const [latency, setLatency] = useState(0)
-  const [kpiOrder] = useState(() => shuffle(Object.keys(KPI) as KpiId[]))
-  const [cbqOrder] = useState(() => shuffle(Object.keys(CBQ) as CbqId[]))
   const t0 = useRef(0)
   const wide = diagram.width / diagram.height > 2
   useEffect(() => {
