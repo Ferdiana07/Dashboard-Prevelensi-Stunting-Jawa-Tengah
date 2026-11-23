@@ -291,6 +291,9 @@ tbody .appended-row td, tbody .appended-row th { border-top: 2px dashed #9fb3c8;
   .text-button { font-size: var(--fs-body); font-weight: 600; color: var(--color-link); }
   .rank-badge { width: 24px; height: 24px; font-size: var(--fs-small); }
   .prevalence-badge { font-size: var(--fs-body); font-weight: 700; min-width: 62px; padding: 3px 8px; }
+  /* 32px rows on every desktop height, fit-to-screen or not. */
+  tbody th, tbody td { height: 32px; padding-top: 2px; padding-bottom: 2px; }
+  .area-name { padding: 2px 0; }
   .k6-summary { margin-top: 4px; padding: 3px 8px; font-size: var(--fs-small); line-height: 1.4; }
 }
 /* Fit-to-screen: the overview fills exactly one screen. Only when the window is tall enough to keep
@@ -307,8 +310,6 @@ tbody .appended-row td, tbody .appended-row th { border-top: 2px dashed #9fb3c8;
   .ranking-panel { min-height: 0; display: flex; flex-direction: column; }
   .ranking-heading, .table-toolbar, .k6-summary { flex-shrink: 0; }
   .table-scroll, .table-scroll.expanded { min-height: 0; max-height: none; overflow: auto; flex: 1; }
-  tbody th, tbody td { height: clamp(30px, 4.8vh, 43px); padding: 3px 7px; }
-  .area-name { padding: 3px 0; }
 }
 .category-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
 .category-legend > div { display: flex; align-items: center; gap: 7px; }

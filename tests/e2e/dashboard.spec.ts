@@ -293,19 +293,19 @@ test('desktop overview fits the viewport when the window is tall enough to keep 
     await expect(page.locator('tbody tr')).toHaveCount(5)
   }
 })
-test('below the fit threshold the page scrolls: natural table of five rows; the Kota vs Kab. panel has no category legend and keeps the trend link in its title row', async ({ page }) => {
+test('below the fit threshold the overview is not squeezed into one screen: natural table of five rows; the Kota vs Kab. panel has no category legend and keeps the trend link in its title row', async ({ page }) => {
   await ready(page)
   for (const [width, height] of [[1280, 719], [1280, 600], [1190, 719], [1100, 789]]) {
     await page.setViewportSize({ width, height })
     await page.waitForTimeout(150)
     const layout = await page.evaluate(() => {
       const table = document.querySelector('.table-scroll')!
-      return { overviewHeight: document.querySelector('.dashboard-overview')!.getBoundingClientRect().height, display: getComputedStyle(document.querySelector('.dashboard-overview')!).display, fits: table.scrollHeight <= table.clientHeight + 1, tableHeight: table.clientHeight }
+      return { display: getComputedStyle(document.querySelector('.dashboard-overview')!).display, fits: table.scrollHeight <= table.clientHeight + 1, tableHeight: table.clientHeight }
     })
     expect(layout.display, `${width}x${height}`).not.toBe('grid')
-    expect(layout.overviewHeight).toBeGreaterThan(height)
+    // Since Tahap 7 the natural overview can be shorter than the window (1280x719: about 690px), so only the layout mode is checked.
     expect(layout.fits, `${width}x${height}: all five rows are visible`).toBe(true)
-    expect(layout.tableHeight).toBeGreaterThan(200)
+    expect(layout.tableHeight).toBeGreaterThanOrEqual(5 * 32)
     await expect(page.locator('.comparison-panel .category-legend')).toHaveCount(0)
     await expect(page.locator('.comparison-heading').getByRole('link', { name: 'Lihat tren ↓', exact: true })).toBeVisible()
     await expect(page.locator('tbody tr')).toHaveCount(5)
