@@ -7,11 +7,11 @@
   --space: 16px;
   --page-pad-y: 24px; --page-pad-x: 32px;
   --pad-card: 12px 20px; --pad-map: 16px 20px 12px; --pad-compare: 12px 20px 8px; --pad-rank: 12px 20px;
-  --fs-h1: clamp(24px, 2.2vw, 32px);
-  --fs-h2: clamp(18px, 1.32vw, 22px);
-  --fs-title: 16px;
-  --fs-value: clamp(32px, 5vh, 44px);
-  --fs-body: 14px;
+  --fs-h1: clamp(22px, 2vw, 28px);
+  --fs-h2: clamp(16px, 1.15vw, 19px);
+  --fs-title: 14px;
+  --fs-value: clamp(28px, 4.4vh, 38px);
+  --fs-body: 13px;
   --fs-small: 12px;
   --color-muted: #4b5563;
   --color-link: #315f8d;
