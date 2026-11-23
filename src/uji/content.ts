@@ -77,7 +77,7 @@ export const STATIC_TASKS: Task[] = [
       { key: 'lonjakan', label: 'Periode terjadinya lonjakan di wilayah itu', type: 'select', options: JUMP_OPTIONS, answer: '2021 → 2022' },
     ], check: 'crossfilter', target: '3329' },
   { id: 'A2', persona: 'A', title: 'Perbandingan Lintas Kelompok', goal: 'Grafik Kota vs Kabupaten → Peringkat Wilayah',
-    text: 'Pada grafik batang “Rata-rata Prevalensi: Kota vs Kabupaten” tahun 2022, bandingkan kelompok kota dan kabupaten. Tentukan kelompok dengan rata-rata prevalensi tertinggi, lalu cari wilayah di kelompok itu yang kinerjanya paling menurun, yaitu kenaikan prevalensi terbesar 2019→2022 (kolom K6 pada tabel “Peringkat Wilayah”).',
+    text: 'Pada grafik batang “Rata-rata Prevalensi: Kota vs Kabupaten” tahun 2022, bandingkan kelompok kota dan kabupaten. Tentukan kelompok dengan rata-rata prevalensi tertinggi, lalu cari wilayah di kelompok itu yang kinerjanya paling menurun, yaitu kenaikan prevalensi terbesar 2019→2022 (kolom “Perubahan 2019→2022” pada tabel “Peringkat Wilayah”).',
     fields: [
       { key: 'kelompok', label: 'Kelompok dengan rata-rata tertinggi 2022', type: 'select', options: GROUP_OPTIONS, answer: 'Kabupaten' },
       { key: 'rata', label: 'Rata-rata prevalensi kelompok itu', type: 'number', unit: '%', answer: 21.7 },

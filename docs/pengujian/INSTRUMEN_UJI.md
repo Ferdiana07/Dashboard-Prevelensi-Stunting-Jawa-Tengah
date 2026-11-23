@@ -83,7 +83,7 @@ Dashboard asli dimuat di dalam formulir. Dok di bagian bawah layar selalu menamp
 | Task | Skenario | Isian jawaban | Kunci |
 | --- | --- | --- | --- |
 | **A1** Identifikasi Anomali Spasial-Temporal | Temukan kabupaten/kota dengan prevalensi stunting tertinggi tahun 2022 pada peta “Peta Prevalensi Stunting”. Klik wilayah tersebut agar grafik “Analisis Tren Temporal” di bagian bawah otomatis mengikuti wilayah itu, lalu tentukan pada periode mana prevalensi wilayah tersebut melonjak (naik). | Wilayah tertinggi 2022; periode lonjakan (2019 → 2021 / 2021 → 2022 / Tidak ada kenaikan) | Kab. Brebes (29,1%); 2021 → 2022 (26,3% → 29,1%) |
-| **A2** Perbandingan Lintas Kelompok | Pada grafik batang “Rata-rata Prevalensi: Kota vs Kabupaten” tahun 2022, bandingkan kelompok kota dan kabupaten. Tentukan kelompok dengan rata-rata prevalensi tertinggi, lalu cari wilayah di kelompok itu yang kinerjanya paling menurun, yaitu kenaikan prevalensi terbesar 2019→2022 (kolom K6 pada tabel “Peringkat Wilayah”). | Kelompok; rata-rata (%); wilayah | Kabupaten; 21,7%; Kab. Pati (+3,6 pp) |
+| **A2** Perbandingan Lintas Kelompok | Pada grafik batang “Rata-rata Prevalensi: Kota vs Kabupaten” tahun 2022, bandingkan kelompok kota dan kabupaten. Tentukan kelompok dengan rata-rata prevalensi tertinggi, lalu cari wilayah di kelompok itu yang kinerjanya paling menurun, yaitu kenaikan prevalensi terbesar 2019→2022 (kolom “Perubahan 2019→2022” pada tabel “Peringkat Wilayah”). | Kelompok; rata-rata (%); wilayah | Kabupaten; 21,7%; Kab. Pati (+3,6 pp) |
 
 ### Persona B — Warga Publik (pencarian informasi mandiri & pemahaman cepat)
 
