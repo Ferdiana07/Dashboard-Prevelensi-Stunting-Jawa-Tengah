@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { ArrowLeft, ArrowRight, Check, ChevronUp, ClipboardCopy, Clock, Download, EyeOff, Flag, Map as MapIcon, MessageCircle, MousePointerClick, Printer, RotateCcw, Send, ShieldCheck, Smile, Timer, UserRound, UsersRound, X } from 'lucide-react'
-import { CBQ, CONFIDENCE, CONFIG, CONSENT_POINTS, DIAGRAMS, KPI, PERSONAS, STUDY, SUS_ITEMS, type CbqId, type Diagram, type Field, type KpiId, type Persona, type Task } from './content'
+import { CBQ, CONFIDENCE, CONFIG, CONSENT_POINTS, DIAGRAMS, KPI, PERSONAS, RESET_STATE, STUDY, SUS_ITEMS, type CbqId, type Diagram, type Field, type KpiId, type Persona, type Task } from './content'
 import { attachProbe, dashboardReady, readState, type Probe } from './probe'
 import { cleanText, fieldCorrect, respondentId, shuffle, susGrade, susScore, tasksFor } from './scoring'
 import { sendPayload, summaryText, type L3Answer, type Payload, type Profile, type SendStatus, type TaskResult } from './session'
@@ -317,18 +317,28 @@ function TaskRunner({ task, index, total, onDone }: { task: Task; index: number;
       }
     }, 100)
   }
+  // Yang dicek keadaan dashboard, bukan tombol: tombol Reset Filter atau dropdown sama-sama sah.
+  function atReset() {
+    const state = readState(frame.current?.contentDocument)
+    return state?.year === RESET_STATE.year && state?.region === RESET_STATE.region
+  }
   function finish(success: boolean) {
     const p = probe.current
     p?.detach()
     onDone({ task: task.id, order: index + 1, success, gaveUp: !success, time: (performance.now() - start.current) / 1000, wrongSubmits: wrong.current,
       clicks: p?.clicks ?? 0, deadClicks: p?.dead ?? 0, filterChanges: p?.filterChanges ?? 0,
       crossfilter: task.check === 'crossfilter' ? crossSeen.current : null,
+      reset: task.check === 'reset' ? atReset() : null,
       answers: Object.fromEntries(fields.map(f => [f.key, cleanText(values[f.key] ?? '', 40)])), log: (p?.log ?? []).join(' | ').slice(0, 2000) })
   }
   function send() {
     if (fields.some(f => !(values[f.key] ?? '').trim())) return setMsg('Lengkapi semua isian dulu.')
-    // Jawaban dinilai dari isian saja; posisi filter dashboard saat menjawab tidak dipersyaratkan.
-    if (fields.every(f => fieldCorrect(f, values[f.key]))) return finish(true)
+    // Isian dinilai untuk semua task; task dengan check 'reset' juga mensyaratkan dashboard kembali ke posisi awal.
+    if (fields.every(f => fieldCorrect(f, values[f.key]))) {
+      if (task.check !== 'reset' || atReset()) return finish(true)
+      wrong.current++
+      return setMsg('Tugas belum selesai. Periksa lagi langkah di skenario.')
+    }
     wrong.current++
     setMsg('Jawaban belum tepat. Periksa lagi di dashboard, atau tekan “Saya menyerah”.')
   }

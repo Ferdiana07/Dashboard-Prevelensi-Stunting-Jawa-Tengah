@@ -64,9 +64,13 @@ export const GROUP_OPTIONS = ['Kota', 'Kabupaten']
 export type Field =
   | { key: string; label: string; type: 'select'; options: string[]; answer: string }
   | { key: string; label: string; type: 'number'; unit: string; answer: number }
-export type Check = 'crossfilter'
-// target = kode wilayah yang harus terpilih di dashboard agar cross-filter dianggap dipakai.
+export type Check = 'crossfilter' | 'reset'
+// crossfilter: target = kode wilayah yang harus pernah terpilih di dashboard agar cross-filter dianggap dipakai.
+// reset: task baru selesai bila isian benar DAN dashboard kembali ke posisi awal (lihat RESET_STATE).
 export interface Task { id: string; persona: Persona; title: string; goal: string; text: string; fields: Field[]; check?: Check; target?: string }
+
+// Posisi awal dashboard (sama dengan tombol Reset Filter): tahun 2022, semua kabupaten/kota.
+export const RESET_STATE = { year: '2022', region: 'all' }
 
 const regionNames = REGIONS.map(region => region.name)
 // Kunci dihitung dari CSV dan dicocokkan dengan README: Brebes 2019 34,65 / 2021 26,3 / 2022 29,1; rata-rata 2022 kabupaten 21,7, kota 15,8;
@@ -93,11 +97,11 @@ export const STATIC_TASKS: Task[] = [
       { key: 'kondisi', label: 'Kondisi 2021 → 2022', type: 'select', options: TREND_OPTIONS, answer: 'Memburuk (prevalensi naik)' },
     ], check: 'crossfilter', target: '3323' },
   { id: 'B2', persona: 'B', title: 'Transparansi Prioritas', goal: 'Filter Tahun → Grafik Kota vs Kabupaten',
-    text: 'Ubah filter Tahun menjadi 2021. Pada grafik batang “Rata-rata Prevalensi: Kota vs Kabupaten”, temukan kelompok wilayah dengan rata-rata prevalensi paling besar.',
+    text: 'Ubah filter Tahun menjadi 2021. Pada grafik batang “Rata-rata Prevalensi: Kota vs Kabupaten”, temukan kelompok wilayah dengan rata-rata prevalensi paling besar. Setelah itu, kembalikan tampilan dashboard ke posisi awal (reset filter).',
     fields: [
       { key: 'kelompok', label: 'Kelompok dengan rata-rata terbesar tahun 2021', type: 'select', options: GROUP_OPTIONS, answer: 'Kabupaten' },
       { key: 'rata', label: 'Rata-rata prevalensi kelompok itu', type: 'number', unit: '%', answer: 20.1 },
-    ] },
+    ], check: 'reset' },
 ]
 
 export const SUS_ITEMS = [
