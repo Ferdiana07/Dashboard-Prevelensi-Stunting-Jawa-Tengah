@@ -19,9 +19,11 @@ export const CONFIG = {
   MIN_WIDTH: 1100,
 }
 
-export const PERSONAS: Record<Persona, { title: string; short: string; who: string; focus: string }> = {
-  A: { title: 'Operator Internal', short: 'Operator', who: 'Staf teknis atau analis pemerintah daerah, Dinas Kesehatan, TPPS, atau mahasiswa yang berperan sebagai analis.', focus: 'Pemantauan rutin dan keputusan taktis: wilayah mana yang diintervensi lebih dulu.' },
-  B: { title: 'Warga Publik', short: 'Warga', who: 'Masyarakat umum tanpa latar belakang analisis data yang ingin tahu kondisi stunting di daerahnya.', focus: 'Mencari informasi sendiri dan memahami kondisi wilayah dengan cepat.' },
+// Persona adalah PERAN yang diberikan penguji, bukan karakteristik responden (semua responden mahasiswa S1 Informatika).
+// Kalimat peran sengaja netral: tidak menyebut prioritas, wilayah tertinggi, tren, atau kota/kabupaten agar opsi CBQ tidak bocor.
+export const PERSONAS: Record<Persona, { title: string; short: string; role: string }> = {
+  A: { title: 'Operator Internal', short: 'Operator', role: 'Anda berperan sebagai staf teknis Dinas Kesehatan yang memakai dashboard ini untuk pemantauan rutin dan pengambilan keputusan taktis.' },
+  B: { title: 'Warga Publik', short: 'Warga', role: 'Anda berperan sebagai warga yang membuka dashboard ini untuk mencari informasi sendiri tentang kondisi daerah.' },
 }
 
 export const KPI: Record<KpiId, { tag: string; text: string }> = {

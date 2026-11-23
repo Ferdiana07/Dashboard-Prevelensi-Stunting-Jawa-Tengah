@@ -10,12 +10,16 @@ Kelompok 14 · Visualisasi Data · Departemen Informatika, Universitas Diponegor
 | Partisipan | N = 20: 10 Persona A (Operator Internal), 10 Persona B (Warga Publik) |
 | Data | Terkirim otomatis ke Google Sheet (lembar Responden, L3, L4, SUS, Persetujuan, Analisis) |
 
-## A. Persona
+## A. Persona (peran)
 
-| Persona | Kriteria responden | Fokus uji |
+Persona adalah **peran** yang diberikan penguji kepada responden, bukan karakteristik responden. Kalimat peran berikut tampil di layar profil, pengantar Level 3, dan pengantar Level 4.
+
+| Persona | Kalimat peran | Fokus uji |
 | --- | --- | --- |
-| **A · Operator Internal** (n = 10) | Staf teknis/analis pemerintah daerah, Dinas Kesehatan, TPPS, atau mahasiswa yang berperan sebagai analis | Analisis diagnostik dan cross-filtering |
-| **B · Warga Publik** (n = 10) | Masyarakat umum tanpa latar belakang analisis data | Pencarian informasi mandiri dan pemahaman cepat |
+| **A · Operator Internal** (n = 10) | “Anda berperan sebagai staf teknis Dinas Kesehatan yang memakai dashboard ini untuk pemantauan rutin dan pengambilan keputusan taktis.” | Analisis diagnostik dan cross-filtering |
+| **B · Warga Publik** (n = 10) | “Anda berperan sebagai warga yang membuka dashboard ini untuk mencari informasi sendiri tentang kondisi daerah.” | Pencarian informasi mandiri dan pemahaman cepat |
+
+Kalimat peran sengaja netral: tidak menyebut prioritas, wilayah tertinggi, tren atau perubahan, maupun perbandingan kota dan kabupaten, agar tidak membocorkan opsi CBQ pada Level 3.
 
 Data profil yang dicatat: nama (tidak dilaporkan), usia, literasi grafik (1 = hampir tidak pernah membaca grafik … 5 = hampir setiap hari), dan mode sesi.
 

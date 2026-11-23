@@ -109,6 +109,9 @@ button.danger { color: var(--bad-ink); }
 .persona-B .p-icon { background: var(--green-s); color: var(--green-i); }
 .p-body { display: flex; flex-direction: column; gap: 2px; }
 .p-tag { font-size: 11px; font-weight: 750; text-transform: uppercase; letter-spacing: .07em; color: var(--mut); }
+.role-card { display: flex; gap: 12px; align-items: center; margin: 0 0 16px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fbfcfd; }
+.role-card .p-icon { width: 36px; height: 36px; border-radius: 10px; }
+.role-card p { margin: 2px 0 0; font-size: 14px; line-height: 1.5; }
 .p-body b { font-size: 16px; }
 .p-body small { font-size: 13px; color: var(--mut); line-height: 1.45; }
 .persona-A.on { border-color: var(--blue-b); background: #f2f9ff; }
