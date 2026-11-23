@@ -127,7 +127,7 @@ function Welcome({ onStart }: { onStart: () => void }) {
       <div><span className="route-no">Bagian {i + 1}</span><b>{stop.title}</b><p>{stop.note}</p></div>
       <span className="route-time"><Clock size={13} />{stop.time}</span>
     </li>)}</ol>
-    {narrow && <p className="note warn">Anda memakai layar kecil. Uji tetap bisa dikerjakan di HP; diagram lebar dapat digeser ke samping. Laptop tetap lebih nyaman bila tersedia.</p>}
+    {narrow && <p className="note warn" role="alert"><span><b>Layar Anda terlalu sempit untuk uji ini.</b> Uji harus dikerjakan di laptop/komputer dengan zoom peramban 100%. Silakan pindah ke laptop/komputer, atau hubungi penguji sebelum mulai.</span></p>}
     <div className="before">
       <b>Sebelum mulai</b>
       <ul><li>Gunakan laptop/komputer dengan zoom peramban 100%.</li><li>Kerjakan sendiri dalam sekali duduk, tanpa mencari jawaban di internet.</li><li>Jangan menutup atau memuat ulang halaman sampai selesai.</li></ul>
