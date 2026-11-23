@@ -91,7 +91,6 @@ h1 { font-size: clamp(22px, 1.75vw, 31px); line-height: 1.21; letter-spacing: -.
 .map-footer { margin-top: 6px; }
 .map-footer h3 { font-size: 20px; font-weight: 730; letter-spacing: -.025em; }
 .legend-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; margin-bottom: 9px; }
-.legend-row { display: flex; align-items: center; justify-content: space-between; gap: 4px 16px; flex-wrap: wrap; flex-shrink: 0; }
 .panel-link { font-size: var(--fs-body); font-weight: 600; color: var(--color-link); text-decoration: none; white-space: nowrap; }
 .panel-link:hover { text-decoration: underline; text-underline-offset: 3px; }
 .map-legend { display: flex; flex-direction: column; gap: 6px; }
@@ -102,6 +101,10 @@ h1 { font-size: clamp(22px, 1.75vw, 31px); line-height: 1.21; letter-spacing: -.
 .analysis-column { display: flex; flex-direction: column; gap: 17px; min-width: 0; }
 .comparison-panel { padding: 18px 21px 12px; }
 .comparison-panel h2 { font-size: clamp(18px, 1.66vw, 27px); }
+/* Title on the left, trend link on the right: the title may wrap, the link never does. */
+.comparison-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.comparison-heading h2 { min-width: 0; }
+.comparison-heading .panel-link { flex-shrink: 0; }
 .bar-chart { height: 156px; width: 100%; margin-left: -4px; }
 .scope-note { font-size: 12px; color: #586272; line-height: 1.5; margin-top: 4px; }
 .ranking-panel { flex: 1; padding: 17px 19px 14px; }
@@ -271,6 +274,7 @@ tbody .appended-row td, tbody .appended-row th { border-top: 2px dashed #9fb3c8;
   .map-help { margin-top: 6px; font-size: var(--fs-small); line-height: 1.4; }
   .analysis-column { gap: var(--space); }
   .comparison-panel { padding: var(--pad-compare); }
+  .bar-chart { height: 88px; }
   .scope-note { font-size: var(--fs-small); }
   .ranking-panel { padding: var(--pad-rank); }
   .table-toolbar { margin: 6px 0; }
@@ -292,10 +296,8 @@ tbody .appended-row td, tbody .appended-row th { border-top: 2px dashed #9fb3c8;
   .map-panel { min-height: 0; }
   .map-canvas { min-height: 0; height: 0; }
   .map-canvas > svg { height: 100%; max-height: none; }
-  .analysis-column { min-height: 0; display: grid; grid-template-rows: minmax(156px, 2fr) minmax(0, 5fr); }
-  .comparison-panel { min-height: 0; display: flex; flex-direction: column; }
-  .comparison-panel h2 { flex-shrink: 0; }
-  .bar-chart { min-height: 0; height: 0; flex: 1; }
+  /* Kota vs Kabupaten takes the height of its content; the ranking panel gets the rest. */
+  .analysis-column { min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); }
   .ranking-panel { min-height: 0; display: flex; flex-direction: column; }
   .ranking-panel h2, .table-toolbar, .table-note, .k6-summary { flex-shrink: 0; }
   .table-scroll, .table-scroll.expanded { min-height: 0; max-height: none; overflow: auto; flex: 1; }
@@ -307,8 +309,6 @@ tbody .appended-row td, tbody .appended-row th { border-top: 2px dashed #9fb3c8;
 .category-legend .legend-swatch { flex-shrink: 0; overflow: hidden; border: 1px solid #8d969e; border-radius: 3px; }
 .compact-legend { font-size: 11px; color: #354252; gap: 5px 16px; }
 .compact-legend .legend-swatch { width: 21px; height: 16px; }
-.comparison-legend { margin-top: 3px; flex-shrink: 0; font-size: 10px; gap: 4px 13px; }
-.comparison-legend .legend-swatch { width: 17px; height: 13px; }
 .category-pattern { pointer-events: none; }
 .map-pattern { stroke: none; }
 .map-legend { align-items: stretch; }
@@ -320,7 +320,6 @@ tbody .appended-row td, tbody .appended-row th { border-top: 2px dashed #9fb3c8;
 .trend-value-label { font-size: 12px; font-weight: 650; fill: #34465b; stroke: #fff; stroke-width: 3.2px; stroke-linejoin: round; paint-order: stroke; pointer-events: none; }
 .trend-observation { stroke-linejoin: round; }
 @media (max-width: 560px) {
-  .comparison-legend { font-size: 10px; gap: 5px 12px; }
   .compact-legend .legend-swatch { width: 18px; height: 14px; }
   .trend-chart { height: 300px; }
   .trend-category-legend { gap: 6px 12px; font-size: 10px; margin-top: 14px; }
@@ -350,7 +349,7 @@ tbody .appended-row td, tbody .appended-row th { border-top: 2px dashed #9fb3c8;
   .detail-values small, .detail-history small, .detail-values span { font-size: var(--fs-small); }
   .k6-note, .k6-direction, .k6-tick, .k6-axis-title { font-size: var(--fs-small); }
   .k6-card h3, .k6-card span, .k6-card p { font-size: var(--fs-small); }
-  .trend-notes, .trend-selection > span, .multi-select label, .series-legend, .compact-legend, .comparison-legend, .page-footer, .inset text { font-size: var(--fs-small); }
+  .trend-notes, .trend-selection > span, .multi-select label, .series-legend, .compact-legend, .page-footer, .inset text { font-size: var(--fs-small); }
 }
 /* Narrow desktops (1100-1189px): tighter cell padding so the five columns fit the half-width panel without sideways scroll. */
 @media (min-width: 1100px) and (max-width: 1189px) {

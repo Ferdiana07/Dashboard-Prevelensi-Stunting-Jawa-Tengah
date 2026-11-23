@@ -93,7 +93,7 @@ test('choosing a scope clears the selection; a region outside the scope still op
   await page.getByLabel('Tahun:', { exact: true }).selectOption('2019')
   await expect(page.locator('.k6-summary')).toContainText('6 kabupaten naik · 1 tetap · 22 turun')
   await expect(page.locator('.k6-summary').getByRole('link', { name: 'Lihat grafik perubahan' })).toHaveAttribute('href', '#k6-title')
-  await expect(page.getByRole('link', { name: 'Lihat tren 2019–2022' })).toHaveAttribute('href', '#trend-title')
+  await expect(page.getByRole('link', { name: 'Lihat tren ↓', exact: true })).toHaveAttribute('href', '#trend-title')
   await expect(page.locator('.overview-footer')).toHaveCount(0)
 })
 test('detail link appears only with a selection and moves focus to the detail heading', async ({ page }) => {
@@ -131,7 +131,7 @@ test('header controls: order and size, reset restores defaults; Detail and Tren 
   await page.keyboard.press('Enter')
   await expect(page.locator('#details-title')).toBeFocused()
   await page.evaluate(() => window.scrollTo(0, 0))
-  await page.getByRole('link', { name: 'Lihat tren 2019–2022' }).focus()
+  await page.getByRole('link', { name: 'Lihat tren ↓', exact: true }).focus()
   await page.keyboard.press('Enter')
   await expect(page).toHaveURL(/#trend-title$/)
   await expect(page.locator('#trend-title')).toBeInViewport()
@@ -289,7 +289,7 @@ test('desktop overview fits the viewport when the window is tall enough to keep 
     await expect(page.locator('tbody tr')).toHaveCount(5)
   }
 })
-test('below the fit threshold the page scrolls: natural table of five rows and the Kota vs Kab. legend stay visible', async ({ page }) => {
+test('below the fit threshold the page scrolls: natural table of five rows; the Kota vs Kab. panel has no category legend and keeps the trend link in its title row', async ({ page }) => {
   await ready(page)
   for (const [width, height] of [[1280, 719], [1280, 600], [1190, 719], [1100, 789]]) {
     await page.setViewportSize({ width, height })
@@ -302,8 +302,8 @@ test('below the fit threshold the page scrolls: natural table of five rows and t
     expect(layout.overviewHeight).toBeGreaterThan(height)
     expect(layout.fits, `${width}x${height}: all five rows are visible`).toBe(true)
     expect(layout.tableHeight).toBeGreaterThan(200)
-    await expect(page.locator('.comparison-legend')).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Lihat tren 2019–2022' })).toBeVisible()
+    await expect(page.locator('.comparison-panel .category-legend')).toHaveCount(0)
+    await expect(page.locator('.comparison-heading').getByRole('link', { name: 'Lihat tren ↓', exact: true })).toBeVisible()
     await expect(page.locator('tbody tr')).toHaveCount(5)
   }
 })

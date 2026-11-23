@@ -12,7 +12,9 @@ test('masked bars preserve zero, scale, category patterns, target and true lengt
   await page.addStyleTag({ content: mask })
   await expect(page.locator('#comparison-title')).not.toBeVisible()
   const chart = page.locator('.bar-chart')
-  for (const value of ['0%', '10%', '20%', '30%', '40%', '14%', 'Kota', 'Kabupaten', 'Prevalensi (%)']) await expect(chart).toContainText(value)
+  for (const value of ['0%', '10%', '20%', '30%', '40%', '14%', 'Kota', 'Kabupaten']) await expect(chart).toContainText(value)
+  // The ticks already carry the % unit, so the axis title was dropped to give the table room.
+  await expect(chart).not.toContainText('Prevalensi (%)')
   const bars = chart.locator('.recharts-bar-rectangle path')
   const city = await bars.nth(0).boundingBox()
   const district = await bars.nth(1).boundingBox()
