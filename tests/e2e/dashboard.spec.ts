@@ -21,7 +21,10 @@ test('year and type filters update all scoped views correctly', async ({ page })
   await ready(page)
   await page.getByLabel('Tahun:', { exact: true }).selectOption('2021')
   await expect(page.locator('.score-value')).toHaveText(['20,0%', '32 dari 35', '1,0 pp', '8,6%'])
-  await expect(page.locator('.table-note')).toContainText('Perubahan = prevalensi 2022 − prevalensi 2019')
+  // The table legend now sits behind the ⓘ button next to the ranking title.
+  await page.getByRole('button', { name: 'Keterangan tabel', exact: true }).click()
+  await expect(page.locator('.info-popover')).toContainText('Perubahan = prevalensi 2022 − prevalensi 2019')
+  await page.keyboard.press('Escape')
   await page.getByLabel('Cari wilayah').fill('Temanggung')
   await expect(page.locator('tbody tr')).toContainText('+3,1 pp')
   await page.getByLabel('Cari wilayah').fill('')
@@ -35,7 +38,8 @@ test('year and type filters update all scoped views correctly', async ({ page })
   await page.getByLabel('Tahun:', { exact: true }).selectOption('2019')
   await expect(page.locator('tbody tr').first()).toContainText('Kab. Wonosobo')
   await expect(page.locator('tbody tr').first().locator('td').last()).toHaveText('-15,9 pp')
-  await expect(page.locator('.table-note')).toContainText('sama untuk semua tahun yang dipilih')
+  await page.getByRole('button', { name: 'Keterangan tabel', exact: true }).click()
+  await expect(page.locator('.info-popover')).toContainText('sama untuk semua tahun yang dipilih')
 })
 test('map tooltip shows the 2019 to 2022 change and no previous-year delta', async ({ page }) => {
   await ready(page)
@@ -93,7 +97,7 @@ test('choosing a scope clears the selection; a region outside the scope still op
   await page.getByLabel('Tahun:', { exact: true }).selectOption('2019')
   await expect(page.locator('.k6-summary')).toContainText('6 kabupaten naik · 1 tetap · 22 turun')
   await expect(page.locator('.k6-summary').getByRole('link', { name: 'Lihat grafik perubahan' })).toHaveAttribute('href', '#k6-title')
-  await expect(page.getByRole('link', { name: 'Lihat tren 2019–2022' })).toHaveAttribute('href', '#trend-title')
+  await expect(page.getByRole('link', { name: 'Lihat tren ↓', exact: true })).toHaveAttribute('href', '#trend-title')
   await expect(page.locator('.overview-footer')).toHaveCount(0)
 })
 test('detail link appears only with a selection and moves focus to the detail heading', async ({ page }) => {
@@ -111,10 +115,19 @@ test('detail link appears only with a selection and moves focus to the detail he
 })
 test('header controls: order and size, reset restores defaults; Detail and Tren links work with the keyboard', async ({ page }) => {
   await ready(page)
-  const controls = await page.locator('.filters > *').evaluateAll(nodes => nodes.map(node => ({ text: node.textContent?.trim() || node.getAttribute('aria-label'), h: node.getBoundingClientRect().height, w: node.getBoundingClientRect().width })))
-  expect(controls.map(c => c.h)).toEqual([40, 40, 40, 40])
-  expect(controls[2].w).toBe(40)
+  const measure = () => page.locator('.filters > *').evaluateAll(nodes => nodes.map(node => ({ text: node.textContent?.trim() || node.getAttribute('aria-label'), h: node.getBoundingClientRect().height, w: node.getBoundingClientRect().width, font: parseFloat(getComputedStyle(node).fontSize), icon: node.querySelector('svg')?.getBoundingClientRect().width })))
+  // Desktop: 32px controls, 13px text, 16px icons. Phones keep the 40px touch target.
+  const controls = await measure()
+  expect(controls.map(c => c.h)).toEqual([32, 32, 32, 32])
+  expect(controls[2].w).toBe(32)
+  expect([0, 1, 3].map(i => controls[i].font)).toEqual([13, 13, 13])
+  expect(controls.map(c => c.icon)).toEqual([16, 16, 16, 16])
+  expect(await page.locator('#year').evaluate(el => getComputedStyle(el).fontWeight)).toBe('500')
+  expect(await page.locator('label[for="year"]').evaluate(el => getComputedStyle(el).fontWeight)).toBe('600')
   expect(controls.map(c => c.text)).toEqual([expect.stringContaining('Tahun:'), expect.stringContaining('Wilayah:'), 'Reset Filter', 'Unduh CSV'])
+  await page.setViewportSize({ width: 390, height: 844 })
+  expect((await measure()).map(c => c.h)).toEqual([40, 40, 40, 40])
+  await page.setViewportSize({ width: 1672, height: 941 })
   await expect(page.getByRole('button', { name: 'Reset Filter', exact: true })).toHaveAttribute('title', 'Reset Filter')
   // Keyboard: select a region on the map, then use the link beside the legend heading.
   await page.locator('[data-region="3329"]').focus(); await page.keyboard.press('Enter')
@@ -122,7 +135,7 @@ test('header controls: order and size, reset restores defaults; Detail and Tren 
   await page.keyboard.press('Enter')
   await expect(page.locator('#details-title')).toBeFocused()
   await page.evaluate(() => window.scrollTo(0, 0))
-  await page.getByRole('link', { name: 'Lihat tren 2019–2022' }).focus()
+  await page.getByRole('link', { name: 'Lihat tren ↓', exact: true }).focus()
   await page.keyboard.press('Enter')
   await expect(page).toHaveURL(/#trend-title$/)
   await expect(page.locator('#trend-title')).toBeInViewport()
@@ -280,21 +293,21 @@ test('desktop overview fits the viewport when the window is tall enough to keep 
     await expect(page.locator('tbody tr')).toHaveCount(5)
   }
 })
-test('below the fit threshold the page scrolls: natural table of five rows and the Kota vs Kab. legend stay visible', async ({ page }) => {
+test('below the fit threshold the overview is not squeezed into one screen: natural table of five rows; the Kota vs Kab. panel has no category legend and keeps the trend link in its title row', async ({ page }) => {
   await ready(page)
   for (const [width, height] of [[1280, 719], [1280, 600], [1190, 719], [1100, 789]]) {
     await page.setViewportSize({ width, height })
     await page.waitForTimeout(150)
     const layout = await page.evaluate(() => {
       const table = document.querySelector('.table-scroll')!
-      return { overviewHeight: document.querySelector('.dashboard-overview')!.getBoundingClientRect().height, display: getComputedStyle(document.querySelector('.dashboard-overview')!).display, fits: table.scrollHeight <= table.clientHeight + 1, tableHeight: table.clientHeight }
+      return { display: getComputedStyle(document.querySelector('.dashboard-overview')!).display, fits: table.scrollHeight <= table.clientHeight + 1, tableHeight: table.clientHeight }
     })
     expect(layout.display, `${width}x${height}`).not.toBe('grid')
-    expect(layout.overviewHeight).toBeGreaterThan(height)
+    // Since Tahap 7 the natural overview can be shorter than the window (1280x719: about 690px), so only the layout mode is checked.
     expect(layout.fits, `${width}x${height}: all five rows are visible`).toBe(true)
-    expect(layout.tableHeight).toBeGreaterThan(200)
-    await expect(page.locator('.comparison-legend')).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Lihat tren 2019–2022' })).toBeVisible()
+    expect(layout.tableHeight).toBeGreaterThanOrEqual(5 * 32)
+    await expect(page.locator('.comparison-panel .category-legend')).toHaveCount(0)
+    await expect(page.locator('.comparison-heading').getByRole('link', { name: 'Lihat tren ↓', exact: true })).toBeVisible()
     await expect(page.locator('tbody tr')).toHaveCount(5)
   }
 })
@@ -357,9 +370,9 @@ test('K4 card wording follows the achievement count in every scope', async ({ pa
   await page.getByLabel('Wilayah:', { exact: true }).selectOption('Kota')
   await expect(note).toHaveText('baru 2 dari 6 wilayah')
   await page.getByLabel('Wilayah:', { exact: true }).selectOption('Kabupaten')
-  await expect(note).toHaveText('belum ada wilayah yang mencapai target')
+  await expect(note).toHaveText('belum ada yang mencapai target')
   await page.getByLabel('Tahun:', { exact: true }).selectOption('2019')
-  await expect(note).toHaveText('belum ada wilayah yang mencapai target')
+  await expect(note).toHaveText('belum ada yang mencapai target')
   await page.getByLabel('Wilayah:', { exact: true }).selectOption('all')
   await expect(page.locator('.scorecard.green .score-value')).toHaveText('0,0%')
   await page.getByLabel('Tahun:', { exact: true }).selectOption('2021')

@@ -51,7 +51,7 @@ test('P12: keyboard focus on a region shows a stroke outline, not a box', async 
 test('P12: the skip link appears for keyboard navigation only, never after mouse use', async ({ page }) => {
   await ready(page)
   expect(await skipTop(page)).toBeLessThan(0)
-  await page.getByRole('link', { name: 'Lihat tren 2019–2022' }).click()
+  await page.getByRole('link', { name: 'Lihat tren ↓', exact: true }).click()
   await page.evaluate(() => window.scrollTo(0, 0))
   await page.getByLabel('Tahun:', { exact: true }).selectOption('2021')
   await page.getByLabel('Wilayah:', { exact: true }).selectOption('3374')

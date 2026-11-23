@@ -173,3 +173,50 @@ Perbaikan setelah audit: (1) kotak inset Karimunjawa kembali ke ukuran semula (1
 Regresi lebar 1100–1190 px: tabel sempat bergulir ke samping (538 lawan 466 di 1100×790) padahal di `main` tidak. Perbaikannya: header "Peringkat prevalensi" juga dua baris (pola `.th-label` yang sama) dan padding horizontal sel 4 px pada lebar 1100–1189 px. Hasil: `scrollWidth` = `clientWidth` di 1672, 1366, 1280×720, 1190×800 (511), dan 1100×790 (466); tidak ada overflow pada sapuan lebar 1100–1300 px per 10 px di tinggi 789, 790, dan 800. Tabel di 1100×790 setinggi 86 px, jadi ambang 790 px tidak perlu dinaikkan. Ukuran 1190×800, 1100×790, dan 1100×789 masuk `layout-fixes.spec.ts`.
 
 Catatan untuk tim: `src/uji/content.ts:80` masih menyebut "kolom K6 pada tabel" dan perlu diganti menjadi "kolom Perubahan 2019→2022" sebelum pengujian ke responden (berkas itu sengaja tidak diubah di tahap ini).
+
+## Tahap 7: ruang tabel, 23 November 2026
+
+Tujuan: lima baris default tabel Peringkat Wilayah terlihat penuh di 1536×730 dalam mode satu layar, minimal lima di 1366×768, dan minimal empat di 1280×720. Titik aman: tag `sebelum-ruang-tabel` (`50168b0`). Angka yang tampil dan isi ekspor CSV tidak berubah; ambang mode satu layar (720/790 px), ringkasan perubahan di bawah tabel, dan panel di bawah ringkasan tidak diubah.
+
+- Kontrol header desktop 32 px (Reset 32×32, ikon 16 px, teks 13 px, label 600 dan nilai 500); ponsel tetap 40 px.
+- Token huruf turun satu tingkat: h1 clamp(22px, 2vw, 28px), h2 clamp(16px, 1.15vw, 19px), judul 14 px, nilai KPI clamp(28px, 4.4vh, 38px), isi 13 px, kecil tetap 12 px. h1 tetap satu baris dari 1100 sampai 1672 px.
+- Panel Kota vs Kabupaten: judul sumbu "Prevalensi (%)" dan legenda kategori dihapus (tick sudah ber-%, legenda yang sama ada di peta), tautan "Lihat tren ↓" pindah ke baris judul. Dalam mode satu layar tinggi panel mengikuti isi (grafik 88 px, batang 16 px dengan jarak 9,5 px). aria-label grafik tetap.
+- Catatan kaki tabel pindah ke popover tombol ⓘ ("Keterangan tabel") di sebelah judul, di semua ukuran layar. Isinya sama, termasuk definisi perubahan (`K6_NOTE`).
+- Baris tabel 32 px di semua desktop ≥1100 px.
+- Catatan kartu ke-4 saat capaian 0 menjadi "belum ada yang mencapai target". Sebelumnya teks ini wrap di 1280 px dan membuat keempat kartu lebih tinggi (1280×720, 2019: kartu 131 → 103 px, tabel 79 → 184 px).
+
+Hasil ukur (Chromium, tahun 2022; 2019 sama kecuali disebut). "Baris" = baris yang terlihat penuh di bawah header tabel.
+
+| Ukuran | Mode | Header | Kartu | Kota vs Kab. | Tabel sebelum → sesudah | Baris sebelum → sesudah | Teks terkecil | h1 satu baris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1672×941 | satu layar | 86 → 74 | 121 → 110 | 182 → 134 | 290 → 405 | 5 → 5 | 12 px | ya |
+| 1536×730 | satu layar | 86 → 74 | 112 → 103 | 156 → 133 | 116 → 204 | 2 → 5 | 12 px | ya |
+| 1366×768 | satu layar | 84 → 73 | 115 → 105 | 156 → 132 | 141 → 227 | 2 → 5 | 12 px | ya |
+| 1280×720 | satu layar | 82 → 71 | 112 → 103 (2019: 131 → 103) | 156 → 132 | 98 → 184 (2019: 79 → 184) | 1 → 4 | 12 px | ya |
+| 1190×800 | satu layar | 79 → 69 | 116 → 107 (2019: 135 → 107) | 156 → 132 | 175 → 262 (2019: 157 → 262) | 3 → 5 | 12 px | ya |
+| 1100×790 | satu layar | 107 → 66 | 135 → 106 | 156 → 132 | 86 → 255 | 1 → 5 | 12 px | ya |
+| 390×844 | gulir | 235 → 235 | 130 → 130 | 295 → 252 | 274 → 274 | – | 10 px (ponsel, di luar cakupan) | tidak (dua baris, seperti sebelumnya) |
+
+Di 1100×790 kontrol header kini muat sebaris dengan subjudul, sehingga header turun dari 107 ke 66 px. Tidak ada scroll ke samping pada halaman maupun tabel di 1672, 1536, 1366, 1280, 1190, dan 1100 (juga saat 35 wilayah ditampilkan). Di 390 px tabel tetap bergulir ke samping dengan kolom nama sticky (P14).
+
+**Ambang 720 px (hanya dilaporkan, tidak diubah).** Dengan aturan mode satu layar dipaksa aktif dan tinggi diturunkan per 10 px (nilai terburuk dari 2019 dan 2022):
+
+| Lebar | Tinggi terendah dengan tabel ≥ 80 px | Tinggi terendah dengan ≥ 2 baris penuh | Tinggi terendah dengan ≥ 4 baris penuh |
+| --- | --- | --- | --- |
+| 1280 | 620 px (88 px, 1 baris; 610 px = 78 px) | 640 px (108 px) | 710 px (174 px) |
+| 1366 | 620 px (86 px, 1 baris; 610 px = 76 px) | 640 px (106 px) | 710 px (172 px) |
+| 1190 | 610 px (80 px, 1 baris) | 640 px (110 px) | 710 px (177 px) |
+
+Jadi dengan kriteria lama (tabel ≥ 80 px) ambang untuk lebar ≥1190 px bisa turun dari 720 ke 620 px, tetapi pada tinggi itu tabel hanya menampilkan satu baris penuh. Kriteria minimal dua baris memberi 640 px.
+
+Pembaruan tes:
+- `dashboard.spec.ts`: kontrol header 32 px di desktop dan 40 px di 390 px (teks 13 px, ikon 16 px, bobot 600/500); tautan tren bernama "Lihat tren ↓"; catatan tabel dibaca dari popover ⓘ; tes di bawah ambang tidak lagi mewajibkan overview lebih tinggi dari layar (di 1280×719 overview alami kini sekitar 690 px) dan memeriksa bahwa panel Kota vs Kab. tanpa legenda dengan tautan di baris judul; teks kartu K4 baru.
+- `markers.spec.ts`: nama tautan tren.
+- `visual-encoding.spec.ts`: grafik batang yang di-mask tidak lagi memuat judul sumbu "Prevalensi (%)".
+- `data.test.ts`: teks `achievementNote` untuk capaian 0.
+- `layout-fixes.spec.ts`: tambah 1536×730; cek scroll samping halaman dan tabel, juga saat 35 wilayah tampil.
+- Baru, `ruang-tabel.spec.ts`: popover ⓘ (klik, Enter, Spasi, hover, Escape mengembalikan fokus, klik di luar dan klik ulang menutup, isi, di dalam viewport dan tidak tertutup panel lain di lima ukuran, area sentuh ponsel), jumlah baris terlihat penuh (1536×730 = 5, 1366×768 ≥ 5, 1280×720 ≥ 4; 2019 dan 2022; baris 32 px), serta kartu yang tingginya sama di 2019 dan 2022 pada 1280×720.
+
+94 tes unit dan 89 tes browser (tanpa `uji-stimulus.spec.ts`) lulus, bersama TypeScript, ESLint, dan build produksi tanpa peringatan. `git status docs/pengujian/` bersih.
+
+**Catatan stimulus pengujian.** Gambar stimulus di `docs/pengujian/` diambil dari tampilan sebelum Tahap 6, jadi tidak lagi sama dengan dashboard (kontrol header, ukuran huruf, catatan tabel, dan panel Kota vs Kabupaten tanpa legenda). Gambar itu perlu diambil ulang setelah tampilan final disetujui. Folder tersebut sengaja tidak diubah di tahap ini. Bila potongan panel batang dipakai sebagai stimulus, kunci kategori perlu disertakan karena panel itu tidak lagi memuat legenda sendiri (lihat `VISUAL_ENCODING.md`).

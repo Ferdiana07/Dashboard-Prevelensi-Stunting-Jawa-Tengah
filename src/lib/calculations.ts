@@ -27,7 +27,7 @@ export function metrics(rows: StuntingRow[]) {
 }
 // Note under the K4 card: the card stays green, the wording avoids implying progress when there is none.
 export function achievementNote(achieved: number, total: number) {
-  if (achieved === 0) return 'belum ada wilayah yang mencapai target'
+  if (achieved === 0) return 'belum ada yang mencapai target'
   if (achieved === total) return 'semua wilayah mencapai target'
   return `baru ${achieved} dari ${total} wilayah`
 }
