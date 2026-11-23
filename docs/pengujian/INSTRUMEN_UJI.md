@@ -7,7 +7,7 @@ Kelompok 14 · Visualisasi Data · Departemen Informatika, Universitas Diponegor
 | --- | --- |
 | Objek uji | 1 dashboard terpadu dengan 3 komponen diagram: Choropleth Map (“Peta Prevalensi Stunting”), Line Trend (“Analisis Tren Temporal”), Horizontal Bar (“Rata-rata Prevalensi: Kota vs Kabupaten”) |
 | Alat uji | Formulir web `/uji/` pada situs dashboard (satu sesi: profil → persetujuan → Level 3 → Level 4 → SUS) |
-| Partisipan | N = 20: 10 Persona A (Operator Internal), 10 Persona B (Warga Publik) |
+| Partisipan | N = 20 mahasiswa S1 Informatika: 10 dengan peran Persona A (Operator Internal), 10 dengan peran Persona B (Warga Publik) |
 | Data | Terkirim otomatis ke Google Sheet (lembar Responden, L3, L4, SUS, Persetujuan, Analisis) |
 
 ## A. Persona (peran)
@@ -20,6 +20,12 @@ Persona adalah **peran** yang diberikan penguji kepada responden, bukan karakter
 | **B · Warga Publik** (n = 10) | “Anda berperan sebagai warga yang membuka dashboard ini untuk mencari informasi sendiri tentang kondisi daerah.” | Pencarian informasi mandiri dan pemahaman cepat |
 
 Kalimat peran sengaja netral: tidak menyebut prioritas, wilayah tertinggi, tren atau perubahan, maupun perbandingan kota dan kabupaten, agar tidak membocorkan opsi CBQ pada Level 3.
+
+**Kriteria responden**
+
+- Mahasiswa S1 Informatika.
+- Bukan anggota Kelompok 14.
+- Setiap orang hanya ikut satu kali (satu peran, satu sesi).
 
 Data profil yang dicatat: nama (tidak dilaporkan), usia, literasi grafik (1 = hampir tidak pernah membaca grafik … 5 = hampir setiap hari), dan mode sesi.
 
