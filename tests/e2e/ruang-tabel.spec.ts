@@ -83,3 +83,30 @@ test('K4 note at zero achievement fits one line at 1280x720, so the cards keep t
   expect(await cards()).toEqual(heights2022)
   expect(await notes()).toEqual([1, 1, 1, 1])
 })
+
+// Rows whose top and bottom both lie inside the visible part of .table-scroll, under the sticky header.
+async function fullyVisibleRows(page: Page) {
+  return page.locator('.table-scroll').evaluate(box => {
+    const outer = box.getBoundingClientRect(), head = box.querySelector('thead')!.getBoundingClientRect()
+    const bottom = outer.top + box.clientTop + box.clientHeight
+    return [...box.querySelectorAll('tbody tr')].filter(row => { const r = row.getBoundingClientRect(); return r.top >= head.bottom - .5 && r.bottom <= bottom + .5 }).length
+  })
+}
+// Target from the Tahap 7 brief: the five default rows are fully visible at 1536x730 in fit-to-screen mode,
+// at least five at 1366x768 and at least four at 1280x720.
+const ROW_TARGETS: [number, number, number][] = [[1536, 730, 5], [1366, 768, 5], [1280, 720, 4]]
+for (const [width, height, minimum] of ROW_TARGETS) {
+  test(`at ${width}x${height} (fit-to-screen) at least ${minimum} table rows are fully visible in 2019 and 2022`, async ({ page }) => {
+    await ready(page, width, height)
+    expect(await page.locator('.dashboard-overview').evaluate(el => getComputedStyle(el).display)).toBe('grid')
+    for (const year of ['2022', '2019']) {
+      await page.getByLabel('Tahun:', { exact: true }).selectOption(year)
+      await expect(page.locator('tbody tr')).toHaveCount(5)
+      const rows = await fullyVisibleRows(page)
+      expect(rows, `${width}x${height} ${year}`).toBeGreaterThanOrEqual(minimum)
+      if (minimum === 5) expect(rows).toBe(5)
+      expect(await page.locator('tbody tr').first().evaluate(row => row.getBoundingClientRect().height)).toBe(32)
+      expect(await page.locator('.dashboard-overview').evaluate(el => el.getBoundingClientRect().bottom)).toBeLessThanOrEqual(height)
+    }
+  })
+}

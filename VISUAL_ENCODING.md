@@ -51,7 +51,7 @@ Asal gambar: tangkapan browser Chromium lokal, bukan gambar rancangan atau hasil
 
 **Masking:** sembunyikan judul, subjudul, catatan/paragraf penjelasan, toolbar mode/pemilihan, kontrol peta, dan anotasi penjelasan 2020. Pertahankan marks, angka data, sumbu, satuan, tick, batas kategori, legenda, serta garis acuan: bagian tersebut adalah metadata pembacaan dan encoding grafik.
 
-Gunakan **potongan satu panel** sebagai stimulus agar panel lain tidak membocorkan jawaban. Full-page desktop/mobile hanya untuk QA layout. Grayscale merupakan pemeriksaan redundansi tambahan, bukan simulasi lengkap semua kondisi buta warna.
+Gunakan **potongan satu panel** sebagai stimulus agar panel lain tidak membocorkan jawaban. Sejak Tahap 7 panel Kota vs Kabupaten tidak lagi memuat legenda kategori sendiri (legenda yang sama ada di peta); bila stimulus diambil ulang dari tampilan baru, sertakan legenda peta pada potongan panel batang atau tampilkan kuncinya terpisah. Full-page desktop/mobile hanya untuk QA layout. Grayscale merupakan pemeriksaan redundansi tambahan, bukan simulasi lengkap semua kondisi buta warna.
 
 ### Kunci peneliti — jangan diberikan sebelum responden menjawab
 

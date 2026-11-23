@@ -7,7 +7,7 @@ async function ready(page: Page, width: number, height: number) {
   await page.evaluate(() => document.fonts.ready)
   await page.waitForTimeout(300)
 }
-const SIZES: [number, number][] = [[1672, 941], [1366, 768], [1280, 720]]
+const SIZES: [number, number][] = [[1672, 941], [1536, 730], [1366, 768], [1280, 720]]
 // Narrow desktops: 1190x800 and 1100x790 fit the screen, 1100x789 is the page-scroll mode just below the threshold.
 const NARROW: [number, number][] = [[1190, 800], [1100, 790], [1100, 789]]
 
@@ -48,7 +48,7 @@ for (const [width, height] of SIZES) {
 }
 
 for (const [width, height] of [...SIZES, ...NARROW]) {
-  test(`the 'Perubahan 2019→2022' header breaks into two lines and the table does not scroll sideways at ${width}x${height}`, async ({ page }) => {
+  test(`the 'Perubahan 2019→2022' header breaks into two lines and neither the page nor the table scrolls sideways at ${width}x${height}`, async ({ page }) => {
     await ready(page, width, height)
     await expect(page.locator('tbody tr')).toHaveCount(5)
     const lines = await page.locator('thead button .th-line').evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().top))
@@ -60,6 +60,12 @@ for (const [width, height] of [...SIZES, ...NARROW]) {
     expect(rank[1]).toBeGreaterThan(rank[0] + 8)
     const box = await page.locator('.table-scroll').evaluate(node => ({ scrollWidth: node.scrollWidth, clientWidth: node.clientWidth, height: node.clientHeight }))
     expect(box.scrollWidth).toBeLessThanOrEqual(box.clientWidth)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'page').toBe(true)
+    // Also with all 35 regions listed (longer names).
+    await page.getByRole('button', { name: 'Lihat semua (35)', exact: true }).click()
+    expect(await page.locator('.table-scroll').evaluate(node => node.scrollWidth <= node.clientWidth), 'table, all regions').toBe(true)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'page, all regions').toBe(true)
+    await page.getByRole('button', { name: 'Tampilkan 5 besar', exact: true }).click()
     expect(box.height).toBeGreaterThanOrEqual(80)
     // The sort icon stays beside the two lines, inside the same button and column.
     const button = await page.getByRole('button', { name: 'Perubahan 2019→2022' }).boundingBox()
