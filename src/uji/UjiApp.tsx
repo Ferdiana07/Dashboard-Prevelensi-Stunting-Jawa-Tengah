@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { ArrowLeft, ArrowRight, Check, ChevronUp, ClipboardCopy, Clock, Download, EyeOff, Flag, Map as MapIcon, MessageCircle, MousePointerClick, Printer, RotateCcw, Send, ShieldCheck, Smile, Timer, UserRound, UsersRound, X } from 'lucide-react'
-import { CBQ, CONFIDENCE, CONFIG, CONSENT_POINTS, DIAGRAMS, KPI, PERSONAS, STUDY, SUS_ITEMS, type CbqId, type Diagram, type Field, type KpiId, type Persona, type Task } from './content'
+import { CBQ, CONFIDENCE, CONFIG, CONSENT_POINTS, DIAGRAMS, KPI, PERSONAS, RESET_STATE, STUDY, SUS_ITEMS, type CbqId, type Diagram, type Field, type KpiId, type Persona, type Task } from './content'
 import { attachProbe, dashboardReady, readState, type Probe } from './probe'
 import { cleanText, fieldCorrect, respondentId, shuffle, susGrade, susScore, tasksFor } from './scoring'
 import { sendPayload, summaryText, type L3Answer, type Payload, type Profile, type SendStatus, type TaskResult } from './session'
 
 type Screen = 'welcome' | 'profile' | 'consent' | 'l3intro' | 'l3' | 'l4intro' | 'task' | 'sus' | 'finish' | 'done'
 const STEPS = [
-  { title: 'Profil', note: 'Kenalan dan pilih persona' },
+  { title: 'Profil', note: 'Kenalan dan peran uji' },
   { title: 'Persetujuan', note: 'Kesediaan sukarela' },
   { title: 'Tebak Diagram', note: '3 diagram tanpa judul' },
   { title: 'Misi Dashboard', note: '2 tugas interaktif' },
@@ -23,7 +23,8 @@ const params = new URLSearchParams(window.location.search)
 const presetPersona = params.get('persona')?.toUpperCase() === 'A' ? 'A' : params.get('persona')?.toUpperCase() === 'B' ? 'B' : null
 const seconds = (value: number) => `${value.toFixed(1).replace('.', ',')} s`
 
-interface Session { id: string; startedAt: string; t0: number; profile: Profile; consentAt: string; order: Diagram[]; l3: L3Answer[]; l4: TaskResult[]; sus: number[]; comment: string }
+// kpiOrder/cbqOrder diacak sekali per responden dan dipakai sama untuk pengantar serta ketiga diagram Level 3.
+interface Session { id: string; startedAt: string; t0: number; profile: Profile; consentAt: string; order: Diagram[]; kpiOrder: KpiId[]; cbqOrder: CbqId[]; l3: L3Answer[]; l4: TaskResult[]; sus: number[]; comment: string }
 
 export default function UjiApp() {
   const [screen, setScreen] = useState<Screen>('welcome')
@@ -76,17 +77,17 @@ export default function UjiApp() {
         {screen === 'welcome' && <Welcome onStart={() => setScreen('profile')} />}
         {screen === 'profile' && <ProfileForm initial={session?.profile} onNext={profile => {
           const id = session?.profile.persona === profile.persona ? session.id : respondentId(profile.persona)
-          setSession(current => current ? { ...current, id, profile } : { id, profile, startedAt: new Date().toISOString(), t0: performance.now(), consentAt: '', order: shuffle(DIAGRAMS), l3: [], l4: [], sus: [], comment: '' })
+          setSession(current => current ? { ...current, id, profile } : { id, profile, startedAt: new Date().toISOString(), t0: performance.now(), consentAt: '', order: shuffle(DIAGRAMS), kpiOrder: shuffle(Object.keys(KPI) as KpiId[]), cbqOrder: shuffle(Object.keys(CBQ) as CbqId[]), l3: [], l4: [], sus: [], comment: '' })
           setScreen('consent')
         }} />}
         {screen === 'consent' && session && <Consent profile={session.profile} onBack={() => setScreen('profile')} onNext={() => { update({ consentAt: new Date().toISOString() }); setScreen('l3intro') }} />}
-        {screen === 'l3intro' && <L3Intro onNext={() => { setL3Index(0); setScreen('l3') }} />}
-        {screen === 'l3' && session && <L3Item key={l3Index} diagram={session.order[l3Index]} index={l3Index} persona={session.profile.persona} onDone={answer => {
+        {screen === 'l3intro' && session && <L3Intro persona={session.profile.persona} kpiOrder={session.kpiOrder} cbqOrder={session.cbqOrder} onNext={() => { setL3Index(0); setScreen('l3') }} />}
+        {screen === 'l3' && session && <L3Item key={l3Index} diagram={session.order[l3Index]} index={l3Index} persona={session.profile.persona} kpiOrder={session.kpiOrder} cbqOrder={session.cbqOrder} onDone={answer => {
           update({ l3: [...session.l3, answer] })
           if (l3Index < 2) setL3Index(l3Index + 1)
           else setScreen('l4intro')
         }} />}
-        {screen === 'l4intro' && session && <L4Intro tasks={tasks} onNext={() => { setTaskIndex(0); setScreen('task') }} />}
+        {screen === 'l4intro' && session && <L4Intro persona={session.profile.persona} tasks={tasks} onNext={() => { setTaskIndex(0); setScreen('task') }} />}
         {screen === 'sus' && <Sus onNext={sus => { update({ sus }); setScreen('finish') }} />}
         {screen === 'finish' && <Finish onSend={submit} />}
         {screen === 'done' && payload && <Done payload={payload} status={status} />}
@@ -127,13 +128,21 @@ function Welcome({ onStart }: { onStart: () => void }) {
       <div><span className="route-no">Bagian {i + 1}</span><b>{stop.title}</b><p>{stop.note}</p></div>
       <span className="route-time"><Clock size={13} />{stop.time}</span>
     </li>)}</ol>
-    {narrow && <p className="note warn">Anda memakai layar kecil. Uji tetap bisa dikerjakan di HP; diagram lebar dapat digeser ke samping. Laptop tetap lebih nyaman bila tersedia.</p>}
+    {narrow && <p className="note warn" role="alert"><span><b>Layar Anda terlalu sempit untuk uji ini.</b> Uji harus dikerjakan di laptop/komputer dengan zoom peramban 100%. Silakan pindah ke laptop/komputer, atau hubungi penguji sebelum mulai.</span></p>}
     <div className="before">
       <b>Sebelum mulai</b>
       <ul><li>Gunakan laptop/komputer dengan zoom peramban 100%.</li><li>Kerjakan sendiri dalam sekali duduk, tanpa mencari jawaban di internet.</li><li>Jangan menutup atau memuat ulang halaman sampai selesai.</li></ul>
     </div>
     <button className="pri big" onClick={onStart}>Mulai uji <ArrowRight size={18} /></button>
   </section>
+}
+
+// Kartu peran satu kalimat: pengingat peran yang dijalankan responden selama uji.
+function RoleCard({ persona }: { persona: Persona }) {
+  return <aside className={`role-card persona-${persona}`} aria-label="Peran Anda">
+    <span className="p-icon">{persona === 'A' ? <UsersRound size={18} /> : <UserRound size={18} />}</span>
+    <div><span className="p-tag">Peran Anda · {PERSONAS[persona].title}</span><p>{PERSONAS[persona].role}</p></div>
+  </aside>
 }
 
 function Heading({ kicker, title, children }: { kicker?: string; title: string; children?: React.ReactNode }) {
@@ -150,28 +159,28 @@ function ProfileForm({ initial, onNext }: { initial?: Profile; onNext: (profile:
   function next() {
     const clean = cleanText(name, 60)
     if (clean.length < 2) return setMsg('Isi nama lengkap Anda.')
-    if (!persona) return setMsg('Pilih kelompok yang paling menggambarkan Anda.')
+    if (!persona) return setMsg('Pilih peran sesuai arahan penguji.')
     if (!age) return setMsg('Pilih kelompok usia.')
     if (!literacy) return setMsg('Pilih seberapa sering Anda membaca grafik atau dashboard.')
     onNext({ name: clean, persona, age, literacy, mode })
   }
   return <section className="panel">
-    <Heading kicker="Langkah 1" title="Kenalan dulu">Data ini dipakai untuk membandingkan hasil antarkelompok pengguna. Nama tidak dicantumkan dalam laporan.</Heading>
+    <Heading kicker="Langkah 1" title="Kenalan dulu">Data ini dipakai untuk membandingkan hasil antarperan pengguna. Nama tidak dicantumkan dalam laporan.</Heading>
     <div className="grid2">
       <label className="fld"><span>Nama lengkap</span><input value={name} onChange={e => setName(e.target.value)} maxLength={60} autoComplete="name" /></label>
       <label className="fld"><span>Usia</span><select value={age} onChange={e => setAge(e.target.value)}><option value="">— pilih —</option>{AGES.map(a => <option key={a}>{a}</option>)}</select></label>
     </div>
-    <fieldset className="fld"><legend>Saya paling cocok digambarkan sebagai…</legend>
+    <fieldset className="fld"><legend>{presetPersona ? 'Peran Anda' : 'Pilih peran sesuai arahan penguji'}</legend>
       <div className="persona-grid">{(['A', 'B'] as const).map(key => {
         const p = PERSONAS[key]
         const locked = presetPersona !== null && presetPersona !== key
         return <label key={key} className={`persona persona-${key} ${persona === key ? 'on' : ''} ${locked ? 'locked' : ''}`}>
           <input type="radio" name="persona" checked={persona === key} disabled={locked} onChange={() => setPersona(key)} />
           <span className="p-icon">{key === 'A' ? <UsersRound size={20} /> : <UserRound size={20} />}</span>
-          <span className="p-body"><span className="p-tag">Persona {key}</span><b>{p.title}</b><small>{p.who}</small></span>
+          <span className="p-body"><span className="p-tag">Persona {key}</span><b>{p.title}</b><small>{p.role}</small></span>
         </label>
       })}</div>
-      {presetPersona && <p className="hint">Persona sudah ditetapkan melalui tautan.</p>}
+      {presetPersona && <p className="hint">Peran sudah ditetapkan penguji melalui tautan.</p>}
     </fieldset>
     <fieldset className="fld"><legend>Seberapa sering Anda membaca grafik atau dashboard data?</legend>
       <div className="scale">{LITERACY.map((label, i) => <label key={label} className={literacy === i + 1 ? 'on' : ''}><input type="radio" name="lit" checked={literacy === i + 1} onChange={() => setLiteracy(i + 1)} /><b>{i + 1}</b><small>{label}</small></label>)}</div>
@@ -189,7 +198,7 @@ function Consent({ profile, onBack, onNext }: { profile: Profile; onBack: () => 
     <Heading kicker="Langkah 2" title="Pernyataan kesediaan sukarela">Mohon dibaca. Salinannya dapat dicetak atau disimpan sebagai PDF di akhir sesi.</Heading>
     <div className="consent-letter">
       <ShieldCheck size={22} className="consent-seal" />
-      <p>Saya, <b>{profile.name}</b>, responden <b>Persona {profile.persona} · {PERSONAS[profile.persona].title}</b>, menyatakan bahwa:</p>
+      <p>Saya, <b>{profile.name}</b>, responden dengan peran <b>{PERSONAS[profile.persona].title} (Persona {profile.persona})</b>, menyatakan bahwa:</p>
       <div className="checks">{CONSENT_POINTS.map((point, i) => <label key={i} className={checks[i] ? 'on' : ''}><input type="checkbox" checked={checks[i]} onChange={e => setChecks(checks.map((v, j) => j === i ? e.target.checked : v))} /><span>{point}</span></label>)}</div>
       <button className="link-button" onClick={() => setChecks(CONSENT_POINTS.map(() => !all))}>{all ? 'Batalkan semua' : 'Centang semua'}</button>
     </div>
@@ -198,27 +207,33 @@ function Consent({ profile, onBack, onNext }: { profile: Profile; onBack: () => 
   </section>
 }
 
-function L3Intro({ onNext }: { onNext: () => void }) {
+function L3Intro({ persona, kpiOrder, cbqOrder, onNext }: { persona: Persona; kpiOrder: KpiId[]; cbqOrder: CbqId[]; onNext: () => void }) {
   return <section className="panel">
     <Heading kicker="Bagian 1" title="Tebak makna diagram tanpa judul">Anda akan melihat 3 diagram dari dashboard, satu per satu dalam urutan acak. Judul, nama indikator, dan keterangan sengaja disembunyikan.</Heading>
+    <RoleCard persona={persona} />
     <div className="steps3">
       <div><span>1</span><b>Pilih informasi</b><small>Apa yang ditampilkan diagram (KPI)?</small></div>
       <div><span>2</span><b>Pilih pertanyaan</b><small>Pertanyaan apa yang bisa dijawabnya (CBQ)?</small></div>
       <div><span>3</span><b>Kunci & nilai yakin</b><small>Seberapa yakin Anda, 1–5?</small></div>
+    </div>
+    <div className="option-preview">
+      <p>Pilihan jawaban berikut <b>sama untuk ketiga diagram</b>, dengan urutan yang sama. Baca dulu sekarang; diagram belum ditampilkan.</p>
+      <div className="choices">
+        <div className="choice"><span className="choice-head">Informasi (KPI) yang ditampilkan</span><ul>{kpiOrder.map((key, i) => <li key={key}><span className="letter">{LETTERS[i]}</span><span><b>{KPI[key].tag}</b>{KPI[key].text}</span></li>)}</ul></div>
+        <div className="choice"><span className="choice-head">Pertanyaan (CBQ) yang dijawab</span><ul>{cbqOrder.map((key, i) => <li key={key}><span className="letter">{i + 1}</span><span><b>{CBQ[key].tag}</b>{CBQ[key].text}</span></li>)}</ul></div>
+      </div>
     </div>
     <p className="note"><Clock size={16} /><span>Waktu baca dihitung sejak gambar muncul sampai Anda menekan <b>Kunci jawaban</b>. Jawab spontan; menebak boleh.</span></p>
     <div className="actions"><button className="pri" onClick={onNext}>Saya siap <ArrowRight size={17} /></button></div>
   </section>
 }
 
-function L3Item({ diagram, index, persona, onDone }: { diagram: Diagram; index: number; persona: Persona; onDone: (answer: L3Answer) => void }) {
+function L3Item({ diagram, index, persona, kpiOrder, cbqOrder, onDone }: { diagram: Diagram; index: number; persona: Persona; kpiOrder: KpiId[]; cbqOrder: CbqId[]; onDone: (answer: L3Answer) => void }) {
   const [phase, setPhase] = useState<'ready' | 'count' | 'show' | 'conf'>('ready')
   const [count, setCount] = useState(3)
   const [kpi, setKpi] = useState<KpiId | null>(null)
   const [cbq, setCbq] = useState<CbqId | null>(null)
   const [latency, setLatency] = useState(0)
-  const [kpiOrder] = useState(() => shuffle(Object.keys(KPI) as KpiId[]))
-  const [cbqOrder] = useState(() => shuffle(Object.keys(CBQ) as CbqId[]))
   const t0 = useRef(0)
   const wide = diagram.width / diagram.height > 2
   useEffect(() => {
@@ -252,9 +267,10 @@ function L3Item({ diagram, index, persona, onDone }: { diagram: Diagram; index: 
   </section>
 }
 
-function L4Intro({ tasks, onNext }: { tasks: Task[]; onNext: () => void }) {
+function L4Intro({ persona, tasks, onNext }: { persona: Persona; tasks: Task[]; onNext: () => void }) {
   return <section className="panel">
     <Heading kicker="Bagian 2" title="Misi pada dashboard sungguhan">Peta, grafik, tabel, dan filter di kanan atas dashboard bisa diklik. Penguji tidak akan membantu selama misi berjalan.</Heading>
+    <RoleCard persona={persona} />
     <ol className="missions">{tasks.map((task, i) => <li key={task.id}><span className="m-no">{String(i + 1).padStart(2, '0')}</span><div><b>{task.title}</b><small>{task.goal}</small></div></li>)}</ol>
     <div className="dock-demo" aria-hidden="true"><span className="dd-timer"><Timer size={14} />0,0 s</span><span className="dd-text">Skenario misi selalu tampil di dok bawah layar</span><span className="dd-btn"><Flag size={13} />Jawab</span></div>
     <ul className="plain"><li>Tekan <b>Mulai misi</b>; stopwatch berjalan setelah dashboard dimuat.</li><li>Setelah menemukan jawabannya, tekan <b>Jawab</b> di dok bawah dan isi laci jawaban.</li><li>Jika belum tepat, tutup laci dan coba lagi; <b>Saya menyerah</b> tersedia bila buntu.</li></ul>
@@ -301,18 +317,28 @@ function TaskRunner({ task, index, total, onDone }: { task: Task; index: number;
       }
     }, 100)
   }
+  // Yang dicek keadaan dashboard, bukan tombol: tombol Reset Filter atau dropdown sama-sama sah.
+  function atReset() {
+    const state = readState(frame.current?.contentDocument)
+    return state?.year === RESET_STATE.year && state?.region === RESET_STATE.region
+  }
   function finish(success: boolean) {
     const p = probe.current
     p?.detach()
     onDone({ task: task.id, order: index + 1, success, gaveUp: !success, time: (performance.now() - start.current) / 1000, wrongSubmits: wrong.current,
       clicks: p?.clicks ?? 0, deadClicks: p?.dead ?? 0, filterChanges: p?.filterChanges ?? 0,
       crossfilter: task.check === 'crossfilter' ? crossSeen.current : null,
+      reset: task.check === 'reset' ? atReset() : null,
       answers: Object.fromEntries(fields.map(f => [f.key, cleanText(values[f.key] ?? '', 40)])), log: (p?.log ?? []).join(' | ').slice(0, 2000) })
   }
   function send() {
     if (fields.some(f => !(values[f.key] ?? '').trim())) return setMsg('Lengkapi semua isian dulu.')
-    // Jawaban dinilai dari isian saja; posisi filter dashboard saat menjawab tidak dipersyaratkan.
-    if (fields.every(f => fieldCorrect(f, values[f.key]))) return finish(true)
+    // Isian dinilai untuk semua task; task dengan check 'reset' juga mensyaratkan dashboard kembali ke posisi awal.
+    if (fields.every(f => fieldCorrect(f, values[f.key]))) {
+      if (task.check !== 'reset' || atReset()) return finish(true)
+      wrong.current++
+      return setMsg('Tugas belum selesai. Periksa lagi langkah di skenario.')
+    }
     wrong.current++
     setMsg('Jawaban belum tepat. Periksa lagi di dashboard, atau tekan “Saya menyerah”.')
   }
@@ -437,7 +463,7 @@ function ConsentPrint({ session }: { session: Session }) {
     <table><tbody>
       <tr><th>Nama</th><td>{session.profile.name}</td></tr>
       <tr><th>Kode responden</th><td>{session.id}</td></tr>
-      <tr><th>Persona</th><td>{session.profile.persona} · {PERSONAS[session.profile.persona].title}</td></tr>
+      <tr><th>Peran</th><td>{PERSONAS[session.profile.persona].title} (Persona {session.profile.persona})</td></tr>
       <tr><th>Mode sesi</th><td>{session.profile.mode}</td></tr>
     </tbody></table>
     <p>Dengan ini saya menyatakan bahwa:</p>

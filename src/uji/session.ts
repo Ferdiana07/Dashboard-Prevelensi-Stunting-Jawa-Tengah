@@ -2,7 +2,7 @@ import { CONFIG, type CbqId, type DiagramId, type KpiId, type Persona } from './
 
 export interface Profile { name: string; persona: Persona; age: string; literacy: number; mode: string }
 export interface L3Answer { diagram: DiagramId; order: number; kpi: KpiId; cbq: CbqId; kpiOk: boolean; cbqOk: boolean; e2e: boolean; latency: number; confidence: number; lucky: boolean }
-export interface TaskResult { task: string; order: number; success: boolean; gaveUp: boolean; time: number; wrongSubmits: number; clicks: number; deadClicks: number; filterChanges: number; crossfilter: boolean | null; answers: Record<string, string>; log: string }
+export interface TaskResult { task: string; order: number; success: boolean; gaveUp: boolean; time: number; wrongSubmits: number; clicks: number; deadClicks: number; filterChanges: number; crossfilter: boolean | null; reset: boolean | null; answers: Record<string, string>; log: string }
 export interface Payload {
   version: 1; id: string; startedAt: string; submittedAt: string; durationSec: number
   profile: Profile; consent: { agreed: true; at: string }
@@ -29,7 +29,7 @@ export function summaryText(p: Payload) {
     `HASIL UJI DASHBOARD STUNTING ${p.id}`,
     `[PROFIL];${p.profile.name};${p.profile.persona};${p.profile.age};literasi ${p.profile.literacy};${p.profile.mode}`,
     ...p.l3.map(a => `[L3];${a.diagram};urutan ${a.order};${a.kpi};${a.cbq};E2E ${a.e2e ? 1 : 0};${n(a.latency)} s;yakin ${a.confidence}`),
-    ...p.l4.map(t => `[L4];${t.task};sukses ${t.success ? 1 : 0};${n(t.time)} s;salah ${t.wrongSubmits};klik ${t.clicks};tanpa respons ${t.deadClicks};filter ${t.filterChanges};cross ${t.crossfilter ?? '-'}`),
+    ...p.l4.map(t => `[L4];${t.task};sukses ${t.success ? 1 : 0};${n(t.time)} s;salah ${t.wrongSubmits};klik ${t.clicks};tanpa respons ${t.deadClicks};filter ${t.filterChanges};cross ${t.crossfilter ?? '-'};reset ${t.reset ?? '-'}`),
     `[SUS];${p.sus.join(';')};skor ${p.susScore}`,
     `[META];${p.startedAt};${p.durationSec} s;${p.device.viewport}`,
   ].join('\n')
