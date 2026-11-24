@@ -126,11 +126,9 @@ Dashboard asli dimuat di dalam formulir. Dok di bagian bawah layar selalu menamp
 | Task | Skenario | Isian jawaban | Kunci |
 | --- | --- | --- | --- |
 | **B1** Kondisi Wilayah Tempat Tinggal | Bayangkan Anda tinggal di Kabupaten Temanggung. Cari Kab. Temanggung pada peta “Peta Prevalensi Stunting” dan klik wilayahnya. Lalu periksa pada grafik “Analisis Tren Temporal” apakah kondisi stunting di wilayah tersebut membaik atau memburuk pada periode terakhir (2021 → 2022). | Prevalensi 2022 (%); kondisi (Membaik / Memburuk / Tetap sama) | 28,9%; Memburuk (20,5% → 28,9%) |
-| **B2** Transparansi Prioritas | Ubah filter Tahun menjadi 2021. Pada grafik batang “Rata-rata Prevalensi: Kota vs Kabupaten”, temukan kelompok wilayah dengan rata-rata prevalensi paling besar. Setelah itu, kembalikan tampilan dashboard ke posisi awal (reset filter). | Kelompok; rata-rata (%) | Kabupaten; 20,1%; dashboard kembali ke Tahun 2022 dan Wilayah “Semua Kab/Kota” |
+| **B2** Transparansi Prioritas | Ubah filter Tahun menjadi 2021. Pada grafik batang “Rata-rata Prevalensi: Kota vs Kabupaten”, temukan kelompok wilayah dengan rata-rata prevalensi paling besar. | Kelompok; rata-rata (%) | Kabupaten; 20,1% |
 
 Wilayah B1 dibuat tetap (Kab. Temanggung) agar tingkat kesulitan sama bagi semua responden. Skenario menyebut panel dengan judul yang tertulis di dashboard.
-
-**Kriteria sukses B2.** Saat responden menekan *Kirim jawaban*, B2 dinyatakan sukses hanya bila semua isian benar **dan** dashboard sudah kembali ke posisi awal: filter Tahun = 2022 dan filter Wilayah = “Semua Kab/Kota”. Yang diperiksa adalah keadaan dashboard, bukan cara mencapainya; tombol Reset Filter maupun mengubah dropdown sama-sama sah. Bila isian benar tetapi dashboard belum kembali, formulir menampilkan pesan netral “Tugas belum selesai. Periksa lagi langkah di skenario.”, menambah hitungan jawaban salah, dan task belum selesai. Pesan ini tidak menyebut tombol atau ikon apa pun. Bila isian salah, pesannya sama dengan task lain.
 
 Jawaban angka diterima dengan koma atau titik (21,7 atau 21.7) dan harus sama dengan nilai satu desimal yang ditampilkan dashboard.
 
@@ -138,14 +136,13 @@ Jawaban angka diterima dengan koma atau titik (21,7 atau 21.7) dan harus sama de
 
 | Data | Definisi |
 | --- | --- |
-| Sukses | 1 bila task selesai tanpa bantuan (semua isian benar, dan untuk B2 dashboard sudah kembali ke posisi awal); 0 bila menyerah |
+| Sukses | 1 bila task selesai tanpa bantuan (semua isian benar); 0 bila menyerah |
 | Time-on-task | Detik sejak dashboard siap hingga task selesai/menyerah |
-| Jawaban salah | Jumlah pengiriman jawaban yang ditolak (isian salah, atau pada B2 isian benar tetapi dashboard belum kembali) |
+| Jawaban salah | Jumlah pengiriman jawaban yang ditolak (isian salah) |
 | Klik tanpa respons | Klik pada area dashboard yang bukan kontrol interaktif (indikator salah klik/kebingungan navigasi) |
 | Error | Jawaban salah + klik tanpa respons |
 | Perubahan filter | Jumlah perubahan dropdown/kotak centang |
 | Cross-filter dipakai | A1 (Brebes) dan B1 (Temanggung): wilayah sasaran pernah terpilih lewat peta, tabel, panel perubahan, atau dropdown Wilayah, sehingga grafik tren mengikutinya. Sumbernya dapat dibaca dari log interaksi. Kosong untuk task lain |
-| Reset | B2: 1 bila dashboard berada di posisi awal (Tahun 2022, Wilayah “Semua Kab/Kota”) saat task berakhir, termasuk saat menyerah; 0 bila belum. Kosong untuk task lain |
 | Log interaksi | Urutan klik dan perubahan filter dengan cap waktu, untuk analisis kebingungan |
 
 ## E. System Usability Scale (SUS)
@@ -202,4 +199,3 @@ Komponen diagram dengan mayoritas < 85%, modus meleset dari kunci, P_i terendah,
 | Diagram 2: grafik tren | Memakai grafik tren satu garis (mode Rata-rata) | Mode Kota vs Kab. akan tumpang tindih dengan makna Diagram 3 (perbandingan kelompok) |
 | Anotasi disembunyikan | Label sumbu dan legenda kategori tetap tampil | Keduanya berisi data, bukan nama metrik. Akibatnya Level 3 berpotensi lebih mudah; hal ini dicatat sebagai batasan |
 | Opsi jawaban Level 3 | Opsi KPI-1/2/3 ditambahkan di samping CBQ | Agar E2E (KPI benar dan CBQ benar) dapat dihitung |
-| B2: “lalu kembalikan tampilan dashboard ke posisi awal (reset filter)” | Dipertahankan dan diperiksa otomatis dari keadaan dashboard | Lihat kriteria sukses B2 di bagian D |

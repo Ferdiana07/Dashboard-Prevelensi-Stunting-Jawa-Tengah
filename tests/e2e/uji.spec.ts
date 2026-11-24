@@ -4,7 +4,6 @@ const ROLE = {
   A: 'Anda berperan sebagai staf teknis Dinas Kesehatan yang memakai dashboard ini untuk pemantauan rutin dan pengambilan keputusan taktis.',
   B: 'Anda berperan sebagai warga yang membuka dashboard ini untuk mencari informasi sendiri tentang kondisi daerah.',
 }
-const NOT_DONE = 'Tugas belum selesai. Periksa lagi langkah di skenario.'
 
 // Teks form yang terlihat responden (di luar iframe dashboard) tidak boleh memuat "K6".
 async function noK6(page: Page) {
@@ -111,13 +110,13 @@ test('Persona A: role chosen on the profile, blinded charts, cross-filter task, 
   expect(p.consent.at).toMatch(/^\d{4}-/)
   expect(p.l3).toHaveLength(3)
   expect(new Set(p.l3.map((a: { diagram: string }) => a.diagram))).toEqual(new Set(['D1', 'D2', 'D3']))
-  expect(p.l4[0]).toMatchObject({ task: 'A1', success: true, wrongSubmits: 1, crossfilter: true, reset: null })
+  expect(p.l4[0]).toMatchObject({ task: 'A1', success: true, wrongSubmits: 1, crossfilter: true })
   expect(p.l4[0].clicks).toBeGreaterThan(0)
-  expect(p.l4[1]).toMatchObject({ task: 'A2', success: true, wrongSubmits: 0, reset: null })
+  expect(p.l4[1]).toMatchObject({ task: 'A2', success: true, wrongSubmits: 0 })
   expect(p.susScore).toBe(75)
 })
 
-test('Persona B: locked role, Temanggung task, B2 rejected until the year dropdown is back at 2022', async ({ page }) => {
+test('Persona B: locked role, Temanggung task, B2 accepted with the year still at 2021', async ({ page }) => {
   await page.goto('/uji/?persona=B')
   await profile(page, 'B', true)
   await level3(page, 'B')
@@ -126,51 +125,20 @@ test('Persona B: locked role, Temanggung task, B2 rejected until the year dropdo
   await frame.locator('[data-region="3323"]').click()
   await expect(frame.locator('#region')).toHaveValue('3323')
   await answer(page, { 'Prevalensi Kab. Temanggung': '28,9', 'Kondisi 2021': 'Memburuk (prevalensi naik)' })
-  await expect(page.locator('.mission-intro')).toContainText('kembalikan tampilan dashboard ke posisi awal (reset filter)')
+  await expect(page.locator('.mission-intro')).toContainText('Ubah filter Tahun menjadi 2021')
+  await expect(page.locator('.mission-intro')).not.toContainText(/posisi awal|reset/i)
   const frame2 = await startTask(page)
   await frame2.locator('#year').selectOption('2021')
-  // Isian benar tetapi tahun masih 2021: ditolak dengan pesan netral, task belum selesai.
+  // Jawaban benar langsung diterima walau dashboard masih di tahun 2021: tidak perlu reset.
   await answer(page, B2_ANSWER)
-  await expect(page.locator('.sheet .msg')).toHaveText(NOT_DONE)
-  await expect(page.locator('.sheet .msg')).not.toContainText(/Reset|tombol|ikon/i)
-  await expect(page.locator('.dock')).toBeVisible()
-  await frame2.locator('#year').selectOption('2022')
-  await page.getByRole('button', { name: 'Kirim jawaban' }).click()
   await sus(page)
   await expect(page.locator('.stat.green dd')).toHaveText('2/2')
   await expect(page.locator('textarea.out')).toContainText('[L4];B2;sukses 1')
-  await expect(page.locator('textarea.out')).toContainText(';reset true')
+  await expect(page.locator('textarea.out')).not.toContainText('reset')
   const p = await stored(page)
-  expect(p.l4[0]).toMatchObject({ task: 'B1', success: true, crossfilter: true, reset: null })
-  expect(p.l4[1]).toMatchObject({ task: 'B2', success: true, wrongSubmits: 1, crossfilter: null, reset: true })
-  expect(p.l4[1].filterChanges).toBeGreaterThanOrEqual(2)
+  expect(p.l4[0]).toMatchObject({ task: 'B1', success: true, crossfilter: true })
+  expect(p.l4[1]).toMatchObject({ task: 'B2', success: true, wrongSubmits: 0, crossfilter: null })
+  expect(p.l4[1]).not.toHaveProperty('reset')
+  expect(p.l4[1].filterChanges).toBeGreaterThanOrEqual(1)
   await expect(page.locator('.status')).toContainText('Pengiriman otomatis belum diaktifkan')
-})
-
-test('Persona B: B2 also succeeds after the Reset Filter button clears year and region', async ({ page }) => {
-  await page.goto('/uji/?persona=B')
-  await profile(page, 'B', true)
-  await level3(page, 'B')
-  await startTask(page)
-  await page.getByRole('button', { name: 'Jawab', exact: true }).click()
-  await page.getByRole('button', { name: 'Saya menyerah' }).click()
-  const frame = await startTask(page)
-  await frame.locator('#year').selectOption('2021')
-  await frame.locator('[data-region="3329"]').click()
-  await expect(frame.locator('#region')).toHaveValue('3329')
-  await answer(page, B2_ANSWER)
-  await expect(page.locator('.sheet .msg')).toHaveText(NOT_DONE)
-  // Tahun saja yang kembali belum cukup: wilayah terpilih juga harus dilepas.
-  await frame.locator('#year').selectOption('2022')
-  await page.getByRole('button', { name: 'Kirim jawaban' }).click()
-  await expect(page.locator('.sheet .msg')).toHaveText(NOT_DONE)
-  await frame.getByRole('button', { name: 'Reset Filter' }).click()
-  await expect(frame.locator('#year')).toHaveValue('2022')
-  await expect(frame.locator('#region')).toHaveValue('all')
-  await page.getByRole('button', { name: 'Kirim jawaban' }).click()
-  await sus(page)
-  const p = await stored(page)
-  expect(p.l4[0]).toMatchObject({ task: 'B1', success: false, gaveUp: true, crossfilter: false, reset: null })
-  expect(p.l4[1]).toMatchObject({ task: 'B2', success: true, wrongSubmits: 2, reset: true })
-  expect(p.l4[1].log).toContain('Reset Filter')
 })
